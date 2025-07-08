@@ -10,16 +10,23 @@
   /* Хедер */
   .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 30px;
+    position: relative;
+  }
+
+  .header h1 {
+    margin: 0;
+    font-size: 2.8rem;
   }
   
   .logo {
     display: flex;
     align-items: center;
-    cursor: pointer;
     gap: 10px;
+    justify-content: center;
+    flex: 1;
   }
   
   .casino-logo {
@@ -79,9 +86,9 @@
   /* Заголовок кейсів */
   .cases-title {
     font-weight: 700;
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    user-select: none;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 25px;
   }
   
   /* Список кейсів */
