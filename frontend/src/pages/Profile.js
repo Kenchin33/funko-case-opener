@@ -69,7 +69,7 @@ const ProfilePage = () => {
                   <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{entry.price ?? '–'}$</p>
                   <p style={{ fontSize: '0.8rem', color: '#aaa' }}>
                     {entry.caseId ? (
-                      <Link to={`/cases/${entry.caseId}`} className="case-link">{entry.caseName || 'Невідомий кейс'}</Link>
+                      <Link to={`/case/${entry.caseId}`} className="case-link">{entry.caseName || 'Невідомий кейс'}</Link>
                     ) : (
                       entry.caseName || 'Невідомий кейс'
                     )}
