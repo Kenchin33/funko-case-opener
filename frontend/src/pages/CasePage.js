@@ -39,7 +39,9 @@ const CasePage = () => {
 
   return (
     <div className="case-page">
-      <button className="back-button" onClick={() => navigate('/')}>← На головну</button>
+      <button className="btn btn-outline back-button" onClick={() => navigate('/')}>
+  ← На головну
+</button>
 
       {caseData ? (
         <>
@@ -49,6 +51,7 @@ const CasePage = () => {
             {rolling ? 'Відкривається...' : 'Відкрити кейс'}
           </button>
 
+          <div className="reel-arrow"/>
           <div className="reel-container">
             <div className={`reel ${rolling ? 'rolling' : ''}`} ref={reelRef}>
               {[...Array(20)].flatMap(() =>
@@ -59,7 +62,7 @@ const CasePage = () => {
             </div>
           </div>
 
-          {!rolling && !resultFigure && (
+          {!rolling && !showResult && (
             <div className="figures-preview">
               <h3>Можуть випасти:</h3>
               <div className="figures-grid">
