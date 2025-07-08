@@ -35,7 +35,7 @@
   
   .logo h1 {
     font-weight: 900;
-    font-size: 2.5rem;
+    font-size: 75px;
     margin: 0;
     user-select: none;
   }
@@ -137,4 +137,92 @@
     color: #f0a500;
     user-select: none;
   }
+
+  .case-page {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .case-title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .case-cover {
+    width: 200px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px #f0a50088;
+  }
+  
+  .open-btn {
+    margin-bottom: 30px;
+  }
+  
+  /* Анімаційна стрічка */
+  .reel-container {
+    width: 100%;
+    overflow: hidden;
+    border: 3px solid #f0a500;
+    border-radius: 12px;
+    height: 160px;
+    position: relative;
+    background-color: #222;
+  }
+  
+  .reel {
+    display: flex;
+    width: fit-content;
+    animation: none;
+  }
+  
+  .reel-item {
+    width: 120px;
+    height: 120px;
+    margin: 20px 10px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  /* Анімація */
+  .rolling {
+    animation: spin 3s ease-out forwards;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-3000px);
+    }
+  }
+  
+  /* Результат */
+  .result-popup {
+    margin-top: 40px;
+    background-color: #1d1d1d;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #f0a500;
+    display: inline-block;
+    animation: fadeIn 0.8s ease-in-out;
+  }
+  
+  .result-popup img {
+    width: 150px;
+    margin: 10px 0;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
   
