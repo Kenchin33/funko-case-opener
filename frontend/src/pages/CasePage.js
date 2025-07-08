@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './style.css';
 
 const CasePage = () => {
@@ -7,7 +7,9 @@ const CasePage = () => {
   const [caseData, setCaseData] = useState(null);
   const [rolling, setRolling] = useState(false);
   const [resultFigure, setResultFigure] = useState(null);
+  const [showResult, setShowResult] = useState(false);
   const reelRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/cases/${id}`)
@@ -21,6 +23,7 @@ const CasePage = () => {
 
     setRolling(true);
     setResultFigure(null);
+    setShowResult(false);
 
     const res = await fetch(`http://localhost:5000/api/cases/${id}/open`, {
       method: 'POST',
@@ -30,11 +33,14 @@ const CasePage = () => {
     setTimeout(() => {
       setResultFigure(data);
       setRolling(false);
-    }, 3500); // тривалість анімації
+      setShowResult(true);
+    }, 3500);
   };
 
   return (
     <div className="case-page">
+      <button className="back-button" onClick={() => navigate('/')}>← На головну</button>
+
       {caseData ? (
         <>
           <h2 className="case-title">{caseData.name}</h2>
@@ -53,11 +59,28 @@ const CasePage = () => {
             </div>
           </div>
 
-          {resultFigure && (
-            <div className="result-popup">
-              <h3>Випала фігурка!</h3>
-              <img src={resultFigure.image} alt={resultFigure.name} />
-              <p><strong>{resultFigure.name}</strong> — {resultFigure.rarity}</p>
+          {!rolling && !resultFigure && (
+            <div className="figures-preview">
+              <h3>Можуть випасти:</h3>
+              <div className="figures-grid">
+                {caseData.figures.map(fig => (
+                  <div key={fig._id} className="figure-card">
+                    <img src={fig.image} alt={fig.name} />
+                    <p>{fig.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {resultFigure && showResult && (
+            <div className="result-popup-overlay">
+              <div className="result-popup">
+                <button className="popup-close" onClick={() => setShowResult(false)}>✖</button>
+                <h3>Випала фігурка!</h3>
+                <img src={resultFigure.image} alt={resultFigure.name} />
+                <p><strong>{resultFigure.name}</strong> — {resultFigure.rarity}</p>
+              </div>
             </div>
           )}
         </>
