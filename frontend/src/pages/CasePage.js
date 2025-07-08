@@ -11,6 +11,8 @@ const CasePage = () => {
   const reelRef = useRef(null);
   const navigate = useNavigate();
 
+  const audioRef = useRef(null);
+
   useEffect(() => {
     fetch(`http://localhost:5000/api/cases/${id}`)
       .then(res => res.json())
@@ -25,17 +27,54 @@ const CasePage = () => {
     setResultFigure(null);
     setShowResult(false);
 
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    }
+
     const res = await fetch(`http://localhost:5000/api/cases/${id}/open`, {
       method: 'POST',
     });
     const data = await res.json();
 
-    setTimeout(() => {
-      setResultFigure(data);
-      setRolling(false);
-      setShowResult(true);
-    }, 3500);
+    const reel = reelRef.current;
+    let position = 0;
+    const initialSpeed = 40;
+    const slowDownRate = 0.98;
+    let speed = initialSpeed;
+    let startTime = null;
+    const fullSpeedDuration = 4000;
+
+    const animate = (timestamp) => {
+      if (!reel) return;
+
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+
+      if (elapsed < fullSpeedDuration) {
+        position -= initialSpeed;
+        reel.style.transform = `translateX(${position}px)`;
+        requestAnimationFrame(animate);
+      } else {
+        speed *= slowDownRate;
+        position -= speed;
+        reel.style.transform = `translateX(${position}px)`;
+        if (speed > 0.5) {
+          requestAnimationFrame(animate);
+        } else {
+          setResultFigure(data);
+          setRolling(false);
+          setShowResult(true);
+  
+          if (audioRef.current) {
+            audioRef.current.pause();
+        }
+      }
+    }
   };
+
+  requestAnimationFrame(animate);
+};
 
   return (
     <div className="case-page">
@@ -54,7 +93,7 @@ const CasePage = () => {
           <div className="reel-arrow"/>
           <div className="reel-container">
             <div className={`reel ${rolling ? 'rolling' : ''}`} ref={reelRef}>
-              {[...Array(20)].flatMap(() =>
+              {[...Array(100)].flatMap(() =>
                 caseData.figures.map((fig, i) => (
                   <img key={i + Math.random()} src={fig.image} alt={fig.name} className="reel-item" />
                 ))
@@ -82,10 +121,16 @@ const CasePage = () => {
                 <button className="popup-close" onClick={() => setShowResult(false)}>✖</button>
                 <h3>Випала фігурка!</h3>
                 <img src={resultFigure.image} alt={resultFigure.name} />
-                <p><strong>{resultFigure.name}</strong> — {resultFigure.rarity}</p>
+                <p>
+                  <strong>{resultFigure.name}</strong>
+                  <span className={`rarity ${resultFigure.rarity}`} > — {resultFigure.rarity}</span>
+                </p>
               </div>
             </div>
           )}
+
+          <audio ref={audioRef} src="/sounds/go-new-gambling.mp3" />
+
         </>
       ) : (
         <p>Завантаження...</p>
