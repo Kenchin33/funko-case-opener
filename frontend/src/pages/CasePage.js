@@ -46,7 +46,7 @@ const CasePage = () => {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/cases/${id}`)
+    fetch(`https://funko-case-opener.onrender.com/api/cases/${id}`)
       .then(res => res.json())
       .then(data => {
         setCaseData(data);
@@ -59,7 +59,7 @@ const CasePage = () => {
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
-      fetch('http://localhost:5000/api/auth/me', {
+      fetch('https://funko-case-opener.onrender.com/api/auth/me', {
         headers: { 'Authorization': 'Bearer ' + token },
       })
         .then(res => {
@@ -123,10 +123,10 @@ const CasePage = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/cases/${id}/open`, {
+      const res = await fetch(`https://funko-case-opener.onrender.com/api/cases/${id}/open`, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token },
-      });
+      })
 
       if (!res.ok) {
         const err = await res.json();

@@ -11,7 +11,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/cases')
+    fetch('https://funko-case-opener.onrender.com/api/cases')
       .then(res => res.json())
       .then(data => setCases(data))
       .catch(console.error);
@@ -20,10 +20,8 @@ const Home = () => {
     if (token) {
       setIsLoggedIn(true);
 
-      fetch('http://localhost:5000/api/auth/me', {
-        headers: {
-          'Authorization': 'Bearer ' + token,
-        },
+      fetch('https://funko-case-opener.onrender.com/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token },
       })
         .then(res => {
           if (!res.ok) throw new Error('Не авторизований');
