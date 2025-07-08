@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaUserCircle } from 'react-icons/fa';
 import './style.css';
 
 const Home = () => {
   const [cases, setCases] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [balance, setBalance] = useState(null);
 
   const navigate = useNavigate();
 
@@ -15,19 +17,49 @@ const Home = () => {
       .catch(console.error);
 
     const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
+    if (token) {
+      setIsLoggedIn(true);
+
+      fetch('http://localhost:5000/api/auth/me', {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+        },
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Не авторизований');
+          return res.json();
+        })
+        .then(data => {
+          setBalance(data.balance ?? 0);
+        })
+        .catch(() => {
+          setIsLoggedIn(false);
+          setBalance(null);
+          localStorage.removeItem('token');
+        });
+    } else {
+      setIsLoggedIn(false);
+      setBalance(null);
+    }
   }, []);
 
   return (
     <div className="home-container">
       <header className="header">
         <div className="logo" onClick={() => navigate('/')}>
-          <span role="img" aria-label="casino" className="casino-logo">🎰</span>
           <h1>Фанко Казіно</h1>
         </div>
         <div className="user-menu">
           {isLoggedIn ? (
-            <Link to="/profile" className="profile-icon" title="Профіль">👤</Link>
+            <Link
+              to="/profile"
+              className="profile-icon"
+              title="Профіль"
+              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
+            >
+              <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
+              <FaUserCircle size={36} />
+            </Link>
           ) : (
             <>
               <Link to="/register" className="btn btn-outline">Реєстрація</Link>

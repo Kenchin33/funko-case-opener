@@ -6,6 +6,23 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey';
 
+// Middleware для перевірки токена
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: 'Необхідна авторизація' });
+
+  const token = authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Токен не знайдено' });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // додаємо дані користувача в req
+    next();
+  } catch (e) {
+    return res.status(401).json({ message: 'Невалідний токен' });
+  }
+}
+
 // Реєстрація
 router.post('/register', async (req, res) => {
   try {
@@ -56,4 +73,59 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router;
+// Отримати інформацію про користувача за токеном
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-passwordHash').populate('openedFigures.figure');
+    if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Помилка сервера' });
+  }
+});
+
+// Отримати користувача за id
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-passwordHash');
+    if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Помилка сервера' });
+  }
+});
+
+// Змінити баланс користувача
+router.patch('/:id/balance', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { balance } = req.body;
+
+    if (typeof balance !== 'number') {
+      return res.status(400).json({ message: 'Невірне значення балансу' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { balance },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'Користувача не знайдено' });
+    }
+
+    res.json({ message: 'Баланс оновлено', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Помилка сервера' });
+  }
+});
+
+// Експортуємо окремо router і middleware
+module.exports = {
+  router,
+  authMiddleware,
+};

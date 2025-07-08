@@ -2,7 +2,8 @@ const express = require('express');
 const Case = require('../models/Case');
 const User = require('../models/User');
 const router = express.Router();
-const { authMiddleware } = require('./auth');
+
+const { authMiddleware } = require('./auth'); // імпорт, як об'єкт
 
 // Отримати всі кейси
 router.get('/', async (req, res) => {
@@ -57,12 +58,10 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
 
-    // Перевірка балансу
     if (user.balance < caseItem.price) {
       return res.status(400).json({ message: 'Недостатньо коштів для відкриття кейсу' });
     }
 
-    // Зняття вартості кейсу з балансу і збереження
     user.balance -= caseItem.price;
     await user.save();
 
@@ -118,7 +117,6 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
     });
     await user.save();
 
-    // Відповідаємо виграшною фігуркою + новим балансом
     res.json({
       ...selectedFigure.toObject ? selectedFigure.toObject() : selectedFigure,
       newBalance: user.balance,
