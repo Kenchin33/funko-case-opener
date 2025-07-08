@@ -1,0 +1,133 @@
+/* Загальний чорний фон */
+.home-container {
+    background-color: #121212;
+    color: white;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+  }
+  
+  /* Хедер */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 10px;
+  }
+  
+  .casino-logo {
+    font-size: 2.5rem;
+  }
+  
+  .logo h1 {
+    font-weight: 900;
+    font-size: 2.5rem;
+    margin: 0;
+    user-select: none;
+  }
+  
+  /* Меню користувача */
+  .user-menu {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .profile-icon {
+    font-size: 1.8rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  /* Кнопки */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-outline {
+    border: 2px solid #f0a500;
+    color: #f0a500;
+  }
+  
+  .btn-outline:hover {
+    background-color: #f0a500;
+    color: black;
+  }
+  
+  .btn-primary {
+    background-color: #f0a500;
+    color: black;
+  }
+  
+  .btn-primary:hover {
+    background-color: #d18e00;
+    color: white;
+  }
+  
+  /* Заголовок кейсів */
+  .cases-title {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+  
+  /* Список кейсів */
+  .cases-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .case-card {
+    background-color: #222;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 180px;
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 0 10px #f0a500aa;
+    transition: transform 0.2s ease;
+  }
+  
+  .case-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .case-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .case-info {
+    padding: 10px;
+  }
+  
+  .case-info h3 {
+    margin: 0 0 5px 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    user-select: none;
+  }
+  
+  .case-info p {
+    margin: 0;
+    font-weight: 600;
+    color: #f0a500;
+    user-select: none;
+  }
+  
