@@ -121,10 +121,11 @@ const CasePage = () => {
                 <button className="popup-close" onClick={() => setShowResult(false)}>✖</button>
                 <h3>Випала фігурка!</h3>
                 <img src={resultFigure.image} alt={resultFigure.name} />
-                <p>
-                  <strong>{resultFigure.name}</strong>
-                  <span className={`rarity ${resultFigure.rarity}`} > — {resultFigure.rarity}</span>
+                <p className="popup-name">
+                  <strong>{resultFigure.name} — </strong>
+                  <span className={`rarity ${resultFigure.rarity}`}>{resultFigure.rarity}</span>
                 </p>
+                <p className="popup-price">{resultFigure.price}$</p>
               </div>
             </div>
           )}

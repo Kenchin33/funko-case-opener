@@ -220,6 +220,19 @@
   text-align: center;
 }
 
+.popup-name {
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+
+.popup-price {
+  font-size: 1rem;
+  text-align: center;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
 .popup-close {
   position: absolute;
   top: 8px;
