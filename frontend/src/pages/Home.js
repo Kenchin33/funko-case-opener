@@ -74,7 +74,7 @@ const Home = () => {
             <p>Кейси не знайдені</p>
           ) : (
             cases.map(c => (
-              <Link to={`/cases/${c._id}`} key={c._id} className="case-card">
+              <Link to={`/case/${c._id}`} key={c._id} className="case-card">
                 <img
                   src={c.image || 'https://via.placeholder.com/180x180?text=No+Image'}
                   alt={c.name}
