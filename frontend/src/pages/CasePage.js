@@ -310,7 +310,7 @@ const CasePage = () => {
                     const token = localStorage.getItem('token');
                     try {
                       const res = await fetch('https://funko-case-opener.onrender.com/api/auth/me', {
-                        headers: { 'Authorization': 'Bearer' + token},
+                        headers: { 'Authorization': 'Bearer ' + token},
                       });
                       const user = await res.json();
                       const currentBalance = Number(user.balance);
@@ -322,7 +322,7 @@ const CasePage = () => {
                         method: 'PATCH',
                         headers: {
                           'Content-Type': 'application/json',
-                          'Authorization': 'Bearer' + token,
+                          'Authorization': 'Bearer ' + token,
                         },
                         body: JSON.stringify({balance: newBalance}),
                       });
