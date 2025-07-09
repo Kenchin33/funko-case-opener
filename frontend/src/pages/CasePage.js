@@ -328,8 +328,8 @@ const CasePage = () => {
                         },
                         body: JSON.stringify({balance: newBalance}),
                       });
-                      if (!patchRes.ok) {
-                        const errData = await patchRes.json();
+                      if (!res.ok) {
+                        const errData = await res.json();
                         throw new Error(errData.message || 'Не вдалося оновити баланс');
                       }
 
