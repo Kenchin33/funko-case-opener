@@ -30,12 +30,13 @@ const CasePage = () => {
     Grail: 'gold',
   };
 
+  // Функція для показу повідомлення з анімацією і автоматичним приховуванням через 2 секунди
   const showErrorMessage = (msg) => {
     if (errorTimeoutRef.current) {
       clearTimeout(errorTimeoutRef.current);
     }
     setErrorMsg(msg);
-    setShowError(false);
+    setShowError(false); // скидаємо, щоб перезапустити анімацію
     setTimeout(() => {
       setShowError(true);
     }, 10);
@@ -96,7 +97,10 @@ const CasePage = () => {
 
   const openCase = async () => {
     if (!caseData) return;
-    if (showError) setShowError(false);
+    // Викидаємо помилку, якщо є
+    //setErrorMsg('');
+    //setShowError(false);
+    if (showError) setShowError(false); // сховаємо повідомлення, якщо було
 
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
@@ -114,7 +118,7 @@ const CasePage = () => {
 
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play();
     }
 
     try {
@@ -122,7 +126,7 @@ const CasePage = () => {
       const res = await fetch(`https://funko-case-opener.onrender.com/api/cases/${id}/open`, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token },
-      });
+      })
 
       if (!res.ok) {
         const err = await res.json();
@@ -136,84 +140,60 @@ const CasePage = () => {
       const reel = reelRef.current;
       const figures = caseData.figures;
 
-      // Зберемо фігурки для стрічки з урахуванням реальної ширини елемента
-      // Спочатку вставимо тимчасові фігурки, щоб виміряти ширину
-      reel.innerHTML = '';
-      const tempImg = document.createElement('img');
-      tempImg.src = figures[0]?.image || '';
-      tempImg.className = 'reel-item';
-      reel.appendChild(tempImg);
-
-      // Затримка, щоб DOM оновився і ми змогли дістати offsetWidth
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      const reelItemWidth = tempImg.offsetWidth || 120;
-      const reelWidth = reel.parentElement.offsetWidth;
-      const visibleCount = Math.floor(reelWidth / reelItemWidth);
+      const reelItemWidth = window.innerWidth < 480 ? 80 : window.innerWidth < 768 ? 100 : 140;
+      const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
+      const centerIndex = Math.floor(visibleCount / 2);
       const repeatCount = 50;
-      const extraBuffer = 3;
 
-      // Створюємо випадкову стрічку
       const randomFigures = Array.from({ length: repeatCount }, () =>
         figures[Math.floor(Math.random() * figures.length)]
       );
 
-      const winningFigure = figures.find(f => f._id === data._id) || data;
+      const totalPrefix = randomFigures.length;
+      const insertAt = totalPrefix + centerIndex;
+      const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
+      const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
 
-      // Фінальна стрічка: random + виграшна + додатковий запас фігурок
-      const finalReel = [
-        ...randomFigures,
-        winningFigure,
-        ...randomFigures.slice(0, visibleCount + extraBuffer),
-      ];
-
-      // Очистити і додати всі фігурки у DOM
-      reel.innerHTML = '';
       const fragment = document.createDocumentFragment();
-      finalReel.forEach(fig => {
+      finalReel.forEach((fig) => {
         const img = document.createElement('img');
         img.src = fig.image;
         img.alt = fig.name;
         img.className = 'reel-item';
         fragment.appendChild(img);
       });
+
+      reel.innerHTML = '';
       reel.appendChild(fragment);
 
-      const centerIndex = Math.floor(visibleCount / 2);
-      const winningIndex = randomFigures.length;
-
-      // Початкова позиція трансформації = 0 (початок стрічки)
-      // Кінцева позиція — виграшна фігурка по центру
-      const finalOffset = -(winningIndex - centerIndex) * reelItemWidth;
-
-      const duration = 9000;
+      const finalOffset = -(insertAt - centerIndex) * reelItemWidth;
+      const duration = 5000;
       const start = performance.now();
 
-      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-
-      const animate = (time) => {
-        const elapsed = time - start;
+      const animate = (timestamp) => {
+        const elapsed = timestamp - start;
         const progress = Math.min(elapsed / duration, 1);
-        const easedProgress = easeOutCubic(progress);
-        const currentX = easedProgress * finalOffset;
-        reel.style.transform = `translateX(${currentX}px)`;
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+
+        const currentPosition = finalOffset * easeOut;
+        reel.style.transform = `translateX(${currentPosition}px)`;
 
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
+          setResultFigure(data);
           setRolling(false);
-          setResultFigure(winningFigure);
           setShowResult(true);
+
           if (audioRef.current) audioRef.current.pause();
           if (winAudioRef.current) {
             winAudioRef.current.currentTime = 0;
-            winAudioRef.current.play().catch(() => {});
+            winAudioRef.current.play();
           }
         }
       };
 
       requestAnimationFrame(animate);
-
     } catch (err) {
       showErrorMessage(err.message);
       setRolling(false);
@@ -330,12 +310,7 @@ const CasePage = () => {
           <audio ref={winAudioRef} src="/sounds/win-sound.mp3" />
 
           {showError && (
-            <div
-              className="error-message"
-              role="alert"
-              aria-live="assertive"
-              style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10000 }}
-            >
+            <div className="error-message" role="alert" aria-live="assertive" style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10000 }}>
               {errorMsg}
             </div>
           )}
