@@ -34,7 +34,7 @@ const CasePage = () => {
 
   // Для керування анімацією
   const [infiniteRun, setInfiniteRun] = useState(false);
-  const [animationDuration, setAnimationDuration] = useState(20); // сек
+  const [animationDuration] = useState(20); // сек
 
   // Показ повідомлення помилки з анімацією
   const showErrorMessage = (msg) => {
