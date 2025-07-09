@@ -1,138 +1,427 @@
-/* ================== Загальні стилі ================== */
+/* Загальний чорний фон */
+.home-container {
+    background-color: #121212;
+    color: white;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+  }
+  
+  /* Хедер */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+  }
 
-body {
-  margin: 0;
-  background-color: #121212;
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  .header h1 {
+    margin: 0;
+    font-size: 2.8rem;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    flex: 1;
+  }
+  
+  .casino-logo {
+    font-size: 2.5rem;
+  }
+  
+  .logo h1 {
+    font-weight: 900;
+    font-size: 75px;
+    margin: 0;
+    user-select: none;
+  }
+  
+  /* Меню користувача */
+  .user-menu {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .profile-icon {
+    font-size: 1.8rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  /* Кнопки */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-outline {
+    border: 2px solid #f0a500;
+    color: #f0a500;
+  }
+  
+  .btn-outline:hover {
+    background-color: #f0a500;
+    color: black;
+  }
+  
+  .btn-primary {
+    background-color: #f0a500;
+    color: black;
+  }
+  
+  .btn-primary:hover {
+    background-color: #d18e00;
+    color: white;
+  }
+  
+  /* Заголовок кейсів */
+  .cases-title {
+    font-weight: 700;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  
+  /* Список кейсів */
+  .cases-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .case-card {
+    background-color: #222;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 180px;
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 0 10px #f0a500aa;
+    transition: transform 0.2s ease;
+  }
+  
+  .case-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .case-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .case-info {
+    padding: 10px;
+  }
+  
+  .case-info h3 {
+    margin: 0 0 5px 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    user-select: none;
+  }
+  
+  .case-info p {
+    margin: 0;
+    font-weight: 600;
+    color: #f0a500;
+    user-select: none;
+  }
 
-.case-page {
-  position: relative;
-  padding: 40px 20px 120px;
-  min-height: 100vh;
-  overflow-x: hidden;
-  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
-}
+  .case-page {
+    background-color: #121212;
+    color: white;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-/* Кнопка повернення */
-.back-button {
-  background: transparent;
-  border: 2px solid #4cb7ff;
-  color: #4cb7ff;
-  padding: 8px 14px;
-  font-size: 1rem;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  margin-bottom: 20px;
-}
-.back-button:hover {
-  background-color: #4cb7ff;
-  color: #121212;
-}
+  .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 1rem;
+    padding: 6px 14px;
+    background-color: #d18e00;
+    color: black;
+  }
+  
+  .back-button:hover {
+    background-color: black;
+    color: white;
+  }
 
-/* Заголовок кейса */
-.case-title {
+  .figures-preview {
+  margin-top: 40px;
   text-align: center;
-  font-size: 2.4rem;
-  margin-bottom: 15px;
-  font-weight: 700;
-  text-shadow: 0 0 6px #4cb7ffaa;
 }
 
-/* Обкладинка кейса */
-.case-cover {
-  display: block;
-  margin: 0 auto 30px;
-  max-width: 250px;
-  border-radius: 12px;
-  box-shadow: 0 0 15px #4cb7ff88;
-  user-select: none;
+  .figures-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 15px;
 }
 
-/* ================== Кнопка Відкрити кейс та підказка ================== */
+.figure-card {
+  background-color: #222;
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+  width: 120px;
+  text-align: center;
+  box-shadow: 0 0 6px #f0a50066;
+}
 
-.open-case-container {
+.figure-card img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.figure-card p {
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.result-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000aa;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  position: relative;
+  z-index: 999;
 }
 
-.open-btn {
-  background-color: #4cb7ff;
-  border: none;
-  color: #121212;
-  padding: 12px 30px;
-  font-size: 1.25rem;
-  font-weight: 700;
+.result-popup {
+  background-color: #1d1d1d;
+  padding: 30px;
   border-radius: 12px;
-  cursor: pointer;
-  box-shadow: 0 0 12px #4cb7ffaa;
-  transition: background-color 0.3s ease;
-  user-select: none;
-}
-
-.open-btn:disabled {
-  background-color: #7ebfff99;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.open-btn:hover:not(:disabled) {
-  background-color: #38a1ff;
-}
-
-/* Іконка "i" інфо */
-.info-icon {
-  background: #444;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  color: white;
-  font-weight: 700;
+  border: 3px solid #f0a500;
+  position: relative;
+  width: 300px;
+  animation: fadeIn 0.8s ease-in-out;
   text-align: center;
-  line-height: 24px;
-  cursor: pointer;
-  user-select: none;
-  font-family: monospace;
-  font-size: 1.1rem;
-  transition: background-color 0.3s ease;
 }
 
-.info-icon:hover,
-.info-icon:focus {
-  background-color: #4cb7ff;
+.popup-name {
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+
+.popup-price {
+  font-size: 1rem;
+  text-align: center;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+.popup-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.popup-close:hover {
+  color: #f0a500;
+}
+  
+.case-page h2.case-title,
+.case-page .case-cover,
+.case-page .open-btn {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+  .case-title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .case-cover {
+    width: 200px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px #f0a50088;
+  }
+  
+  .open-btn {
+    margin-bottom: 30px;
+  }
+  
+  /* Анімаційна стрічка */
+  .reel-container {
+    width: 100%;
+    overflow: hidden;
+    border: 3px solid #ffffff;
+    border-radius: 12px;
+    height: 160px;
+    position: relative;
+    background-color: #222;
+  }
+  
+  .reel {
+    display: flex;
+    gap: 10px;
+    will-change: transform;
+    width: fit-content;
+    transition: none;
+  }
+  
+  .reel-item {
+    width: 120px;
+    height: 120px;
+    margin: 20px 10px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .reel-arrow {
+    position: relative;
+    width: 100%;
+    height: 0;
+    text-align: center;
+    margin-bottom: 8px;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+  }
+
+  .reel-arrow::after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 18px solid #f0a500;
+    position: relative;
+    top: 8px; /* підняли трохи вгору */
+  }
+  
+  /* Результат */
+  .result-popup {
+    margin-top: 40px;
+    background-color: #1d1d1d;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #f0a500;
+    display: inline-block;
+    animation: fadeIn 0.8s ease-in-out;
+    color: white;
+  }
+  
+  .result-popup img {
+    width: 150px;
+    margin: 10px 0;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .rarity {
+    font-weight: bold;
+    margin-left: 0.5rem;
+  }
+  
+  .rarity.Common {
+    color: white;
+  }
+  
+  .rarity.Exclusive {
+    color: #ff1900; /* червоний */
+  }
+  
+  .rarity.Epic {
+    color: #9f07db; /* фіолетовий */
+  }
+  
+  .rarity.Legendary {
+    color: #4cb7ff; /* голубий */
+  }
+  
+  .rarity.Grail {
+    color: gold;
+  }
+
+  .info-icon {
+    cursor: pointer;
+    background-color: #f0a500;
+    color: black;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    user-select: none;
+    flex-shrink: 0; /* Щоб іконка не стискалась */
+    transition: background-color 0.3s ease;
+  }
+
+  .info-icon:hover,
+  .info-icon:focus {
+  background-color: #d18e00;
   outline: none;
 }
-
-/* Підказка про шанси випадіння */
+  
 .chance-info-popup {
   position: absolute;
-  top: 38px;
-  right: 0;
-  background: #222;
-  border-radius: 10px;
-  padding: 12px 18px;
-  width: 180px;
-  box-shadow: 0 0 12px #4cb7ffcc;
-  font-size: 0.95rem;
-  color: #ccc;
-  user-select: none;
-  z-index: 15;
+  top: 50%;
+  left: 110%;
+  transform: translate(0, -50%);
+  background-color: #222;
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 2px solid #f0a500;
+  box-shadow: 0 0 10px #f0a500aa;
+  color: white;
+  width: 220px;
+  z-index: 1000;
+  pointer-events: auto;
 }
-
+  
 .chance-info-popup h4 {
   margin-top: 0;
-  margin-bottom: 10px;
-  color: #4cb7ff;
+  margin-bottom: 8px;
   font-weight: 700;
-  font-size: 1.1rem;
+  text-align: center;
 }
 
 .chance-info-popup ul {
@@ -144,331 +433,295 @@ body {
 .chance-info-popup li {
   margin-bottom: 6px;
   font-weight: 600;
+  font-size: 1rem;
 }
 
-/* ================== Стрічка кейса ================== */
+.open-case-container {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    margin-bottom: 20px;
+    width: auto;
+}
 
-.reel-container {
-  overflow: hidden;
-  max-width: 900px;
-  margin: 0 auto;
-  border-radius: 14px;
-  box-shadow: 0 0 20px #4cb7ff99;
-  background-color: #0a0a0a;
-  height: 140px;
+.register-page {
+  background-color: #121212;
+  min-height: 100vh;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-}
-
-.reel {
-  display: flex;
-  align-items: center;
-  will-change: transform;
-  transform: translateX(0);
-  /* transition для плавної зупинки */
-  transition: transform 0s linear;
-}
-
-/* Клас для безкінечної анімації */
-.reel.infinite {
-  animation-name: scrollLeft;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-fill-mode: forwards;
-  transition: none !important;
-}
-
-/* Анімація прокрутки ліворуч */
-@keyframes scrollLeft {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* Окремий елемент фігурки */
-.reel-item {
-  width: 110px;
-  height: 110px;
-  margin: 0 8px;
-  object-fit: contain;
-  border-radius: 10px;
-  box-shadow: 0 0 8px #222;
-  filter: drop-shadow(0 0 6px rgba(75, 183, 255, 0.45));
-  user-select: none;
-  pointer-events: none;
-  transition: transform 0.3s ease;
-}
-
-/* ================== Стрілка в центрі ================== */
-
-.reel-arrow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-bottom: 35px solid #4cb7ff;
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 0 8px #4cb7ffbb);
-  z-index: 20;
-  pointer-events: none;
-}
-
-/* ================== Превʼю можливих фігурок ================== */
-
-.figures-preview {
-  max-width: 900px;
-  margin: 50px auto 0;
-  text-align: center;
-}
-
-.figures-preview h3 {
-  margin-bottom: 18px;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: #4cb7ff;
-  text-shadow: 0 0 8px #4cb7ff99;
-}
-
-.figures-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 18px;
-}
-
-.figure-card {
-  width: 120px;
-  background-color: #222;
-  border-radius: 14px;
-  padding: 10px;
-  box-shadow: 0 0 15px #4cb7ff77;
-  user-select: none;
-  cursor: default;
-  transition: transform 0.2s ease;
-}
-
-.figure-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 25px #4cb7ffbb;
-}
-
-.figure-card img {
-  width: 100%;
-  height: 110px;
-  object-fit: contain;
-  margin-bottom: 8px;
-}
-
-/* ================== Попап виграшної фігурки ================== */
-
-.result-popup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 150;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 20px;
 }
 
-.result-popup {
-  background-color: #1a1a1a;
-  padding: 35px 50px;
-  border-radius: 18px;
-  box-shadow: 0 0 30px #4cb7ffcc;
-  max-width: 360px;
-  width: 100%;
-  color: white;
-  text-align: center;
-  position: relative;
-  user-select: none;
-}
-
-.result-popup img {
-  width: 190px;
-  height: 190px;
-  object-fit: contain;
-  margin-bottom: 25px;
+.register-form {
+  background-color: #1e1e1e;
+  padding: 30px 40px;
   border-radius: 12px;
-  box-shadow: 0 0 18px #4cb7ffaa;
-}
-
-.popup-name {
-  font-size: 1.45rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  text-shadow: 0 0 8px #4cb7ffbb;
-}
-
-.rarity.Common {
-  color: white;
-}
-
-.rarity.Exclusive {
-  color: #ff1900;
-  text-shadow: 0 0 6px #ff1900aa;
-}
-
-.rarity.Epic {
-  color: #9f07db;
-  text-shadow: 0 0 6px #9f07dbaa;
-}
-
-.rarity.Legendary {
-  color: #4cb7ff;
-  text-shadow: 0 0 6px #4cb7ffbb;
-}
-
-.rarity.Grail {
-  color: gold;
-  text-shadow: 0 0 8px gold;
-}
-
-.popup-price {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-top: 0;
-  color: #4cb7ff;
-  text-shadow: 0 0 6px #4cb7ffaa;
-}
-
-/* Кнопка закриття попапа */
-.popup-close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  background: transparent;
-  border: none;
-  font-size: 1.6rem;
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.3s ease;
-}
-
-.popup-close:hover {
-  color: #4cb7ff;
-}
-
-/* ================== Повідомлення про помилки ================== */
-
-.error-popup {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #e74c3c;
-  padding: 14px 32px;
-  border-radius: 30px;
-  font-weight: 700;
-  font-size: 1rem;
-  box-shadow: 0 0 15px #e74c3ccc;
-  color: white;
-  z-index: 200;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  user-select: none;
-}
-
-.error-popup.animate-fade-in {
-  opacity: 1;
-}
-
-/* ================== Профіль та баланс ================== */
-
-.profile-icon {
+  box-shadow: 0 0 15px #f0a500aa;
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  color: white;
-  font-weight: 700;
-  text-decoration: none;
-  user-select: none;
-  transition: color 0.3s ease;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
 }
 
-.profile-icon:hover {
-  color: #4cb7ff;
+.register-form h2 {
+  margin-bottom: 10px;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.register-form label {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.register-form input {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  background-color: #2a2a2a;
+  color: white;
+}
+
+.register-form input:focus {
+  outline: 2px solid #f0a500;
+}
+
+.register-message {
+  margin-top: 10px;
+  font-size: 1rem;
+  text-align: center;
+  color: #f0a500;
+}
+
+.register-page .back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.auth-page {
+  background-color: #121212;
+  color: white;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 320px;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.auth-form input {
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+}
+
+.message {
+  margin-top: 15px;
+  font-weight: 700;
+  color: #f0a500;
+  text-align: center;
 }
 
 .balance-text {
-  font-size: 1rem;
-}
-
-/* ================== Кнопки Реєстрації та Авторизації ================== */
-
-.btn {
+  font-size: 0.9rem;
+  color: #f0a500;
   user-select: none;
-  padding: 8px 18px;
-  font-size: 1rem;
+  margin-bottom: 4px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.profile-icon {
+  text-decoration: none;
+}
+
+.error-message {
+  background-color: #330000cc;
+  color: #ff5c5c;
+  font-weight: 700;
+  padding: 12px 24px;
   border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  border: none;
+  box-shadow: 0 0 15px #ff5c5caa;
+  opacity: 1;
+  animation: fadeOut 1s ease forwards;
+  animation-delay: 1s;
+  user-select: none;
+  min-width: 280px;
+  text-align: center;
+  font-size: 1.1rem;
 }
 
-.btn-primary {
-  background-color: #4cb7ff;
-  color: #121212;
-  box-shadow: 0 0 15px #4cb7ffbb;
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
 }
 
-.btn-primary:hover {
-  background-color: #38a1ff;
+.profile-page {
+  background-color: #121212;
+  color: white;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-.btn-outline {
-  background: transparent;
+.profile-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.won-figures-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.logout-button {
+  margin: 40px auto 0;
+  display: block;
+  padding: 10px 20px;
+}
+
+.case-link {
   color: #4cb7ff;
-  border: 2px solid #4cb7ff;
-  box-shadow: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.case-link:hover {
+  color: #2a8cd6;
 }
 
-.btn-outline:hover {
-  background-color: #4cb7ff;
-  color: #121212;
-  box-shadow: 0 0 15px #4cb7ffbb;
-}
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
 
-/* ================== Адаптивність ================== */
+  .logo h1 {
+    font-size: 48px;
+  }
 
-@media (max-width: 640px) {
-  .case-title {
-    font-size: 1.8rem;
+  .user-menu {
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  .case-cover {
-    max-width: 180px;
+
+  .cases-list {
+    justify-content: center;
   }
-  .reel-item {
-    width: 80px;
-    height: 80px;
-    margin: 0 6px;
-  }
-  .result-popup {
-    padding: 25px 35px;
-    max-width: 280px;
-  }
-  .result-popup img {
+
+  .case-card {
     width: 140px;
-    height: 140px;
-    margin-bottom: 15px;
   }
-  .popup-name {
-    font-size: 1.15rem;
+
+  .reel-container {
+    height: 130px;
   }
-  .popup-price {
-    font-size: 1rem;
+
+  .reel-item {
+    width: 90px;
+    height: 90px;
+    margin: 20px 6px;
   }
+
+  .case-cover {
+    width: 150px;
+  }
+
   .open-btn {
-    font-size: 1rem;
     padding: 10px 20px;
+    font-size: 1rem;
+  }
+
+  .register-form,
+  .auth-form {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .register-form h2 {
+    font-size: 1.4rem;
+  }
+
+  .auth-form label,
+  .register-form label {
+    font-size: 1rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .won-figures-grid {
+    gap: 10px;
+  }
+
+  .figure-card {
+    width: 100px;
+  }
+
+  .figure-card img {
+    height: 80px;
+  }
+
+  .popup-name {
+    font-size: 1rem;
+  }
+
+  .popup-price {
+    font-size: 0.9rem;
+  }
+
+  .result-popup {
+    width: 90%;
+    max-width: 300px;
+    padding: 20px;
+  }
+
+  .chance-info-popup {
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 10px);
+    width: 90%;
+  }
+
+  .logout-button {
+    width: 100%;
+    text-align: center;
   }
 }
