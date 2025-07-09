@@ -143,8 +143,8 @@ const CasePage = () => {
       const centerIndex = Math.floor(visibleCount / 2);
   
       // Вручну підкоригуй ці значення, щоб підлаштувати точність
-      const correctionVertical = -4;    // на скільки позицій назад показує в вертикальному
-      const correctionHorizontal = -3;  // в горизонтальному положенні
+      const correctionVertical = 4;    // на скільки позицій назад показує в вертикальному
+      const correctionHorizontal = 3;  // в горизонтальному положенні
   
       // Визначаємо орієнтацію екрану
       const isLandscape = window.innerWidth > window.innerHeight;
