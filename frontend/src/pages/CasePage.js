@@ -18,12 +18,10 @@ const CasePage = () => {
   const errorTimeoutRef = useRef(null);
 
   const reelRef = useRef(null);
-  const reelContainerRef = useRef(null);
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const winAudioRef = useRef(null);
 
-  // Кольори рідкості
   const rarityColors = {
     Common: 'white',
     Exclusive: '#ff1900',
@@ -32,17 +30,13 @@ const CasePage = () => {
     Grail: 'gold',
   };
 
-  // Для керування анімацією
-  const [infiniteRun, setInfiniteRun] = useState(false);
-  const [animationDuration] = useState(20); // сек
-
-  // Показ повідомлення помилки з анімацією
+  // Показ помилки з анімацією
   const showErrorMessage = (msg) => {
     if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
     setErrorMsg(msg);
-    setShowError(false);
+    setShowError(false); // перезапуск анімації
     setTimeout(() => setShowError(true), 10);
-    errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
+    errorTimeoutRef.current = setTimeout(() => setShowError(false), 3000);
   };
 
   // Завантаження даних кейса
@@ -51,8 +45,7 @@ const CasePage = () => {
       .then(res => res.json())
       .then(data => {
         setCaseData(data);
-        setResultFigure(null);
-        setShowResult(false);
+        fillReelWithRandom(data.figures);
       })
       .catch(console.error);
   }, [id]);
@@ -81,16 +74,34 @@ const CasePage = () => {
     }
   }, []);
 
-  // Відкриття кейса
+  // Заповнюємо стрічку випадковими фігурками для "заповнення"
+  const fillReelWithRandom = (figures, repeat = 100) => {
+    const reel = reelRef.current;
+    if (!reel || !figures || figures.length === 0) return;
+
+    reel.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < repeat; i++) {
+      const fig = figures[Math.floor(Math.random() * figures.length)];
+      const img = document.createElement('img');
+      img.src = fig.image;
+      img.alt = fig.name;
+      img.className = 'reel-item';
+      fragment.appendChild(img);
+    }
+    reel.appendChild(fragment);
+  };
+
+  // Функція відкриття кейса з анімацією прокрутки вправо (стрічка рухається вліво)
   const openCase = async () => {
     if (!caseData) return;
-    if (rolling) return;
+
+    if (showError) setShowError(false);
 
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
       return;
     }
-
     if (balance < caseData.price) {
       showErrorMessage('Недостатньо коштів на балансі для відкриття кейсу.');
       return;
@@ -102,10 +113,8 @@ const CasePage = () => {
 
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {});
     }
-
-    setInfiniteRun(true); // Запускаємо інфінітну анімацію прокрутки
 
     try {
       const token = localStorage.getItem('token');
@@ -123,89 +132,90 @@ const CasePage = () => {
 
       setBalance(prev => prev - caseData.price);
 
-      // Затримка для показу інфінітної прокрутки мінімум 3 сек
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Зупинка анімації і плавне позиціювання на виграшній фігурці
-      setInfiniteRun(false);
-
-      // Обчислюємо позицію виграшної фігурки у першому наборі
+      const reel = reelRef.current;
       const figures = caseData.figures;
-      const winningIndex = figures.findIndex(f => f._id === data._id);
-      if (winningIndex === -1) {
-        // Якщо не знайшли, просто показуємо результат
-        setResultFigure(data);
-        setRolling(false);
-        setShowResult(true);
-        if (audioRef.current) audioRef.current.pause();
-        if (winAudioRef.current) {
-          winAudioRef.current.currentTime = 0;
-          winAudioRef.current.play();
+
+      // Розміри і кількість видимих фігурок
+      const reelWidth = reel.parentElement.offsetWidth;
+      const reelItemWidth = 120; // ширина з CSS + margin (коригуйте під свій стиль)
+      const visibleCount = Math.floor(reelWidth / reelItemWidth);
+
+      // Побудова стрічки для анімації:
+      // randomFigures — випадкові фігури до випадкової кількості (50)
+      const repeatCount = 50;
+      const randomFigures = Array.from({ length: repeatCount }, () =>
+        figures[Math.floor(Math.random() * figures.length)]
+      );
+
+      // Визначаємо позицію виграшної фігурки у стрічці так, щоб вона опинилась у центрі
+      const centerIndex = Math.floor(visibleCount / 2);
+      const winningFigure = figures.find(f => f._id === data._id) || data;
+
+      // Фінальна стрічка: randomFigures + winningFigure + кілька randomFigures для плавності
+      const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
+
+      // Створюємо DOM елементи стрічки
+      const fragment = document.createDocumentFragment();
+      finalReel.forEach(fig => {
+        const img = document.createElement('img');
+        img.src = fig.image;
+        img.alt = fig.name;
+        img.className = 'reel-item';
+        fragment.appendChild(img);
+      });
+
+      reel.innerHTML = '';
+      reel.appendChild(fragment);
+
+      // Анімація трансформації translateX в пікселях, рух вправо (стрічка рухається вліво)
+      // Початкове положення: 0 (стрічка на початку)
+      // Фінальне: зрушення вліво так, щоб виграшна фігурка була по центру
+      const finalOffset = -(randomFigures.length + centerIndex) * reelItemWidth;
+
+      const duration = 9000; // 9 секунд для прокрутки
+      const start = performance.now();
+
+      // Плавне easing — кубічне easeOut
+      const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+      const animate = (time) => {
+        const elapsed = time - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+        const currentX = easedProgress * finalOffset;
+
+        reel.style.transform = `translateX(${currentX}px)`;
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          setRolling(false);
+          setResultFigure(winningFigure);
+          setShowResult(true);
+          if (audioRef.current) audioRef.current.pause();
+          if (winAudioRef.current) {
+            winAudioRef.current.currentTime = 0;
+            winAudioRef.current.play().catch(() => {});
+          }
         }
-        return;
-      }
-
-      // Ширина одного елемента + відступ
-      const reelEl = reelRef.current;
-      const containerEl = reelContainerRef.current;
-      if (!reelEl || !containerEl) return;
-
-      const reelItem = reelEl.querySelector('.reel-item');
-      if (!reelItem) return;
-
-      const itemStyle = window.getComputedStyle(reelItem);
-      const itemWidth = reelItem.offsetWidth + parseInt(itemStyle.marginLeft) + parseInt(itemStyle.marginRight);
-
-      const containerWidth = containerEl.offsetWidth;
-
-      // Розрахунок offset: 
-      // позиція = -(індекс виграшної * ширина елемента) + (половина ширини контейнера - половина ширини елемента)
-      // щоб виграшна фігурка була по центру контейнера
-      const offset = -(winningIndex * itemWidth) + (containerWidth / 2) - (itemWidth / 2);
-
-      // Плавно анімувати трансформ стрічки до потрібного offset
-      reelEl.style.transition = 'transform 2s ease-out';
-      reelEl.style.transform = `translateX(${offset}px)`;
-
-      // Коли анімація закінчиться, показуємо результат і зупиняємо звуки
-      const onTransitionEnd = () => {
-        reelEl.style.transition = '';
-        setResultFigure(data);
-        setRolling(false);
-        setShowResult(true);
-
-        if (audioRef.current) audioRef.current.pause();
-        if (winAudioRef.current) {
-          winAudioRef.current.currentTime = 0;
-          winAudioRef.current.play();
-        }
-
-        reelEl.removeEventListener('transitionend', onTransitionEnd);
       };
 
-      reelEl.addEventListener('transitionend', onTransitionEnd);
-
+      requestAnimationFrame(animate);
     } catch (err) {
       showErrorMessage(err.message);
       setRolling(false);
-      setInfiniteRun(false);
     }
   };
 
-  // Шанси випадіння (з дефолтом)
   const chances = caseData?.rarityChances && Object.keys(caseData.rarityChances).length > 0
     ? caseData.rarityChances
     : {
-      Common: 60,
-      Exclusive: 20,
-      Epic: 10,
-      Legendary: 8,
-      Grail: 2,
-    };
-
-  // Подвійний масив для інфінітної прокрутки
-  const figures = caseData?.figures || [];
-  const doubleFigures = [...figures, ...figures];
+        Common: 60,
+        Exclusive: 20,
+        Epic: 10,
+        Legendary: 8,
+        Grail: 2,
+      };
 
   return (
     <div className="case-page">
@@ -256,7 +266,7 @@ const CasePage = () => {
             </span>
 
             {showChanceInfo && (
-              <div className="chance-info-popup">
+              <div className="chance-info-popup" role="tooltip">
                 <h4>Шанси випадіння рідкостей</h4>
                 <ul>
                   {Object.entries(chances).map(([rarity, chance]) => (
@@ -270,22 +280,8 @@ const CasePage = () => {
           </div>
 
           <div className="reel-arrow" />
-          <div className="reel-container" ref={reelContainerRef}>
-            <div
-              className={`reel ${infiniteRun ? 'infinite' : ''}`}
-              style={{ animationDuration: `${animationDuration}s` }}
-              ref={reelRef}
-            >
-              {doubleFigures.map((fig, idx) => (
-                <img
-                  key={idx}
-                  src={fig.image}
-                  alt={fig.name}
-                  className="reel-item"
-                  draggable={false}
-                />
-              ))}
-            </div>
+          <div className="reel-container">
+            <div className="reel" ref={reelRef}></div>
           </div>
 
           {!rolling && !showResult && (
@@ -303,31 +299,31 @@ const CasePage = () => {
           )}
 
           {resultFigure && showResult && (
-            <div className="result-popup-overlay">
+            <div className="result-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="result-title">
               <div className="result-popup">
-                <button className="popup-close" onClick={() => setShowResult(false)}>✖</button>
-                <h3>Випала фігурка!</h3>
+                <button className="popup-close" onClick={() => setShowResult(false)} aria-label="Закрити">✖</button>
+                <h3 id="result-title">Випала фігурка!</h3>
                 <img src={resultFigure.image} alt={resultFigure.name} />
                 <p className="popup-name">
                   <strong>{resultFigure.name}</strong> —{' '}
                   <span className={`rarity ${resultFigure.rarity}`}>{resultFigure.rarity}</span>
                 </p>
-                <p className="popup-price"><strong>{resultFigure.price} UAH</strong></p>
+                <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
               </div>
             </div>
           )}
 
+          <audio ref={audioRef} src="/sounds/go-new-gambling.mp3" preload="auto" />
+          <audio ref={winAudioRef} src="/sounds/win-sound.mp3" preload="auto" />
+
           {showError && (
-            <div className="error-popup animate-fade-in">
+            <div className="error-popup" role="alert" aria-live="assertive" style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10000 }}>
               {errorMsg}
             </div>
           )}
-
-          <audio ref={audioRef} src="/audio/opening.wav" />
-          <audio ref={winAudioRef} src="/audio/win.wav" />
         </>
       ) : (
-        <p>Завантаження даних кейсу...</p>
+        <p>Завантаження...</p>
       )}
     </div>
   );
