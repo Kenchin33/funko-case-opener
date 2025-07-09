@@ -42,9 +42,9 @@ const Home = () => {
   }, []);
 
   const categoryTitles = {
-    standard: 'Стандартні кейси',
-    thematic: 'Тематичні кейси',
-    partner: 'Кейси від партнерів',
+    standard: 'Стандартні бокси',
+    thematic: 'Тематичні бокси',
+    partner: 'Бокси від партнерів',
     'all-or-nothing': 'Все або нічого',
   };
 
@@ -77,7 +77,7 @@ const Home = () => {
       </header>
 
       <main>
-        <h2 className="cases-title">Кейси</h2>
+        <h2 className="cases-title">Бокси</h2>
 
         {cases.length === 0 ? (
           <p>Кейси не знайдені</p>
