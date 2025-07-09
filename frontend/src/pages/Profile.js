@@ -234,25 +234,6 @@ const Profile = () => {
             <button
               onClick={handleSellAll}
               className="btn btn-sell-all"
-              style={{
-                backgroundColor: 'orange',
-                color: 'white',         // Білий текст
-                padding: '12px 25px',
-                border: '2px solid black',  // Чорний обідок
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '1.2rem',
-                transition: 'all 0.3s ease',  // Плавний перехід
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = 'white';  // Білий фон
-                e.currentTarget.style.color = 'black';            // Чорний текст
-              }}
-              nMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'orange'; // Повернення оранжевого
-                e.currentTarget.style.color = 'white';             // Білий текст
-              }}
             >
               Продати всі фігурки за {Math.round(totalSellPrice)}₴
             </button>
