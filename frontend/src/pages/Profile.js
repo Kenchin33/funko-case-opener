@@ -200,7 +200,7 @@ const Profile = () => {
                   <img src={figure.image || '/unknown.png'} alt={figure.name || 'Невідома фігурка'} />
                   <p>{figure.name || 'Невідома фігурка'}</p>
                   <p className={`rarity ${figure.rarity || ''}`}>{figure.rarity || ''}</p>
-                  <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{entry.price ?? '–'}₴</p>
+                  <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{entry.price ?? '–'}$</p>
                   <p style={{ fontSize: '0.8rem', color: '#aaa' }}>
                     {entry.caseId ? (
                       <Link to={`/case/${entry.caseId}`} className="case-link">{entry.caseName || 'Невідомий кейс'}</Link>
