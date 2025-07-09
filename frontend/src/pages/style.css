@@ -827,3 +827,15 @@
     transform: translateY(-20px);
   }
 }
+
+.btn.btn-outline.open-btn {
+  background-color: orange;
+  color: black;
+  border: 1px solid black;
+}
+
+/* Додатково можеш додати ефект при наведенні */
+.btn.btn-outline.open-btn:hover {
+  background-color: darkorange;
+  color: white;
+}
