@@ -132,31 +132,42 @@ const CasePage = () => {
       }
   
       const data = await res.json();
+  
       setBalance(prev => prev - caseData.price);
   
       const reel = reelRef.current;
       const figures = caseData.figures;
   
-      // 🎯 Адаптивна ширина фігурки (під смартфони / планшети / ноутбуки)
-      const reelItemWidth =
-        window.innerWidth <= 430 ? 80 :
-        window.innerWidth < 768 ? 100 :
-        140;
-  
+      // Ширина одного елемента стрічки залежно від ширини вікна
+      const reelItemWidth = window.innerWidth < 480 ? 80 : window.innerWidth < 768 ? 100 : 140;
       const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
       const centerIndex = Math.floor(visibleCount / 2);
+  
+      // Корекція центру для смартфонів (адаптивна під iPhone 13/14/16)
+      let correction = 0;
+      if (window.innerWidth <= 480) {
+        correction = 2.5; // вертикальна орієнтація
+      } else if (window.innerWidth <= 844) {
+        correction = 1.5; // горизонтальна орієнтація / планшет
+      } else {
+        correction = 0; // десктоп
+      }
+  
       const repeatCount = 50;
   
-      // 🎰 Створення стрічки з випадкових фігурок
+      // Генеруємо довгу стрічку випадкових фігурок
       const randomFigures = Array.from({ length: repeatCount }, () =>
         figures[Math.floor(Math.random() * figures.length)]
       );
   
-      const insertAt = repeatCount + centerIndex;
+      // Визначаємо індекс вставки виграшної фігурки з корекцією
+      const insertAt = repeatCount + centerIndex + correction;
+  
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
+  
+      // Стрічка: випадкові + виграшна + частина випадкових для плавності прокрутки
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
   
-      // Створення HTML
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {
         const img = document.createElement('img');
@@ -169,6 +180,7 @@ const CasePage = () => {
       reel.innerHTML = '';
       reel.appendChild(fragment);
   
+      // Обчислюємо остаточне зміщення, щоб центр стрічки співпав з виграшною
       const finalOffset = -(insertAt - centerIndex) * reelItemWidth;
       const duration = 5000;
       const start = performance.now();
