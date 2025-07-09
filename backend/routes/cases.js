@@ -153,10 +153,6 @@ router.post('/inventory/add', authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
 
-    // Перевірити, чи вже є ця фігурка в інвентарі (опційно)
-    const alreadyExists = user.inventory.some(item => item.figure.toString() === figureId);
-    if (alreadyExists) return res.status(400).json({ message: 'Фігурка вже в інвентарі' });
-
     user.inventory.push({
       figure: figureId,
       caseId,
