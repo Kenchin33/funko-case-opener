@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 import './style.css';
 
-const CasePage = () => {
+const Profile = () => {
   const { id } = useParams();
   const [caseData, setCaseData] = useState(null);
   const [rolling, setRolling] = useState(false);
@@ -437,4 +437,4 @@ const CasePage = () => {
   );
 };
 
-export default CasePage;
+export default Profile;
