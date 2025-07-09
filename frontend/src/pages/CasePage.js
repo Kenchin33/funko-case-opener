@@ -331,6 +331,7 @@ const CasePage = () => {
                       setShowResult(false);
                       showErrorMessage(`Фігурку продано за ${salePrice} грн`);
                     } catch (err) {
+                      console.error('Помилка при продажу фігурки:', err);
                       showErrorMessage('Помилка під час продажу фігурки');
                     }
                   }}>Продати за {Math.round(resultFigure.price * 0.75 * 42)} грн</button>
