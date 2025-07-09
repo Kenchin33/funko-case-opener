@@ -754,3 +754,14 @@
   transform: translateX(-50%);
   z-index: 10000;
 }
+
+.result-popup-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.result-popup-buttons .btn {
+  min-width: 120px;
+}
