@@ -295,7 +295,37 @@ const CasePage = () => {
           {resultFigure && showResult && (
             <div className="result-popup-overlay">
               <div className="result-popup">
-                <button className="popup-close" onClick={() => setShowResult(false)}>✖</button>
+                <button 
+                  className="popup-close" 
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem('token');
+                      const responce = await fetch('https://funko-case-opener.onrender.com/api/cases/inventory/add', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': 'Bearer ' + token,
+                        },
+                        body: JSON.stringify({
+                          figureId: resultFigure._id,
+                          caseId: id,
+                          caseName: caseData.name,
+                          price: resultFigure.price,
+                        }),
+                      });
+
+                      if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.message || 'Помилка збереження фігурки у інвентарі');
+                      }
+
+                      setShowResult(false);
+                      showErrorMessage('Фігурка залишена у інвентарі');
+                    } catch (err) {
+                      console.error('Помилка при додавані ✖: ', err);
+                      showErrorMessage(err.message);
+                    }
+                  }}>✖</button>
                 <h3>Випала фігурка!</h3>
                 <img src={resultFigure.image} alt={resultFigure.name} />
                 <p className="popup-name">
@@ -380,7 +410,7 @@ const CasePage = () => {
 
           {showError && (
             <div
-              className={errorMsg.includes('продано') || errorMsg.includes('залишено') ? 'success-message' : 'error-message'}
+              className={errorMsg.includes('продано') || errorMsg.includes('додана') ? 'success-message' : 'error-message'}
               role="alert"
               aria-live="assertive"
             > {errorMsg}</div>
