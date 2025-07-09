@@ -624,21 +624,20 @@
   color: #2a8cd6;
 }
 
-/* ===== АДАПТАЦІЯ ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ ===== */
 @media (max-width: 768px) {
   .header {
     flex-direction: column;
-    align-items: flex-start;
     gap: 10px;
+    align-items: center;
   }
 
-  .header h1 {
-    font-size: 2rem;
+  .logo h1 {
+    font-size: 48px;
   }
 
   .user-menu {
-    justify-content: space-between;
-    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .cases-list {
@@ -646,35 +645,26 @@
   }
 
   .case-card {
-    width: 100%;
-    max-width: 90vw;
+    width: 140px;
+  }
+
+  .reel-container {
+    height: 130px;
+  }
+
+  .reel-item {
+    width: 90px;
+    height: 90px;
+    margin: 20px 6px;
   }
 
   .case-cover {
     width: 150px;
   }
 
-  .case-title {
-    font-size: 1.5rem;
-    text-align: center;
-  }
-
-  .reel-container {
-    height: 140px;
-  }
-
-  .reel-item {
-    width: 100px;
-    height: 100px;
-  }
-
-  .figure-card {
-    width: 100px;
-    padding: 8px;
-  }
-
-  .figure-card img {
-    height: 80px;
+  .open-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
   }
 
   .register-form,
@@ -683,79 +673,30 @@
     padding: 20px;
   }
 
-  .chance-info-popup {
-    left: 50%;
-    top: 100%;
-    transform: translateX(-50%);
-    width: 90vw;
+  .register-form h2 {
+    font-size: 1.4rem;
   }
 
-  .open-case-container {
-    flex-direction: column;
+  .auth-form label,
+  .register-form label {
+    font-size: 1rem;
   }
 
   .profile-header {
     flex-direction: column;
-    gap: 10px;
-  }
-
-  .won-figures-grid {
-    justify-content: center;
-  }
-
-  .result-popup {
-    width: 90%;
-    padding: 20px;
-  }
-
-  .result-popup img {
-    width: 120px;
-  }
-
-  .btn {
-    width: 100%;
     text-align: center;
   }
 
-  .back-button {
-    top: 10px;
-    left: 10px;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .header h1 {
-    font-size: 1.6rem;
-  }
-
-  .logo h1 {
-    font-size: 2rem;
-  }
-
-  .case-cover {
-    width: 120px;
-  }
-
-  .reel-item {
-    width: 80px;
-    height: 80px;
+  .won-figures-grid {
+    gap: 10px;
   }
 
   .figure-card {
-    width: 90px;
+    width: 100px;
   }
 
   .figure-card img {
-    height: 70px;
-  }
-
-  .case-info h3 {
-    font-size: 1rem;
-  }
-
-  .profile-icon {
-    font-size: 1.2rem;
+    height: 80px;
   }
 
   .popup-name {
@@ -766,12 +707,21 @@
     font-size: 0.9rem;
   }
 
-  .register-form,
-  .auth-form {
-    padding: 15px;
+  .result-popup {
+    width: 90%;
+    max-width: 300px;
+    padding: 20px;
   }
 
   .chance-info-popup {
-    font-size: 0.9rem;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 10px);
+    width: 90%;
+  }
+
+  .logout-button {
+    width: 100%;
+    text-align: center;
   }
 }
