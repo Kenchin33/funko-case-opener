@@ -307,9 +307,9 @@ const CasePage = () => {
                 <div className="popup-buttons">
                   <button className="btn btn-primary open-btn" onClick={async () => {
                     console.log('Натиснули кнопку продати');
-                    console.log('token:', token);
                     const salePrice = Math.round(resultFigure.price * 0.75 * 42);
                     const token = localStorage.getItem('token');
+                    console.log('token:', token);
                     try {
                       const res = await fetch('https://funko-case-opener.onrender.com/api/auth/me', {
                         headers: { 'Authorization': 'Bearer ' + token},
