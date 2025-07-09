@@ -1,22 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
-import './style.css';
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Повідомлення зверху
-  const [message, setMessage] = useState(null);
-  const [isError, setIsError] = useState(false); // false - зелений, true - червоний
+  // Повідомлення та анімація
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const errorTimeoutRef = useRef(null);
+  const successTimeoutRef = useRef(null);
 
-  // Модалка дій (продати / забрати)
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFigureIndex, setSelectedFigureIndex] = useState(null);
 
-  // Дані форми заявки
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -26,16 +27,26 @@ const Profile = () => {
 
   const navigate = useNavigate();
 
+  // Функції для показу повідомлень з анімацією
+  const showErrorMessage = (msg) => {
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    setErrorMsg(msg);
+    setShowError(false);
+    setTimeout(() => setShowError(true), 10);
+    errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
+  };
+
+  const showSuccessMessage = (msg) => {
+    if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
+    setSuccessMsg(msg);
+    setShowSuccess(false);
+    setTimeout(() => setShowSuccess(true), 10);
+    successTimeoutRef.current = setTimeout(() => setShowSuccess(false), 2010);
+  };
+
   useEffect(() => {
     fetchProfile();
   }, []);
-
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => setMessage(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -47,8 +58,7 @@ const Profile = () => {
       setUserData(res.data);
     } catch (err) {
       console.error('Помилка завантаження профілю:', err);
-      setMessage('Помилка завантаження профілю');
-      setIsError(true);
+      showErrorMessage('Помилка завантаження профілю');
     } finally {
       setLoading(false);
     }
@@ -66,8 +76,6 @@ const Profile = () => {
   const openModal = (index) => {
     setSelectedFigureIndex(index);
     setFormData({ fullName: '', phone: '', city: '', branchNumber: '' });
-    setMessage(null);
-    setIsError(false);
     setModalOpen(true);
   };
 
@@ -83,7 +91,6 @@ const Profile = () => {
 
   const handleSell = async () => {
     if (selectedFigureIndex === null || !userData) return;
-
     try {
       const token = localStorage.getItem('token');
       const figureEntry = userData.inventory[selectedFigureIndex];
@@ -105,31 +112,30 @@ const Profile = () => {
 
       const newBalance = userData.balance + sellPrice;
 
-      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`, 
-        { inventory: trimmedInventory }, 
+      await axios.patch(
+        `https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`,
+        { inventory: trimmedInventory },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/balance`, 
+      await axios.patch(
+        `https://funko-case-opener.onrender.com/api/auth/${userData._id}/balance`,
         { balance: newBalance },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setUserData(prev => ({ ...prev, inventory: newInventory, balance: newBalance }));
-      setMessage(`Фігурку продано за ${Math.round(sellPrice)}₴`);
-      setIsError(false);
+      showSuccessMessage(`Фігурку продано за ${Math.round(sellPrice)}₴`);
       closeModal();
     } catch (error) {
       console.error('Помилка при продажі:', error);
-      setMessage('Помилка при продажі фігурки');
-      setIsError(true);
+      showErrorMessage('Помилка при продажі фігурки');
     }
   };
 
   const handlePickupSubmit = async () => {
     if (!formData.fullName || !formData.phone || !formData.city || !formData.branchNumber) {
-      setMessage('Будь ласка, заповніть усі поля');
-      setIsError(true);
+      showErrorMessage('Будь ласка, заповніть усі поля');
       return;
     }
 
@@ -137,25 +143,21 @@ const Profile = () => {
       const token = localStorage.getItem('token');
       if (selectedFigureIndex === null) return;
 
-      const selectedFigure = userData.inventory[selectedFigureIndex];
-      if (!selectedFigure) return;
-
       const newInventory = [...userData.inventory];
       newInventory.splice(selectedFigureIndex, 1);
 
-      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`,
+      await axios.patch(
+        `https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`,
         { inventory: newInventory },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setUserData(prev => ({ ...prev, inventory: newInventory }));
-      setMessage('Заявка на відправку отримана');
-      setIsError(false);
+      showSuccessMessage('Заявка на відправку отримана');
       closeModal();
     } catch (error) {
       console.error('Помилка при оформленні заявки:', error);
-      setMessage('Помилка при оформленні заявки');
-      setIsError(true);
+      showErrorMessage('Помилка при оформленні заявки');
     }
   };
 
@@ -166,10 +168,22 @@ const Profile = () => {
   const sellPrice = selectedFigure ? (selectedFigure.price || 0) * 0.75 * 42 : 0;
 
   return (
-    <div className="profile-page" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="profile-page" style={{ paddingTop: '60px', position: 'relative', minHeight: '100vh' }}>
+      {/* Повідомлення */}
+      {showError && (
+        <div className="error-message" role="alert" aria-live="assertive">
+          {errorMsg}
+        </div>
+      )}
+      {showSuccess && (
+        <div className="success-message" role="alert" aria-live="polite">
+          {successMsg}
+        </div>
+      )}
+
       <button onClick={goHome} className="btn back-button">← На головну</button>
 
-      <div className="profile-header" style={{ flexDirection: 'column', textAlign: 'center' }}>
+      <div className="profile-header" style={{ flexDirection: 'column', textAlign: 'center', marginBottom: '30px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <FaUserCircle size={36} />
           <h2>{userData.nickname}</h2>
@@ -179,159 +193,96 @@ const Profile = () => {
         </p>
       </div>
 
-      {/* Повідомлення зверху */}
-      {message && (
-        <div style={{
-          position: 'relative',
-          textAlign: 'center',
-          color: isError ? 'red' : 'green',
-          marginBottom: '20px',
-          fontWeight: 'bold',
-          padding: '10px 40px 10px 10px',
-          border: `2px solid ${isError ? 'red' : 'green'}`,
-          borderRadius: '5px',
-          maxWidth: '600px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          userSelect: 'none',
-        }}>
-          {message}
-          <button
-            onClick={() => setMessage(null)}
-            style={{
-              position: 'absolute',
-              right: '5px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              border: 'none',
-              background: 'transparent',
-              color: isError ? 'red' : 'green',
-              fontWeight: 'bold',
-              fontSize: '18px',
-              cursor: 'pointer',
-              padding: 0,
-              lineHeight: 1,
-              userSelect: 'none',
-            }}
-            aria-label="Закрити повідомлення"
-          >
-            ×
-          </button>
+      <h3 style={{ textAlign: 'center', marginBottom: '15px' }}>Інвентар:</h3>
+      {userData.inventory.length === 0 ? (
+        <p style={{ textAlign: 'center' }}>Інвентар порожній.</p>
+      ) : (
+        <div className="won-figures-grid">
+          {userData.inventory.map((entry, index) => {
+            const figure = entry.figure || {};
+            return (
+              <div key={entry._id || index} className="figure-card">
+                <img src={figure.image || '/unknown.png'} alt={figure.name || 'Невідома фігурка'} />
+                <p>{figure.name || 'Невідома фігурка'}</p>
+                <p className={`rarity ${figure.rarity || ''}`}>{figure.rarity || ''}</p>
+                <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{entry.price ?? '–'}₴</p>
+                <p style={{ fontSize: '0.8rem', color: '#aaa' }}>
+                  {entry.caseId ? (
+                    <Link to={`/case/${entry.caseId}`} className="case-link">{entry.caseName || 'Невідомий кейс'}</Link>
+                  ) : (
+                    entry.caseName || 'Невідомий кейс'
+                  )}
+                </p>
+                <div className="figure-buttons">
+                  <button onClick={() => openModal(index)} className="btn btn-primary btn-pickup">Продати / Забрати</button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      <div style={{ flexGrow: 1 }}>
-        <h3 style={{ textAlign: 'center', marginTop: '40px' }}>Інвентар:</h3>
-
-        {userData.inventory.length === 0 ? (
-          <p style={{ textAlign: 'center' }}>Інвентар порожній.</p>
-        ) : (
-          <div className="won-figures-grid">
-            {userData.inventory.map((entry, index) => {
-              const figure = entry.figure || {};
-              return (
-                <div key={entry._id || index} className="figure-card">
-                  <img src={figure.image || '/unknown.png'} alt={figure.name || 'Невідома фігурка'} />
-                  <p>{figure.name || 'Невідома фігурка'}</p>
-                  <p className={`rarity ${figure.rarity || ''}`}>{figure.rarity || ''}</p>
-                  <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{entry.price ?? '–'}₴</p>
-                  <p style={{ fontSize: '0.8rem', color: '#aaa' }}>
-                    {entry.caseId ? (
-                      <Link to={`/case/${entry.caseId}`} className="case-link">{entry.caseName || 'Невідомий кейс'}</Link>
-                    ) : (
-                      entry.caseName || 'Невідомий кейс'
-                    )}
-                  </p>
-                  <div className="figure-buttons">
-                    <button onClick={() => openModal(index)} className="btn btn-primary">
-                      Продати / Забрати
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <button onClick={handleLogout} className="btn btn-primary logout-button" style={{ marginTop: 'auto' }}>
+      <button onClick={handleLogout} className="btn btn-primary logout-button" style={{ marginTop: '40px' }}>
         Вийти з акаунту
       </button>
 
       {/* Модалка */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
+        <div className="modal-overlay" onClick={closeModal} role="dialog" aria-modal="true">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3>Фігурка: {selectedFigure?.figure?.name || 'Невідома'}</h3>
-
-            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-              <button
-                onClick={handleSell}
-                className="btn btn-sell"
-                style={{ marginRight: '10px', backgroundColor: 'orange', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'red')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'orange')}
-              >
-                Продати за {Math.round(sellPrice)}₴
-              </button>
-            </div>
-
-            <div>
-              {['fullName', 'phone', 'city', 'branchNumber'].map(field => (
-                <input
-                  key={field}
-                  type="text"
-                  name={field}
-                  placeholder={{
-                    fullName: 'ПІБ',
-                    phone: 'Номер телефону',
-                    city: 'Місто',
-                    branchNumber: '№ відділення',
-                  }[field]}
-                  value={formData[field]}
-                  onChange={handleFormChange}
-                  className="modal-input"
-                  style={{
-                    backgroundColor: 'black',
-                    border: '2px solid orange',
-                    color: 'white',
-                    padding: '8px',
-                    marginBottom: '10px',
-                    borderRadius: '5px',
-                    width: '100%',
-                    boxSizing: 'border-box',
-                    fontSize: '1rem',
-                  }}
-                />
-              ))}
-
-              <button
-                onClick={handlePickupSubmit}
-                className="btn btn-pickup-submit"
-                style={{
-                  marginTop: '10px',
-                  backgroundColor: 'orange',
-                  color: 'white',
-                  padding: '10px 20px',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  fontSize: '1rem',
-                  width: '100%',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'red')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'orange')}
-              >
-                Підтвердити заявку
-              </button>
-            </div>
+            <h3 style={{ textAlign: 'center', marginBottom: '15px' }}>
+              Фігурка: {selectedFigure?.figure?.name || 'Невідома'}
+            </h3>
 
             <button
-              onClick={closeModal}
-              className="btn btn-close-modal"
-              style={{ marginTop: '15px', padding: '6px 12px', cursor: 'pointer' }}
+              onClick={handleSell}
+              className="btn-sell"
+              type="button"
+              aria-label={`Продати фігурку за ${Math.round(sellPrice)} гривень`}
             >
+              Продати за {Math.round(sellPrice)}₴
+            </button>
+
+            <input
+              name="fullName"
+              placeholder="ПІБ"
+              value={formData.fullName}
+              onChange={handleFormChange}
+              className="modal-input"
+              autoComplete="name"
+              type="text"
+            />
+            <input
+              name="phone"
+              placeholder="Номер телефону"
+              value={formData.phone}
+              onChange={handleFormChange}
+              className="modal-input"
+              autoComplete="tel"
+              type="tel"
+            />
+            <input
+              name="city"
+              placeholder="Місто"
+              value={formData.city}
+              onChange={handleFormChange}
+              className="modal-input"
+              type="text"
+            />
+            <input
+              name="branchNumber"
+              placeholder="Номер відділення Нової Пошти"
+              value={formData.branchNumber}
+              onChange={handleFormChange}
+              className="modal-input"
+              type="text"
+            />
+
+            <button onClick={handlePickupSubmit} className="btn-pickup-submit" type="button">
+              Підтвердити заявку
+            </button>
+
+            <button onClick={closeModal} className="btn-close-modal" type="button">
               Закрити
             </button>
           </div>
