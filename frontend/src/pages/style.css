@@ -934,3 +934,77 @@
 .btn-close-modal:hover {
   background-color: #c82333;
 }
+
+/* Форма заявки */
+.modal-content {
+  background-color: #000000; /* чорний фон */
+  padding: 20px;
+  border-radius: 8px;
+  color: white; /* білий текст */
+  max-width: 400px;
+  margin: auto;
+}
+
+/* Інпути форми */
+.modal-input {
+  width: 100%;
+  background-color: #000000; /* чорний фон */
+  border: 2px solid orange; /* помаранчева обводка */
+  border-radius: 4px;
+  padding: 10px;
+  margin: 8px 0;
+  color: white; /* білий текст */
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.modal-input:focus {
+  border-color: #ff6600; /* яскравіша помаранчева при фокусі */
+}
+
+/* Кнопки "Продати" та "Підтвердити заявку" */
+.btn-sell, .btn-pickup-submit {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 15px auto 0 auto; /* по центру, відступ зверху */
+  padding: 12px 20px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  background-color: orange;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.btn-sell:hover, .btn-pickup-submit:hover {
+  background-color: red;
+}
+
+/* Кнопка Закрити */
+.btn-close-modal {
+  display: block;
+  margin: 20px auto 0 auto;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Якщо хочеш — підправи стилі для .modal-overlay і .modal-content для центрованого відображення */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}

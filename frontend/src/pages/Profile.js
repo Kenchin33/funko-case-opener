@@ -249,16 +249,6 @@ const ProfilePage = () => {
               <button onClick={handleSell} className="btn btn-sell" style={{ marginRight: '10px' }}>
                 Продати за {Math.round(sellPrice)}₴
               </button>
-              <button
-                onClick={() => {
-                  // Покажемо форму заявки при натисканні кнопки "Забрати"
-                  setErrorMessage(null);
-                  setIsError(false);
-                }}
-                className="btn btn-pickup"
-              >
-                Забрати (оформити заявку)
-              </button>
             </div>
 
             {/* Форма заявки "Забрати" */}
