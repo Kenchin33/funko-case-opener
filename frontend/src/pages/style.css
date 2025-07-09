@@ -725,3 +725,11 @@
     text-align: center;
   }
 }
+
+.category-title {
+  margin-top: 32px;
+  font-size: 1.8rem;
+  color: #fff;
+  border-left: 5px solid #ffd700;
+  padding-left: 12px;
+}

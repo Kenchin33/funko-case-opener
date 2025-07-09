@@ -41,6 +41,15 @@ const Home = () => {
     }
   }, []);
 
+  const categoryTitles = {
+    standard: 'Стандартні кейси',
+    thematic: 'Тематичні кейси',
+    partner: 'Кейси від партнерів',
+    'all-or-nothing': 'Все або нічого',
+  };
+
+  const categoryOrder = ['standard', 'thematic', 'partner', 'all-or-nothing'];
+
   return (
     <div className="home-container">
       <header className="header">
@@ -69,25 +78,36 @@ const Home = () => {
 
       <main>
         <h2 className="cases-title">Кейси</h2>
-        <div className="cases-list">
-          {cases.length === 0 ? (
-            <p>Кейси не знайдені</p>
-          ) : (
-            cases.map(c => (
-              <Link to={`/case/${c._id}`} key={c._id} className="case-card">
-                <img
-                  src={c.image || 'https://via.placeholder.com/180x180?text=No+Image'}
-                  alt={c.name}
-                  className="case-image"
-                />
-                <div className="case-info">
-                  <h3>{c.name}</h3>
-                  <p>{c.price} UAH</p>
+
+        {cases.length === 0 ? (
+          <p>Кейси не знайдені</p>
+        ) : (
+          categoryOrder.map(category => {
+            const filtered = cases.filter(c => c.category === category);
+            if (filtered.length === 0) return null;
+
+            return (
+              <section key={category}>
+                <h3 className="category-title">{categoryTitles[category]}</h3>
+                <div className="cases-list">
+                  {filtered.map(c => (
+                    <Link to={`/case/${c._id}`} key={c._id} className="case-card">
+                      <img
+                        src={c.image || 'https://via.placeholder.com/180x180?text=No+Image'}
+                        alt={c.name}
+                        className="case-image"
+                      />
+                      <div className="case-info">
+                        <h3>{c.name}</h3>
+                        <p>{c.price} UAH</p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </Link>
-            ))
-          )}
-        </div>
+              </section>
+            );
+          })
+        )}
       </main>
     </div>
   );

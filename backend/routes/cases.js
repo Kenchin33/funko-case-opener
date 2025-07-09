@@ -40,8 +40,9 @@ router.get('/:id', async (req, res) => {
 // Додати новий кейс
 router.post('/', async (req, res) => {
   try {
-    const { name, price, figures } = req.body;
-    const newCase = new Case({ name, price, figures });
+    console.log('req.body:', req.body);
+    const { name, price, figures, category } = req.body;
+    const newCase = new Case({ name, price, figures, category });
     await newCase.save();
     res.status(201).json(newCase);
   } catch (err) {
