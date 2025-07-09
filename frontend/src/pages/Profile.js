@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
@@ -46,9 +46,9 @@ const Profile = () => {
 
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallBack(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -62,7 +62,7 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
