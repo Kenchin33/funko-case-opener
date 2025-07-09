@@ -159,11 +159,53 @@ const Profile = () => {
     }
   };
 
+  const handleSellAll = async () => {
+    if (!userData || userData.inventory.length === 0) return;
+  
+    try {
+      const token = localStorage.getItem('token');
+      const newInventory = [];
+  
+      const totalPrice = userData.inventory.reduce((acc, entry) => {
+        const price = entry.price || 0;
+        return acc + price * 0.75 * 42;
+      }, 0);
+  
+      const newBalance = userData.balance + totalPrice;
+  
+      // Оновлення інвентарю (порожній)
+      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`,
+        { inventory: newInventory },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      // Оновлення балансу
+      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/balance`,
+        { balance: newBalance },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      // Оновлення локального стану
+      setUserData(prev => ({ ...prev, inventory: newInventory, balance: newBalance }));
+  
+      setMessage(`Усі фігурки продані за ${Math.round(totalPrice)}₴`);
+      setIsError(false);
+    } catch (error) {
+      console.error('Помилка при продажі всіх фігурок:', error);
+      setMessage('Помилка при продажі всіх фігурок');
+      setIsError(true);
+    }
+  };  
+
   if (loading) return <div className="profile-page">Завантаження...</div>;
   if (!userData) return <div className="profile-page">Помилка завантаження даних</div>;
 
   const selectedFigure = selectedFigureIndex !== null ? userData.inventory[selectedFigureIndex] : null;
   const sellPrice = selectedFigure ? (selectedFigure.price || 0) * 0.75 * 42 : 0;
+  const totalSellPrice = userData.inventory.reduce((acc, entry) => {
+    const price = entry.price || 0;
+    return acc + price * 0.75 * 42;
+  }, 0);
 
   return (
     <div className="profile-page" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -187,6 +229,29 @@ const Profile = () => {
       )}
 
       <div style={{ flexGrow: 1 }}>
+        {userData.inventory.length > 0 && (
+          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <button
+              onClick={handleSellAll}
+              className="btn btn-sell-all"
+              style={{
+              backgroundColor: 'green',
+              color: 'white',
+              padding: '12px 25px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '1.2rem',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'darkgreen')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'green')}
+            >
+              Продати всі фігурки за {Math.round(totalSellPrice)}₴
+            </button>
+          </div>
+        )}
+
         <h3 style={{ textAlign: 'center', marginTop: '40px' }}>Інвентар:</h3>
 
         {userData.inventory.length === 0 ? (
