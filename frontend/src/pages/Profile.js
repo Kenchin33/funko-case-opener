@@ -4,19 +4,19 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 import './style.css';
 
-const ProfilePage = () => {
+const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Стан для показу повідомлення (success або error)
-  const [errorMessage, setErrorMessage] = useState(null);
+  // Повідомлення зверху
+  const [message, setMessage] = useState(null);
   const [isError, setIsError] = useState(false); // false - зелений, true - червоний
 
-  // Стан для модалки "Дія" (продати / забрати)
+  // Модалка дій (продати / забрати)
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFigureIndex, setSelectedFigureIndex] = useState(null);
 
-  // Для заявки "Забрати"
+  // Дані форми заявки
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -30,6 +30,13 @@ const ProfilePage = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   const fetchProfile = async () => {
     setLoading(true);
     try {
@@ -40,7 +47,7 @@ const ProfilePage = () => {
       setUserData(res.data);
     } catch (err) {
       console.error('Помилка завантаження профілю:', err);
-      setErrorMessage('Помилка завантаження профілю');
+      setMessage('Помилка завантаження профілю');
       setIsError(true);
     } finally {
       setLoading(false);
@@ -56,16 +63,10 @@ const ProfilePage = () => {
     navigate('/');
   };
 
-  // Відкриття модалки дій (продати або забрати)
   const openModal = (index) => {
     setSelectedFigureIndex(index);
-    setFormData({
-      fullName: '',
-      phone: '',
-      city: '',
-      branchNumber: '',
-    });
-    setErrorMessage(null);
+    setFormData({ fullName: '', phone: '', city: '', branchNumber: '' });
+    setMessage(null);
     setIsError(false);
     setModalOpen(true);
   };
@@ -73,16 +74,13 @@ const ProfilePage = () => {
   const closeModal = () => {
     setModalOpen(false);
     setSelectedFigureIndex(null);
-    setErrorMessage(null);
   };
 
-  // Обробка зміни у формі заявки
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Продаж фігурки
   const handleSell = async () => {
     if (selectedFigureIndex === null || !userData) return;
 
@@ -93,11 +91,9 @@ const ProfilePage = () => {
 
       const sellPrice = (figureEntry.price || 0) * 0.75 * 42;
 
-      // Видаляємо фігурку з інвентарю
       const newInventory = [...userData.inventory];
       newInventory.splice(selectedFigureIndex, 1);
 
-      // Мінімальні дані для відправки
       const trimmedInventory = newInventory.map(item => ({
         _id: item._id,
         figure: item.figure._id,
@@ -120,33 +116,30 @@ const ProfilePage = () => {
       );
 
       setUserData(prev => ({ ...prev, inventory: newInventory, balance: newBalance }));
-      setErrorMessage(`Фігурку продано за ${Math.round(sellPrice)}₴`);
+      setMessage(`Фігурку продано за ${Math.round(sellPrice)}₴`);
       setIsError(false);
       closeModal();
     } catch (error) {
       console.error('Помилка при продажі:', error);
-      setErrorMessage('Помилка при продажі фігурки');
+      setMessage('Помилка при продажі фігурки');
       setIsError(true);
     }
   };
 
-  // Підтвердження заявки "Забрати"
   const handlePickupSubmit = async () => {
     if (!formData.fullName || !formData.phone || !formData.city || !formData.branchNumber) {
-      setErrorMessage('Будь ласка, заповніть усі поля');
+      setMessage('Будь ласка, заповніть усі поля');
       setIsError(true);
       return;
     }
 
     try {
       const token = localStorage.getItem('token');
-
       if (selectedFigureIndex === null) return;
 
       const selectedFigure = userData.inventory[selectedFigureIndex];
       if (!selectedFigure) return;
 
-      // Поки просто видалимо фігурку як "заявку"
       const newInventory = [...userData.inventory];
       newInventory.splice(selectedFigureIndex, 1);
 
@@ -156,12 +149,12 @@ const ProfilePage = () => {
       );
 
       setUserData(prev => ({ ...prev, inventory: newInventory }));
-      setErrorMessage('Заявка на відправку отримана');
+      setMessage('Заявка на відправку отримана');
       setIsError(false);
       closeModal();
     } catch (error) {
       console.error('Помилка при оформленні заявки:', error);
-      setErrorMessage('Помилка при оформленні заявки');
+      setMessage('Помилка при оформленні заявки');
       setIsError(true);
     }
   };
@@ -186,17 +179,44 @@ const ProfilePage = () => {
         </p>
       </div>
 
-      {/* Повідомлення про помилку або успіх */}
-      {errorMessage && (
-        <div
-          style={{
-            textAlign: 'center',
-            color: isError ? 'red' : 'green',
-            marginBottom: '20px',
-            fontWeight: 'bold',
-          }}
-        >
-          {errorMessage}
+      {/* Повідомлення зверху */}
+      {message && (
+        <div style={{
+          position: 'relative',
+          textAlign: 'center',
+          color: isError ? 'red' : 'green',
+          marginBottom: '20px',
+          fontWeight: 'bold',
+          padding: '10px 40px 10px 10px',
+          border: `2px solid ${isError ? 'red' : 'green'}`,
+          borderRadius: '5px',
+          maxWidth: '600px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          userSelect: 'none',
+        }}>
+          {message}
+          <button
+            onClick={() => setMessage(null)}
+            style={{
+              position: 'absolute',
+              right: '5px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              border: 'none',
+              background: 'transparent',
+              color: isError ? 'red' : 'green',
+              fontWeight: 'bold',
+              fontSize: '18px',
+              cursor: 'pointer',
+              padding: 0,
+              lineHeight: 1,
+              userSelect: 'none',
+            }}
+            aria-label="Закрити повідомлення"
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -238,59 +258,80 @@ const ProfilePage = () => {
         Вийти з акаунту
       </button>
 
-      {/* Модалка з кнопками Продати та Забрати */}
+      {/* Модалка */}
       {modalOpen && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <h3>Фігурка: {selectedFigure?.figure?.name || 'Невідома'}</h3>
 
-            {/* Якщо вибрана фігурка, показуємо кнопки */}
-            <div style={{ marginBottom: '20px' }}>
-              <button onClick={handleSell} className="btn btn-sell" style={{ marginRight: '10px' }}>
+            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+              <button
+                onClick={handleSell}
+                className="btn btn-sell"
+                style={{ marginRight: '10px', backgroundColor: 'orange', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'red')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'orange')}
+              >
                 Продати за {Math.round(sellPrice)}₴
               </button>
             </div>
 
-            {/* Форма заявки "Забрати" */}
             <div>
-              <input
-                type="text"
-                name="fullName"
-                placeholder="ПІБ"
-                value={formData.fullName}
-                onChange={handleFormChange}
-                className="modal-input"
-              />
-              <input
-                type="text"
-                name="phone"
-                placeholder="Номер телефону"
-                value={formData.phone}
-                onChange={handleFormChange}
-                className="modal-input"
-              />
-              <input
-                type="text"
-                name="city"
-                placeholder="Місто"
-                value={formData.city}
-                onChange={handleFormChange}
-                className="modal-input"
-              />
-              <input
-                type="text"
-                name="branchNumber"
-                placeholder="№ відділення"
-                value={formData.branchNumber}
-                onChange={handleFormChange}
-                className="modal-input"
-              />
-              <button onClick={handlePickupSubmit} className="btn btn-pickup-submit" style={{ marginTop: '10px' }}>
+              {['fullName', 'phone', 'city', 'branchNumber'].map(field => (
+                <input
+                  key={field}
+                  type="text"
+                  name={field}
+                  placeholder={{
+                    fullName: 'ПІБ',
+                    phone: 'Номер телефону',
+                    city: 'Місто',
+                    branchNumber: '№ відділення',
+                  }[field]}
+                  value={formData[field]}
+                  onChange={handleFormChange}
+                  className="modal-input"
+                  style={{
+                    backgroundColor: 'black',
+                    border: '2px solid orange',
+                    color: 'white',
+                    padding: '8px',
+                    marginBottom: '10px',
+                    borderRadius: '5px',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    fontSize: '1rem',
+                  }}
+                />
+              ))}
+
+              <button
+                onClick={handlePickupSubmit}
+                className="btn btn-pickup-submit"
+                style={{
+                  marginTop: '10px',
+                  backgroundColor: 'orange',
+                  color: 'white',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  width: '100%',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'red')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'orange')}
+              >
                 Підтвердити заявку
               </button>
             </div>
 
-            <button onClick={closeModal} className="btn btn-close-modal" style={{ marginTop: '15px' }}>
+            <button
+              onClick={closeModal}
+              className="btn btn-close-modal"
+              style={{ marginTop: '15px', padding: '6px 12px', cursor: 'pointer' }}
+            >
               Закрити
             </button>
           </div>
@@ -300,4 +341,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default Profile;
