@@ -235,8 +235,8 @@ const Profile = () => {
               onClick={handleSellAll}
               className="btn btn-sell-all"
               style={{
-              backgroundColor: 'green',
-              color: 'white',
+              backgroundColor: 'orange',
+              color: 'black',
               padding: '12px 25px',
               border: 'none',
               borderRadius: '6px',
