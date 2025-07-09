@@ -115,83 +115,83 @@ const CasePage = () => {
     setRolling(true);
     setResultFigure(null);
     setShowResult(false);
-
+    
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
     }
-
+    
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`https://funko-case-opener.onrender.com/api/cases/${id}/open`, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token },
-      })
-
+      });
+    
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message || 'Помилка відкриття кейсу');
       }
-
+    
       const data = await res.json();
-
       setBalance(prev => prev - caseData.price);
-
+    
       const reel = reelRef.current;
       const figures = caseData.figures;
-
-      // Після того як reel наповниться, дочекаємось щоб DOM елементи з'явились
-      await new Promise(resolve => setTimeout(resolve, 20));
-
-      // Отримуємо фактичну ширину одного reel-item
-      const oneItem = reel.querySelector('.reel-item');
-      const reelItemWidth = oneItem ? oneItem.offsetWidth + 10 : 120; // +10 — це приблизний gap між item-ами
-
-      const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
-      const centerIndex = Math.floor(visibleCount / 2);
-
+    
       const repeatCount = 50;
-
       const randomFigures = Array.from({ length: repeatCount }, () =>
         figures[Math.floor(Math.random() * figures.length)]
       );
-
-      const totalPrefix = randomFigures.length;
-      const insertAt = totalPrefix + centerIndex;
+    
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
-      const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
-
+    
+      const fullReelFigures = [...randomFigures, winningFigure, ...randomFigures.slice(0, 10)];
+    
       const fragment = document.createDocumentFragment();
-      finalReel.forEach((fig) => {
+      fullReelFigures.forEach((fig) => {
         const img = document.createElement('img');
         img.src = fig.image;
         img.alt = fig.name;
         img.className = 'reel-item';
         fragment.appendChild(img);
       });
-
+    
       reel.innerHTML = '';
       reel.appendChild(fragment);
-
-      const finalOffset = -(insertAt - centerIndex) * reelItemWidth;
+    
+      // Даємо час DOM намалювати
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    
+      // Тепер вимірюємо ширину reel-item
+      const item = reel.querySelector('.reel-item');
+      const itemWidth = item ? item.offsetWidth + 10 : 130; // +gap (10px)
+      const reelWidth = reel.parentElement.offsetWidth;
+    
+      const visibleCount = Math.floor(reelWidth / itemWidth);
+      const centerIndex = Math.floor(visibleCount / 2);
+    
+      const insertAt = randomFigures.length; // позиція виграшної фігурки
+      const finalOffset = -(insertAt - centerIndex) * itemWidth;
+    
       const duration = 5000;
       const start = performance.now();
-
+    
       const animate = (timestamp) => {
         const elapsed = timestamp - start;
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
-
+    
         const currentPosition = finalOffset * easeOut;
         reel.style.transform = `translateX(${currentPosition}px)`;
-
+    
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
           setResultFigure(data);
           setRolling(false);
           setShowResult(true);
-
+    
           if (audioRef.current) audioRef.current.pause();
           if (winAudioRef.current) {
             winAudioRef.current.currentTime = 0;
@@ -199,12 +199,13 @@ const CasePage = () => {
           }
         }
       };
-
+    
       requestAnimationFrame(animate);
     } catch (err) {
       showErrorMessage(err.message);
       setRolling(false);
     }
+    
   };
 
   const chances = caseData?.rarityChances && Object.keys(caseData.rarityChances).length > 0
