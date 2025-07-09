@@ -51,41 +51,50 @@ const ProfilePage = () => {
   };
 
   // Функція для продажу фігурки
-  const handleSell = async (entryIndex) => {
-    if (!userData) return;
-    try {
-      const token = localStorage.getItem('token');
+  // У handleSell:
+const handleSell = async (entryIndex) => {
+  if (!userData) return;
+  try {
+    const token = localStorage.getItem('token');
+    const figureEntry = userData.inventory[entryIndex];
+    if (!figureEntry) return;
 
-      // Визначаємо фігурку та ціну
-      const figureEntry = userData.inventory[entryIndex];
-      if (!figureEntry) return;
+    const sellPrice = (figureEntry.price || 0) * 0.75 * 42;
 
-      // Видаляємо фігурку з інвентарю (треба API - будемо робити PATCH з новим інвентарем)
-      const newInventory = [...userData.inventory];
-      newInventory.splice(entryIndex, 1);
+    // Видаляємо фігурку з інвентарю
+    const newInventory = [...userData.inventory];
+    newInventory.splice(entryIndex, 1);
 
-      // Оновлюємо баланс
-      const newBalance = userData.balance + (figureEntry.price || 0);
+    // Формуємо trimmedInventory з мінімальними даними
+    const trimmedInventory = newInventory.map(item => ({
+      _id: item._id,
+      figure: item.figure._id,
+      caseName: item.caseName,
+      caseId: item.caseId,
+      price: item.price,
+      date: item.date,
+    }));
 
-      // Оновлення інвентарю і балансу на сервері
-      await axios.patch(`https://funko-case-opener.onrender.com/api/users/${userData._id}/inventory`, 
-        { inventory: newInventory }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/balance`, 
-        { balance: newBalance },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    const newBalance = userData.balance + sellPrice;
 
-      // Оновлюємо локальний стан
-      setUserData(prev => ({ ...prev, inventory: newInventory, balance: newBalance }));
+    await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`, 
+      { inventory: trimmedInventory }, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      alert(`Фігурку продано за ${figureEntry.price}₴`);
-    } catch (error) {
-      console.error('Помилка при продажі:', error);
-      alert('Помилка при продажі фігурки');
-    }
-  };
+    await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/balance`, 
+      { balance: newBalance },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setUserData(prev => ({ ...prev, inventory: newInventory, balance: newBalance }));
+
+    alert(`Фігурку продано за ${Math.round(sellPrice)}₴`);
+  } catch (error) {
+    console.error('Помилка при продажі:', error);
+    alert('Помилка при продажі фігурки');
+  }
+};
 
   // Відкриваємо модалку "Забрати"
   const openPickupModal = (entryIndex) => {
@@ -161,7 +170,7 @@ const ProfilePage = () => {
           <h2>{userData.nickname}</h2>
         </div>
         <p className="balance-text" style={{ fontSize: '1.4rem', marginTop: '10px' }}>
-          Баланс: <strong>{userData.balance}₴</strong>
+          Баланс: <strong>{userData.balance}$</strong>
         </p>
       </div>
 
@@ -174,6 +183,7 @@ const ProfilePage = () => {
           <div className="won-figures-grid">
             {userData.inventory.map((entry, index) => {
               const figure = entry.figure || {};
+              const sellPrice = (entry.price || 0) * 0.75 * 42;
               return (
                 <div key={entry._id || index} className="figure-card">
                   <img src={figure.image || '/unknown.png'} alt={figure.name || 'Невідома фігурка'} />
@@ -188,7 +198,7 @@ const ProfilePage = () => {
                     )}
                   </p>
                   <div className="figure-buttons">
-                    <button onClick={() => handleSell(index)} className="btn btn-sell">Продати за {entry.price}₴</button>
+                    <button onClick={() => handleSell(index)} className="btn btn-sell">Продати за {Math.round(sellPrice)}₴</button>
                     <button onClick={() => openPickupModal(index)} className="btn btn-pickup">Забрати</button>
                   </div>
                 </div>
