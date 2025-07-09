@@ -93,12 +93,19 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
     figures.forEach(fig => {
       const rarity = fig.rarity?.trim();
       const weight = chances[rarity] ?? 0;
+      console.log(`🔍 Фігурка: ${fig.name}, Рідкість: ${rarity}, Шанс: ${weight}`);
       if (weight > 0) {
         for (let i = 0; i < weight; i++) {
           weightedPool.push(fig);
         }
       }
     });
+
+    const rarityCount = weightedPool.reduce((acc, fig) => {
+      acc[fig.rarity] = (acc[fig.rarity] || 0) + 1;
+      return acc;
+    }, {});
+    console.log('📦 Рідкості у фінальному пулі:', rarityCount);
 
     if (weightedPool.length === 0) {
       return res.status(400).json({ message: 'Немає фігурок з валідними шансами' });
