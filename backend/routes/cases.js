@@ -51,6 +51,7 @@ router.post('/', async (req, res) => {
 });
 
 // Відкрити кейс (з авторизацією, зніманням коштів та оновленням балансу)
+// Відкрити кейс (з авторизацією, зніманням коштів та оновленням балансу)
 router.post('/:id/open', authMiddleware, async (req, res) => {
   try {
     const caseItem = await Case.findById(req.params.id).populate('figures');
@@ -63,6 +64,7 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Недостатньо коштів для відкриття кейсу' });
     }
 
+    // Знімаємо гроші
     user.balance -= caseItem.price;
     await user.save();
 
@@ -71,31 +73,23 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'У кейсі немає фігурок' });
     }
 
+    // Розрахунок шансів
     const presentRarities = new Set(figures.map(f => f.rarity));
-
-    const defaultChances = {
-      Common: 60,
-      Exclusive: 20,
-      Epic: 10,
-      Legendary: 8,
-      Grail: 2,
-    };
-
+    const defaultChances = { Common: 60, Exclusive: 20, Epic: 10, Legendary: 8, Grail: 2 };
     const chancesFromCase = caseItem.rarityChances || {};
     const chances = {};
 
     for (const rarity of presentRarities) {
-      const value = chancesFromCase.get?.(rarity) || chancesFromCase[rarity] || defaultChances[rarity] || 0;
+      const value = chancesFromCase[rarity] || defaultChances[rarity] || 0;
       chances[rarity] = value;
     }
 
     const totalChance = Object.values(chances).reduce((a, b) => a + b, 0);
     if (totalChance === 0) {
-      return res.status(400).json({ message: 'Немає валідних шансів для доступних рідкостей' });
+      return res.status(400).json({ message: 'Немає валідних шансів' });
     }
 
     const weightedPool = [];
-
     figures.forEach(fig => {
       const weight = chances[fig.rarity] || 0;
       for (let i = 0; i < weight; i++) {
@@ -104,27 +98,20 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
     });
 
     if (weightedPool.length === 0) {
-      return res.status(400).json({ message: 'Не знайдено жодної фігурки з валідними шансами' });
+      return res.status(400).json({ message: 'Немає фігурок з валідними шансами' });
     }
 
     const randomIndex = Math.floor(Math.random() * weightedPool.length);
     const selectedFigure = weightedPool[randomIndex];
-    user.openedFigures.push({
-      figure: selectedFigure._id,
-      caseName: caseItem.name,
-      caseId: caseItem._id,
-      price: selectedFigure.price,
-      date: new Date(),
-    });
-    await user.save();
 
+    // ❌ НЕ додаємо в user, просто повертаємо фігуру
     res.json({
-      ...selectedFigure.toObject ? selectedFigure.toObject() : selectedFigure,
+      ...selectedFigure.toObject(),
       newBalance: user.balance,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
+    console.error('Помилка відкриття кейсу:', err);
+    res.status(500).json({ message: 'Помилка сервера при відкритті кейсу' });
   }
 });
 
