@@ -124,6 +124,25 @@ router.patch('/:id/balance', async (req, res) => {
   }
 });
 
+// Оновлення інвентарю користувача
+router.patch('/:id/inventory', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { inventory } = req.body;
+    if (!Array.isArray(inventory)) {
+      return res.status(400).json({ message: 'Інвентар має бути масивом' });
+    }
+    const user = await User.findByIdAndUpdate(id, { inventory }, { new: true }).populate('inventory.figure');
+    if (!user) {
+      return res.status(404).json({ message: 'Користувача не знайдено' });
+    }
+    res.json({ message: 'Інвентар оновлено', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Помилка сервера' });
+  }
+});
+
 // Експортуємо окремо router і middleware
 module.exports = {
   router,

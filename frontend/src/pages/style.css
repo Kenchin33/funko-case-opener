@@ -839,3 +839,98 @@
   background-color: darkorange;
   color: white;
 }
+
+.figure-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.btn-sell, .btn-pickup {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-sell {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-sell:hover {
+  background-color: #218838;
+}
+
+.btn-pickup {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-pickup:hover {
+  background-color: #0069d9;
+}
+
+/* Модалка */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 320px;
+  max-width: 90%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-input {
+  padding: 8px;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.btn-pickup-submit {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-pickup-submit:hover {
+  background-color: #0056b3;
+}
+
+.btn-close-modal {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.btn-close-modal:hover {
+  background-color: #c82333;
+}
