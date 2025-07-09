@@ -314,8 +314,8 @@ const CasePage = () => {
                         }),
                       });
 
-                      if (!response.ok) {
-                        const err = await response.json();
+                      if (!responce.ok) {
+                        const err = await responce.json();
                         throw new Error(err.message || 'Помилка збереження фігурки у інвентарі');
                       }
 
