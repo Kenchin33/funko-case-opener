@@ -303,6 +303,38 @@ const CasePage = () => {
                   <span className={`rarity ${resultFigure.rarity}`}>{resultFigure.rarity}</span>
                 </p>
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
+
+                <div className="popup-buttons">
+                  <button className="btn-success" onClick={async () => {
+                    const salePrice = Math.round(resultFigure.price * 0.75 * 42);
+                    const token = localStorage.getItem('token');
+                    try {
+                      const res = await fetch('https://funko-case-opener.onrender.com/api/auth/me', {
+                        headers: {'Authorization': 'Bearer' + token},
+                      });
+                      const user = await res.json();
+                      const newBalance = user.balance + salePrice;
+                      await fetch(`https://funko-case-opener.onrender.com/api/auth/${user._id}/balance`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({balance: newBalance}),
+                      });
+
+                      setBalance(newBalance);
+                      setShowResult(false);
+                      showErrorMessage(`Фігурку продано за ${salePrice} грн`);
+                    } catch (err) {
+                      showErrorMessage('Помилка під час продажу фігурки');
+                    }
+                  }}>Продати за {Math.round(resultFigure.price * 0.75 * 42)} грн</button>
+                  <button className="btn-outline" onClick={() => {
+                    setShowResult(false); 
+                    showErrorMessage('Фігурку залишено')
+                  }}
+                  > Залишити </button>
+                </div>
               </div>
             </div>
           )}
@@ -311,9 +343,11 @@ const CasePage = () => {
           <audio ref={winAudioRef} src="/sounds/win-sound.mp3" />
 
           {showError && (
-            <div className="error-message" role="alert" aria-live="assertive" style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10000 }}>
-              {errorMsg}
-            </div>
+            <div
+              className={errorMsg.includes('продано') || errorMsg.includes('залишено') ? 'success-message' : 'error-message'}
+              role="alert"
+              aria-live="assertive"
+            > {errorMsg}</div>
           )}
         </>
       ) : (
