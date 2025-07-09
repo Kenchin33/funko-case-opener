@@ -140,7 +140,7 @@ const CasePage = () => {
       const reel = reelRef.current;
       const figures = caseData.figures;
 
-      const reelItemWidth = 140;
+      const reelItemWidth = window.innerWidth < 480 ? 80 : window.innerWidth < 768 ? 100 : 140;
       const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
       const centerIndex = Math.floor(visibleCount / 2);
       const repeatCount = 50;

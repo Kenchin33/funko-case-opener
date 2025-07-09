@@ -624,3 +624,154 @@
   color: #2a8cd6;
 }
 
+/* ===== АДАПТАЦІЯ ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ ===== */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .user-menu {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .cases-list {
+    justify-content: center;
+  }
+
+  .case-card {
+    width: 100%;
+    max-width: 90vw;
+  }
+
+  .case-cover {
+    width: 150px;
+  }
+
+  .case-title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .reel-container {
+    height: 140px;
+  }
+
+  .reel-item {
+    width: 100px;
+    height: 100px;
+  }
+
+  .figure-card {
+    width: 100px;
+    padding: 8px;
+  }
+
+  .figure-card img {
+    height: 80px;
+  }
+
+  .register-form,
+  .auth-form {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .chance-info-popup {
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    width: 90vw;
+  }
+
+  .open-case-container {
+    flex-direction: column;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .won-figures-grid {
+    justify-content: center;
+  }
+
+  .result-popup {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .result-popup img {
+    width: 120px;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .back-button {
+    top: 10px;
+    left: 10px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1.6rem;
+  }
+
+  .logo h1 {
+    font-size: 2rem;
+  }
+
+  .case-cover {
+    width: 120px;
+  }
+
+  .reel-item {
+    width: 80px;
+    height: 80px;
+  }
+
+  .figure-card {
+    width: 90px;
+  }
+
+  .figure-card img {
+    height: 70px;
+  }
+
+  .case-info h3 {
+    font-size: 1rem;
+  }
+
+  .profile-icon {
+    font-size: 1.2rem;
+  }
+
+  .popup-name {
+    font-size: 1rem;
+  }
+
+  .popup-price {
+    font-size: 0.9rem;
+  }
+
+  .register-form,
+  .auth-form {
+    padding: 15px;
+  }
+
+  .chance-info-popup {
+    font-size: 0.9rem;
+  }
+}
