@@ -142,30 +142,43 @@ const CasePage = () => {
       const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
       const centerIndex = Math.floor(visibleCount / 2);
   
-      // Вручну підкоригуй ці значення, щоб підлаштувати точність
-      const correctionVertical = 4;    // на скільки позицій назад показує в вертикальному
-      const correctionHorizontal = 3;  // в горизонтальному положенні
+      // Логи для перевірки
+      console.log('reelItemWidth:', reelItemWidth);
+      console.log('visibleCount:', visibleCount);
+      console.log('centerIndex:', centerIndex);
   
       // Визначаємо орієнтацію екрану
       const isLandscape = window.innerWidth > window.innerHeight;
   
+      // Тут задаємо поправки
       let correction = 0;
+  
       if (window.innerWidth <= 480) {
-        correction = isLandscape ? correctionHorizontal : correctionVertical;
+        correction = isLandscape ? -3 : -2; // Ти можеш підкоригувати ці значення!
       }
+  
+      console.log('isLandscape:', isLandscape);
+      console.log('correction:', correction);
   
       const repeatCount = 50;
   
+      // Генеруємо випадкові фігурки
       const randomFigures = Array.from({ length: repeatCount }, () =>
         figures[Math.floor(Math.random() * figures.length)]
       );
   
-      const insertAt = repeatCount + centerIndex + correction;
-  
+      // Знаходимо виграшну фігурку
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
   
+      // Позиція вставки виграшної фігурки у стрічку
+      const insertAt = repeatCount + centerIndex + correction;
+  
+      console.log('insertAt:', insertAt);
+  
+      // Формуємо фінальну стрічку
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
   
+      // Створюємо елементи стрічки
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {
         const img = document.createElement('img');
@@ -178,7 +191,11 @@ const CasePage = () => {
       reel.innerHTML = '';
       reel.appendChild(fragment);
   
+      // Вираховуємо кінцевий зсув
       const finalOffset = -(insertAt - centerIndex) * reelItemWidth;
+  
+      console.log('finalOffset:', finalOffset);
+  
       const duration = 5000;
       const start = performance.now();
   
