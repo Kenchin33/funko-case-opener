@@ -52,7 +52,6 @@ router.post('/', async (req, res) => {
 
 // Відкрити кейс (з авторизацією, зніманням коштів та оновленням балансу)
 router.post('/:id/open', authMiddleware, async (req, res) => {
-  console.log('🎯 Відкрито кейс', req.params.id);
   try {
     const caseItem = await Case.findById(req.params.id).populate('figures');
     if (!caseItem) return res.status(404).json({ message: 'Кейс не знайдено' });
@@ -64,7 +63,6 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Недостатньо коштів для відкриття кейсу' });
     }
 
-    // Знімаємо гроші
     user.balance -= caseItem.price;
     await user.save();
 
@@ -73,39 +71,29 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'У кейсі немає фігурок' });
     }
 
-    // Розрахунок шансів
-    const presentRarities = new Set(figures.map(f => f.rarity));
-    const defaultChances = { Common: 60, Exclusive: 20, Epic: 10, Legendary: 8, Grail: 2 };
+    // ✅ Формуємо шанси правильно
     const chancesFromCase = caseItem.rarityChances || {};
+    const defaultChances = { Common: 60, Exclusive: 20, Epic: 10, Legendary: 8, Grail: 2 };
+
     const chances = {};
-
-    for (const rarity of presentRarities) {
-      const value = chancesFromCase.hasOwnProperty(rarity) ? chancesFromCase[rarity] : defaultChances[rarity] ?? 0;
-      chances[rarity] = value;
-    }
-
-    const totalChance = Object.values(chances).reduce((a, b) => a + b, 0);
-    if (totalChance === 0) {
-      return res.status(400).json({ message: 'Немає валідних шансів' });
+    for (const fig of figures) {
+      const rarity = fig.rarity?.trim(); // гарантовано прибираємо пробіли
+      if (!(rarity in chances)) {
+        chances[rarity] =
+          chancesFromCase.hasOwnProperty(rarity)
+            ? chancesFromCase[rarity]
+            : defaultChances[rarity] ?? 0;
+      }
     }
 
     const weightedPool = [];
-    figures.forEach(fig => {
+    for (const fig of figures) {
       const rarity = fig.rarity?.trim();
       const weight = chances[rarity] ?? 0;
-      console.log(`🔍 Фігурка: ${fig.name}, Рідкість: ${rarity}, Шанс: ${weight}`);
-      if (weight > 0) {
-        for (let i = 0; i < weight; i++) {
-          weightedPool.push(fig);
-        }
+      for (let i = 0; i < weight; i++) {
+        weightedPool.push(fig);
       }
-    });
-
-    const rarityCount = weightedPool.reduce((acc, fig) => {
-      acc[fig.rarity] = (acc[fig.rarity] || 0) + 1;
-      return acc;
-    }, {});
-    console.log('📦 Рідкості у фінальному пулі:', rarityCount);
+    }
 
     if (weightedPool.length === 0) {
       return res.status(400).json({ message: 'Немає фігурок з валідними шансами' });
@@ -114,7 +102,6 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
     const randomIndex = Math.floor(Math.random() * weightedPool.length);
     const selectedFigure = weightedPool[randomIndex];
 
-    // ❌ НЕ додаємо в user, просто повертаємо фігуру
     res.json({
       ...selectedFigure.toObject(),
       newBalance: user.balance,
