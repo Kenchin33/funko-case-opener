@@ -30,13 +30,13 @@ const CasePage = () => {
     Grail: 'gold',
   };
 
-  // Показ повідомлення з анімацією і автоскриттям
+  // Функція для показу повідомлення з анімацією і автоматичним приховуванням через 2 секунди
   const showErrorMessage = (msg) => {
     if (errorTimeoutRef.current) {
       clearTimeout(errorTimeoutRef.current);
     }
     setErrorMsg(msg);
-    setShowError(false);
+    setShowError(false); // скидаємо, щоб перезапустити анімацію
     setTimeout(() => {
       setShowError(true);
     }, 10);
@@ -97,8 +97,10 @@ const CasePage = () => {
 
   const openCase = async () => {
     if (!caseData) return;
-
-    if (showError) setShowError(false);
+    // Викидаємо помилку, якщо є
+    //setErrorMsg('');
+    //setShowError(false);
+    if (showError) setShowError(false); // сховаємо повідомлення, якщо було
 
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
@@ -124,7 +126,7 @@ const CasePage = () => {
       const res = await fetch(`https://funko-case-opener.onrender.com/api/cases/${id}/open`, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token },
-      });
+      })
 
       if (!res.ok) {
         const err = await res.json();
@@ -151,6 +153,7 @@ const CasePage = () => {
       const insertAt = window.innerWidth < 480 ? totalPrefix + centerIndex + 28 : window.innerWidth < 768 ? totalPrefix + centerIndex + 3 : totalPrefix + centerIndex;
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
+      console.log('Повний список фігурок у стрічці:', finalReel);
 
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {
@@ -198,37 +201,6 @@ const CasePage = () => {
     }
   };
 
-  // Логіка продажу фігурки
-  const sellFigure = async () => {
-    if (!resultFigure) return;
-
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch('https://funko-case-opener.onrender.com/api/cases/sell-figure', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
-        body: JSON.stringify({
-          figureId: resultFigure._id,
-          salePrice: resultFigure.price,
-        }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || 'Помилка продажу фігурки');
-      }
-
-      const data = await res.json();
-      setBalance(data.newBalance);
-      setShowResult(false);
-    } catch (err) {
-      showErrorMessage(err.message);
-    }
-  };
-
   const chances = caseData?.rarityChances && Object.keys(caseData.rarityChances).length > 0
     ? caseData.rarityChances
     : {
@@ -267,86 +239,85 @@ const CasePage = () => {
       {caseData ? (
         <>
           <h2 className="case-title">{caseData.name}</h2>
-          <img src={caseData.image} alt={caseData.name} className="case-image" />
-          <p className="case-description">{caseData.description}</p>
-          <p className="case-price">Ціна відкриття: <strong>{caseData.price}$</strong></p>
+          <img src={caseData.image} alt={caseData.name} className="case-cover" />
 
-          <div className="case-reel-wrapper">
-            <div className={`case-reel ${rolling ? 'rolling' : ''}`} ref={reelRef} />
+          <div className="open-case-container">
+            <button onClick={openCase} disabled={rolling} className="btn btn-primary open-btn">
+              {rolling ? 'Відкривається...' : 'Відкрити кейс'}
+            </button>
+
+            <span
+              className="info-icon"
+              onMouseEnter={() => setShowChanceInfo(true)}
+              onMouseLeave={() => setShowChanceInfo(false)}
+              tabIndex={0}
+              onFocus={() => setShowChanceInfo(true)}
+              onBlur={() => setShowChanceInfo(false)}
+              aria-label="Інформація про шанси випадіння"
+              role="button"
+            >
+              i
+            </span>
+
+            {showChanceInfo && (
+              <div className="chance-info-popup">
+                <h4>Шанси випадіння рідкостей</h4>
+                <ul>
+                  {Object.entries(chances).map(([rarity, chance]) => (
+                    <li key={rarity} style={{ color: rarityColors[rarity] || 'white' }}>
+                      {rarity}: {chance}%
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
-          <button
-            className="btn btn-primary open-button"
-            disabled={rolling}
-            onClick={openCase}
-            aria-label="Відкрити кейс"
-          >
-            {rolling ? 'Відкриваємо...' : 'Відкрити кейс'}
-          </button>
+          <div className="reel-arrow" />
+          <div className="reel-container">
+            <div className="reel" ref={reelRef}></div>
+          </div>
 
-          <button
-            className="btn btn-link"
-            onClick={() => setShowChanceInfo(prev => !prev)}
-            aria-expanded={showChanceInfo}
-            aria-controls="chanceInfo"
-            style={{ marginTop: '1rem' }}
-          >
-            {showChanceInfo ? 'Приховати шанси випадіння' : 'Показати шанси випадіння'}
-          </button>
-
-          {showChanceInfo && (
-            <div id="chanceInfo" className="chance-info">
-              <ul>
-                {Object.entries(chances).map(([rarity, chance]) => (
-                  <li key={rarity} style={{ color: rarityColors[rarity] || 'white' }}>
-                    {rarity}: {chance}%
-                  </li>
+          {!rolling && !showResult && (
+            <div className="figures-preview">
+              <h3>Можуть випасти:</h3>
+              <div className="figures-grid">
+                {caseData.figures.map(fig => (
+                  <div key={fig._id} className="figure-card">
+                    <img src={fig.image} alt={fig.name} />
+                    <p>{fig.name}</p>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          )}
-
-          {errorMsg && (
-            <div className={`error-message ${showError ? 'visible' : ''}`}>
-              {errorMsg}
+              </div>
             </div>
           )}
 
           {resultFigure && showResult && (
-            <div className="result-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+            <div className="result-popup-overlay">
               <div className="result-popup">
-                <button
-                  className="popup-close"
-                  onClick={() => setShowResult(false)}
-                  aria-label="Закрити спливаюче вікно"
-                >
-                  ✖
-                </button>
-                <h3 id="resultTitle">Випала фігурка!</h3>
+                <button className="popup-close" onClick={() => setShowResult(false)}>✖</button>
+                <h3>Випала фігурка!</h3>
                 <img src={resultFigure.image} alt={resultFigure.name} />
                 <p className="popup-name">
                   <strong>{resultFigure.name}</strong> —{' '}
                   <span className={`rarity ${resultFigure.rarity}`}>{resultFigure.rarity}</span>
                 </p>
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
-
-                <div className="result-popup-buttons">
-                  <button className="btn btn-primary" onClick={sellFigure}>
-                    Продати
-                  </button>
-                  <button className="btn btn-outline" onClick={() => setShowResult(false)}>
-                    Залишити
-                  </button>
-                </div>
               </div>
             </div>
           )}
 
-          <audio ref={audioRef} src="/sounds/spin.mp3" preload="auto" />
-          <audio ref={winAudioRef} src="/sounds/win.mp3" preload="auto" />
+          <audio ref={audioRef} src="/sounds/go-new-gambling.mp3" />
+          <audio ref={winAudioRef} src="/sounds/win-sound.mp3" />
+
+          {showError && (
+            <div className="error-message" role="alert" aria-live="assertive" style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10000 }}>
+              {errorMsg}
+            </div>
+          )}
         </>
       ) : (
-        <p>Завантаження кейсу...</p>
+        <p>Завантаження...</p>
       )}
     </div>
   );
