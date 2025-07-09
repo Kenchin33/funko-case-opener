@@ -140,9 +140,16 @@ const CasePage = () => {
       const reel = reelRef.current;
       const figures = caseData.figures;
 
-      const reelItemWidth = window.innerWidth < 480 ? 80 : window.innerWidth < 768 ? 100 : 140;
+      // Після того як reel наповниться, дочекаємось щоб DOM елементи з'явились
+      await new Promise(resolve => setTimeout(resolve, 20));
+
+      // Отримуємо фактичну ширину одного reel-item
+      const oneItem = reel.querySelector('.reel-item');
+      const reelItemWidth = oneItem ? oneItem.offsetWidth + 10 : 120; // +10 — це приблизний gap між item-ами
+
       const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
       const centerIndex = Math.floor(visibleCount / 2);
+
       const repeatCount = 50;
 
       const randomFigures = Array.from({ length: repeatCount }, () =>
