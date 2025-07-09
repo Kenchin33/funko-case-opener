@@ -97,63 +97,66 @@ const CasePage = () => {
 
   const openCase = async () => {
     if (!caseData) return;
-    // Викидаємо помилку, якщо є
-    //setErrorMsg('');
-    //setShowError(false);
-    if (showError) setShowError(false); // сховаємо повідомлення, якщо було
-
+  
+    if (showError) setShowError(false);
+  
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
       return;
     }
-
+  
     if (balance < caseData.price) {
       showErrorMessage('Недостатньо коштів на балансі для відкриття кейсу.');
       return;
     }
-
+  
     setRolling(true);
     setResultFigure(null);
     setShowResult(false);
-
+  
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
     }
-
+  
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`https://funko-case-opener.onrender.com/api/cases/${id}/open`, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token },
-      })
-
+      });
+  
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message || 'Помилка відкриття кейсу');
       }
-
+  
       const data = await res.json();
-
       setBalance(prev => prev - caseData.price);
-
+  
       const reel = reelRef.current;
       const figures = caseData.figures;
-
-      const reelItemWidth = window.innerWidth < 480 ? 80 : window.innerWidth < 768 ? 100 : 140;
+  
+      // 🎯 Адаптивна ширина фігурки (під смартфони / планшети / ноутбуки)
+      const reelItemWidth =
+        window.innerWidth <= 430 ? 80 :
+        window.innerWidth < 768 ? 100 :
+        140;
+  
       const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
       const centerIndex = Math.floor(visibleCount / 2);
       const repeatCount = 50;
-
+  
+      // 🎰 Створення стрічки з випадкових фігурок
       const randomFigures = Array.from({ length: repeatCount }, () =>
         figures[Math.floor(Math.random() * figures.length)]
       );
-
-      const totalPrefix = randomFigures.length;
-      const insertAt = totalPrefix + centerIndex;
+  
+      const insertAt = repeatCount + centerIndex;
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
-
+  
+      // Створення HTML
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {
         const img = document.createElement('img');
@@ -162,29 +165,29 @@ const CasePage = () => {
         img.className = 'reel-item';
         fragment.appendChild(img);
       });
-
+  
       reel.innerHTML = '';
       reel.appendChild(fragment);
-
+  
       const finalOffset = -(insertAt - centerIndex) * reelItemWidth;
       const duration = 5000;
       const start = performance.now();
-
+  
       const animate = (timestamp) => {
         const elapsed = timestamp - start;
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
-
+  
         const currentPosition = finalOffset * easeOut;
         reel.style.transform = `translateX(${currentPosition}px)`;
-
+  
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
           setResultFigure(data);
           setRolling(false);
           setShowResult(true);
-
+  
           if (audioRef.current) audioRef.current.pause();
           if (winAudioRef.current) {
             winAudioRef.current.currentTime = 0;
@@ -192,13 +195,13 @@ const CasePage = () => {
           }
         }
       };
-
+  
       requestAnimationFrame(animate);
     } catch (err) {
       showErrorMessage(err.message);
       setRolling(false);
     }
-  };
+  };  
 
   const chances = caseData?.rarityChances && Object.keys(caseData.rarityChances).length > 0
     ? caseData.rarityChances
