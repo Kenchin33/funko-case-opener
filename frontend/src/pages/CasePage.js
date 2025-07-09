@@ -12,10 +12,11 @@ const CasePage = () => {
   const [showChanceInfo, setShowChanceInfo] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [balance, setBalance] = useState(null);
+
   const [errorMsg, setErrorMsg] = useState('');
   const [showError, setShowError] = useState(false);
-
   const errorTimeoutRef = useRef(null);
+
   const reelRef = useRef(null);
   const navigate = useNavigate();
   const audioRef = useRef(null);
@@ -29,14 +30,19 @@ const CasePage = () => {
     Grail: 'gold',
   };
 
+  // Функція для показу повідомлення з анімацією і автоматичним приховуванням через 2 секунди
   const showErrorMessage = (msg) => {
     if (errorTimeoutRef.current) {
       clearTimeout(errorTimeoutRef.current);
     }
     setErrorMsg(msg);
-    setShowError(false);
-    setTimeout(() => setShowError(true), 10);
-    errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
+    setShowError(false); // скидаємо, щоб перезапустити анімацію
+    setTimeout(() => {
+      setShowError(true);
+    }, 10);
+    errorTimeoutRef.current = setTimeout(() => {
+      setShowError(false);
+    }, 2010);
   };
 
   useEffect(() => {
@@ -54,10 +60,10 @@ const CasePage = () => {
     if (token) {
       setIsLoggedIn(true);
       fetch('https://funko-case-opener.onrender.com/api/auth/me', {
-        headers: { Authorization: 'Bearer ' + token },
+        headers: { 'Authorization': 'Bearer ' + token },
       })
         .then(res => {
-          if (!res.ok) throw new Error();
+          if (!res.ok) throw new Error('Не авторизований');
           return res.json();
         })
         .then(data => setBalance(data.balance ?? 0))
@@ -74,7 +80,8 @@ const CasePage = () => {
 
   const fillReelWithRandom = (figures, repeat = 100) => {
     const reel = reelRef.current;
-    if (!reel || !figures?.length) return;
+    if (!reel || !figures || figures.length === 0) return;
+
     reel.innerHTML = '';
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < repeat; i++) {
@@ -90,7 +97,10 @@ const CasePage = () => {
 
   const openCase = async () => {
     if (!caseData) return;
-    if (showError) setShowError(false);
+    // Викидаємо помилку, якщо є
+    //setErrorMsg('');
+    //setShowError(false);
+    if (showError) setShowError(false); // сховаємо повідомлення, якщо було
 
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
@@ -106,14 +116,17 @@ const CasePage = () => {
     setResultFigure(null);
     setShowResult(false);
 
-    audioRef.current?.play();
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    }
 
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`https://funko-case-opener.onrender.com/api/cases/${id}/open`, {
         method: 'POST',
-        headers: { Authorization: 'Bearer ' + token },
-      });
+        headers: { 'Authorization': 'Bearer ' + token },
+      })
 
       if (!res.ok) {
         const err = await res.json();
@@ -121,10 +134,12 @@ const CasePage = () => {
       }
 
       const data = await res.json();
-      setBalance(data.newBalance ?? balance); // ОНОВЛЕНО!
+
+      setBalance(data.newBalance ?? (prev => prev - caseData.price));
 
       const reel = reelRef.current;
       const figures = caseData.figures;
+
       const reelItemWidth = window.innerWidth < 480 ? 70 : window.innerWidth < 768 ? 100 : 140;
       const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
       const centerIndex = Math.floor(visibleCount / 2);
@@ -134,14 +149,11 @@ const CasePage = () => {
         figures[Math.floor(Math.random() * figures.length)]
       );
 
-      const insertAt = window.innerWidth < 480
-        ? repeatCount + centerIndex + 28
-        : window.innerWidth < 768
-        ? repeatCount + centerIndex + 3
-        : repeatCount + centerIndex;
-
+      const totalPrefix = randomFigures.length;
+      const insertAt = window.innerWidth < 480 ? totalPrefix + centerIndex + 28 : window.innerWidth < 768 ? totalPrefix + centerIndex + 3 : totalPrefix + centerIndex;
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
+      console.log('Повний список фігурок у стрічці:', finalReel);
 
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {
@@ -163,6 +175,7 @@ const CasePage = () => {
         const elapsed = timestamp - start;
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
+
         const currentPosition = finalOffset * easeOut;
         reel.style.transform = `translateX(${currentPosition}px)`;
 
@@ -172,8 +185,12 @@ const CasePage = () => {
           setResultFigure(data);
           setRolling(false);
           setShowResult(true);
-          audioRef.current?.pause();
-          winAudioRef.current?.play();
+
+          if (audioRef.current) audioRef.current.pause();
+          if (winAudioRef.current) {
+            winAudioRef.current.currentTime = 0;
+            winAudioRef.current.play();
+          }
         }
       };
 
@@ -184,13 +201,15 @@ const CasePage = () => {
     }
   };
 
-  const chances = caseData?.rarityChances || {
-    Common: 60,
-    Exclusive: 20,
-    Epic: 10,
-    Legendary: 8,
-    Grail: 2,
-  };
+  const chances = caseData?.rarityChances && Object.keys(caseData.rarityChances).length > 0
+    ? caseData.rarityChances
+    : {
+        Common: 60,
+        Exclusive: 20,
+        Epic: 10,
+        Legendary: 8,
+        Grail: 2,
+      };
 
   return (
     <div className="case-page">
@@ -200,8 +219,13 @@ const CasePage = () => {
 
       <div style={{ position: 'absolute', top: 20, right: 20 }}>
         {isLoggedIn ? (
-          <Link to="/profile" className="profile-icon" title="Профіль">
-            <span className="balance-text">{balance !== null ? `${balance} UAH` : '...'}</span>
+          <Link
+            to="/profile"
+            className="profile-icon"
+            title="Профіль"
+            style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
+          >
+            <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
             <FaUserCircle size={36} />
           </Link>
         ) : (
@@ -221,6 +245,7 @@ const CasePage = () => {
             <button onClick={openCase} disabled={rolling} className="btn btn-primary open-btn">
               {rolling ? 'Відкривається...' : 'Відкрити кейс'}
             </button>
+
             <span
               className="info-icon"
               onMouseEnter={() => setShowChanceInfo(true)}
@@ -228,7 +253,7 @@ const CasePage = () => {
               tabIndex={0}
               onFocus={() => setShowChanceInfo(true)}
               onBlur={() => setShowChanceInfo(false)}
-              aria-label="Інформація про шанси"
+              aria-label="Інформація про шанси випадіння"
               role="button"
             >
               i
@@ -236,7 +261,7 @@ const CasePage = () => {
 
             {showChanceInfo && (
               <div className="chance-info-popup">
-                <h4>Шанси випадіння</h4>
+                <h4>Шанси випадіння рідкостей</h4>
                 <ul>
                   {Object.entries(chances).map(([rarity, chance]) => (
                     <li key={rarity} style={{ color: rarityColors[rarity] || 'white' }}>
@@ -278,6 +303,38 @@ const CasePage = () => {
                   <span className={`rarity ${resultFigure.rarity}`}>{resultFigure.rarity}</span>
                 </p>
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
+
+                <div className="popup-buttons">
+                  <button className="btn-success" onClick={async () => {
+                    const salePrice = Math.round(resultFigure.price * 0.75 * 42);
+                    const token = localStorage.getItem('token');
+                    try {
+                      const res = await fetch('https://funko-case-opener.onrender.com/api/auth/me', {
+                        headers: {'Authorization': 'Bearer' + token},
+                      });
+                      const user = await res.json();
+                      const newBalance = user.balance + salePrice;
+                      await fetch(`https://funko-case-opener.onrender.com/api/auth/${user._id}/balance`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({balance: newBalance}),
+                      });
+
+                      setBalance(newBalance);
+                      setShowResult(false);
+                      showErrorMessage(`Фігурку продано за ${salePrice} грн`);
+                    } catch (err) {
+                      showErrorMessage('Помилка під час продажу фігурки');
+                    }
+                  }}>Продати за {Math.round(resultFigure.price * 0.75 * 42)} грн</button>
+                  <button className="btn-outline" onClick={() => {
+                    setShowResult(false); 
+                    showErrorMessage('Фігурку залишено')
+                  }}
+                  > Залишити </button>
+                </div>
               </div>
             </div>
           )}
@@ -286,7 +343,11 @@ const CasePage = () => {
           <audio ref={winAudioRef} src="/sounds/win-sound.mp3" />
 
           {showError && (
-            <div className="error-message">{errorMsg}</div>
+            <div
+              className={errorMsg.includes('продано') || errorMsg.includes('залишено') ? 'success-message' : 'error-message'}
+              role="alert"
+              aria-live="assertive"
+            > {errorMsg}</div>
           )}
         </>
       ) : (
