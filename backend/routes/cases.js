@@ -91,9 +91,12 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
 
     const weightedPool = [];
     figures.forEach(fig => {
-      const weight = chances[fig.rarity] || 0;
-      for (let i = 0; i < weight; i++) {
-        weightedPool.push(fig);
+      const rarity = fig.rarity?.trim();
+      const weight = chances[rarity] ?? 0;
+      if (weight > 0) {
+        for (let i = 0; i < weight; i++) {
+          weightedPool.push(fig);
+        }
       }
     });
 
