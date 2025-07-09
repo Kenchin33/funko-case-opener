@@ -99,12 +99,10 @@ const CasePage = () => {
     if (!caseData) return;
   
     if (showError) setShowError(false);
-  
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
       return;
     }
-  
     if (balance < caseData.price) {
       showErrorMessage('Недостатньо коштів на балансі для відкриття кейсу.');
       return;
@@ -132,53 +130,43 @@ const CasePage = () => {
       }
   
       const data = await res.json();
-  
       setBalance(prev => prev - caseData.price);
   
       const reel = reelRef.current;
       const figures = caseData.figures;
   
+      // Визначаємо ширину одного елемента в стрічці залежно від екрану
       const reelItemWidth = window.innerWidth < 480 ? 80 : window.innerWidth < 768 ? 100 : 140;
-      const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
-      const centerIndex = Math.floor(visibleCount / 2);
   
-      // Логи для перевірки
-      console.log('reelItemWidth:', reelItemWidth);
-      console.log('visibleCount:', visibleCount);
-      console.log('centerIndex:', centerIndex);
+      // Скільки фігурок видно одночасно
+      const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
+  
+      // Центр видимого блоку
+      const centerIndex = Math.floor(visibleCount / 2);
   
       // Визначаємо орієнтацію екрану
       const isLandscape = window.innerWidth > window.innerHeight;
   
-      // Тут задаємо поправки
+      // Корекція для смартфонів, щоб виграшна фігурка була по центру
       let correction = 0;
-  
       if (window.innerWidth <= 480) {
-        correction = isLandscape ? -3 : -2; // Ти можеш підкоригувати ці значення!
+        correction = isLandscape ? -1 : -2;  // Можеш підкоригувати цифри під свої спостереження
       }
   
-      console.log('isLandscape:', isLandscape);
-      console.log('correction:', correction);
-  
       const repeatCount = 50;
-  
-      // Генеруємо випадкові фігурки
       const randomFigures = Array.from({ length: repeatCount }, () =>
         figures[Math.floor(Math.random() * figures.length)]
       );
   
-      // Знаходимо виграшну фігурку
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
   
-      // Позиція вставки виграшної фігурки у стрічку
+      // Куди вставляємо виграшну фігурку
       const insertAt = repeatCount + centerIndex + correction;
   
-      console.log('insertAt:', insertAt);
-  
-      // Формуємо фінальну стрічку
+      // Формуємо повну стрічку
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
   
-      // Створюємо елементи стрічки
+      // Відмалюємо стрічку
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {
         const img = document.createElement('img');
@@ -191,10 +179,8 @@ const CasePage = () => {
       reel.innerHTML = '';
       reel.appendChild(fragment);
   
-      // Вираховуємо кінцевий зсув
+      // Обчислюємо зсув для трансформації стрічки
       const finalOffset = -(insertAt - centerIndex) * reelItemWidth;
-  
-      console.log('finalOffset:', finalOffset);
   
       const duration = 5000;
       const start = performance.now();
@@ -204,8 +190,7 @@ const CasePage = () => {
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
   
-        const currentPosition = finalOffset * easeOut;
-        reel.style.transform = `translateX(${currentPosition}px)`;
+        reel.style.transform = `translateX(${finalOffset * easeOut}px)`;
   
         if (progress < 1) {
           requestAnimationFrame(animate);
