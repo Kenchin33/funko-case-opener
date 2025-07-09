@@ -135,7 +135,7 @@ const CasePage = () => {
 
       const data = await res.json();
 
-      setBalance(data.newBalance ?? (prev => prev - caseData.price));
+      setBalance(prev => prev - caseData.price);
 
       const reel = reelRef.current;
       const figures = caseData.figures;
@@ -305,7 +305,7 @@ const CasePage = () => {
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
 
                 <div className="popup-buttons">
-                  <button className="btn-success" onClick={async () => {
+                  <button className="btn btn-primary open-btn" onClick={async () => {
                     const salePrice = Math.round(resultFigure.price * 0.75 * 42);
                     const token = localStorage.getItem('token');
                     try {
@@ -318,6 +318,7 @@ const CasePage = () => {
                         method: 'PATCH',
                         headers: {
                           'Content-Type': 'application/json',
+                          'Authorization': 'Bearer' + token
                         },
                         body: JSON.stringify({balance: newBalance}),
                       });
@@ -329,7 +330,7 @@ const CasePage = () => {
                       showErrorMessage('Помилка під час продажу фігурки');
                     }
                   }}>Продати за {Math.round(resultFigure.price * 0.75 * 42)} грн</button>
-                  <button className="btn-outline" onClick={() => {
+                  <button className="btn btn-outline open-btn" onClick={() => {
                     setShowResult(false); 
                     showErrorMessage('Фігурку залишено')
                   }}
