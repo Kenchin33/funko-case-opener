@@ -305,7 +305,7 @@ const CasePage = () => {
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
 
                 <div className="popup-buttons">
-                  <button className="btn btn-primary open-btn" onClick={async () => {
+                  <button className="btn-success" onClick={async () => {
                     console.log('Натиснули кнопку продати');
                     const salePrice = Math.round(resultFigure.price * 0.75 * 42);
                     const token = localStorage.getItem('token');
@@ -328,6 +328,10 @@ const CasePage = () => {
                         },
                         body: JSON.stringify({balance: newBalance}),
                       });
+                      if (!patchRes.ok) {
+                        const errData = await patchRes.json();
+                        throw new Error(errData.message || 'Не вдалося оновити баланс');
+                      }
 
                       setBalance(newBalance);
                       console.log('Баланс оновлено на:', newBalance);
@@ -338,10 +342,33 @@ const CasePage = () => {
                       showErrorMessage('Помилка під час продажу фігурки');
                     }
                   }}>Продати за {Math.round(resultFigure.price * 0.75 * 42)} грн</button>
-                  <button className="btn btn-outline open-btn" onClick={() => {
+                  <button className="btn btn-outline open-btn" onClick={async () => {
+                    try {
+                      const token = localStorage.getItem('token');
+                      const responce = await fetch('https://funko-case-opener.onrender.com/api/cases/inventory/add', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': 'Bearer ' + token,
+                        },
+                        body: JSON.stringify({
+                          figureId: resultFigure._id,
+                          caseId: id,
+                          caseName: caseData.name,
+                          price: resultFigure.price,
+                        }),
+                      });
+
+                      if(!responce.ok) {
+                        const err = await responce.json();
+                        throw new Error(err.message || 'Помилка збереження фігурки у інвентарі');
+                      }
+
                     setShowResult(false); 
-                    showErrorMessage('Фігурку залишено')
-                  }}
+                    showErrorMessage('Фігурка додана у інвентар')
+                  } catch (err) {
+                    showErrorMessage(err.message);
+                  }}}
                   > Залишити </button>
                 </div>
               </div>

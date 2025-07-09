@@ -76,7 +76,7 @@ router.post('/login', async (req, res) => {
 // Отримати інформацію про користувача за токеном
 router.get('/me', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select('-passwordHash').populate('openedFigures.figure');
+    const user = await User.findById(req.user.userId).select('-passwordHash').populate('inventory.figure');
     if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
 
     res.json(user);

@@ -159,4 +159,32 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+// Додати фігурку в інвентар користувача (при натисканні "залишити")
+router.post('/inventory/add', authMiddleware, async (req, res) => {
+  try {
+    const { figureId, caseId, caseName, price } = req.body;
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
+
+    // Перевірити, чи вже є ця фігурка в інвентарі (опційно)
+    const alreadyExists = user.inventory.some(item => item.figure.toString() === figureId);
+    if (alreadyExists) return res.status(400).json({ message: 'Фігурка вже в інвентарі' });
+
+    user.inventory.push({
+      figure: figureId,
+      caseId,
+      caseName,
+      price,
+      date: new Date(),
+    });
+
+    await user.save();
+
+    res.json({ message: 'Фігурка додана в інвентар', inventory: user.inventory });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Помилка сервера' });
+  }
+});
+
 module.exports = router;

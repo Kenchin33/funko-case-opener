@@ -51,15 +51,15 @@ const ProfilePage = () => {
         </p>
       </div>
 
-      {/* Історія відкритих фігурок */}
+      {/* Інвентар */}
       <div style={{ flexGrow: 1 }}>
-        <h3 style={{ textAlign: 'center', marginTop: '40px' }}>Історія відкритих фігурок:</h3>
+        <h3 style={{ textAlign: 'center', marginTop: '40px' }}>Інвентар:</h3>
 
-        {userData.openedFigures.length === 0 ? (
-          <p style={{ textAlign: 'center' }}>Фігурки ще не випадали.</p>
+        {userData.inventory.length === 0 ? (
+          <p style={{ textAlign: 'center' }}>Інвентар порожній.</p>
         ) : (
           <div className="won-figures-grid">
-            {userData.openedFigures.map((entry, index) => {
+            {userData.inventory.map((entry, index) => {
               const figure = entry.figure || {};
               return (
                 <div key={index} className="figure-card">
