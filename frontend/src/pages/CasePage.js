@@ -310,15 +310,19 @@ const CasePage = () => {
                     const token = localStorage.getItem('token');
                     try {
                       const res = await fetch('https://funko-case-opener.onrender.com/api/auth/me', {
-                        headers: {'Authorization': 'Bearer' + token},
+                        headers: { 'Authorization': 'Bearer' + token},
                       });
                       const user = await res.json();
-                      const newBalance = user.balance + salePrice;
+                      const currentBalance = Number(user.balance);
+                      if(isNaN(currentBalance)) {
+                        throw new Error('Баланс користувача некоректний');
+                      }
+                      const newBalance = currentBalance + salePrice;
                       await fetch(`https://funko-case-opener.onrender.com/api/auth/${user._id}/balance`, {
                         method: 'PATCH',
                         headers: {
                           'Content-Type': 'application/json',
-                          'Authorization': 'Bearer' + token
+                          'Authorization': 'Bearer' + token,
                         },
                         body: JSON.stringify({balance: newBalance}),
                       });
