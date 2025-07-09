@@ -320,7 +320,7 @@ const CasePage = () => {
                       }
 
                       setShowResult(false);
-                      showErrorMessage('Фігурка залишена у інвентарі');
+                      showErrorMessage('Фігурка додана у інвентар');
                     } catch (err) {
                       console.error('Помилка при додавані ✖: ', err);
                       showErrorMessage(err.message);
@@ -335,7 +335,7 @@ const CasePage = () => {
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
 
                 <div className="popup-buttons">
-                  <button className="btn-success" onClick={async () => {
+                  <button className="btn btn-inline open-btn" onClick={async () => {
                     console.log('Натиснули кнопку продати');
                     const salePrice = Math.round(resultFigure.price * 0.75 * 42);
                     const token = localStorage.getItem('token');
