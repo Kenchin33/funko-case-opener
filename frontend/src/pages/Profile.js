@@ -8,11 +8,15 @@ const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Стан для модалки "Забрати"
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedFigure, setSelectedFigure] = useState(null);
+  // Стан для показу повідомлення (success або error)
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [isError, setIsError] = useState(false); // false - зелений, true - червоний
 
-  // Поля форми "Забрати"
+  // Стан для модалки "Дія" (продати / забрати)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFigureIndex, setSelectedFigureIndex] = useState(null);
+
+  // Для заявки "Забрати"
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -36,6 +40,8 @@ const ProfilePage = () => {
       setUserData(res.data);
     } catch (err) {
       console.error('Помилка завантаження профілю:', err);
+      setErrorMessage('Помилка завантаження профілю');
+      setIsError(true);
     } finally {
       setLoading(false);
     }
@@ -50,115 +56,121 @@ const ProfilePage = () => {
     navigate('/');
   };
 
-  // Функція для продажу фігурки
-  // У handleSell:
-const handleSell = async (entryIndex) => {
-  if (!userData) return;
-  try {
-    const token = localStorage.getItem('token');
-    const figureEntry = userData.inventory[entryIndex];
-    if (!figureEntry) return;
-
-    const sellPrice = (figureEntry.price || 0) * 0.75 * 42;
-
-    // Видаляємо фігурку з інвентарю
-    const newInventory = [...userData.inventory];
-    newInventory.splice(entryIndex, 1);
-
-    // Формуємо trimmedInventory з мінімальними даними
-    const trimmedInventory = newInventory.map(item => ({
-      _id: item._id,
-      figure: item.figure._id,
-      caseName: item.caseName,
-      caseId: item.caseId,
-      price: item.price,
-      date: item.date,
-    }));
-
-    const newBalance = userData.balance + sellPrice;
-
-    await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`, 
-      { inventory: trimmedInventory }, 
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/balance`, 
-      { balance: newBalance },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    setUserData(prev => ({ ...prev, inventory: newInventory, balance: newBalance }));
-
-    alert(`Фігурку продано за ${Math.round(sellPrice)}₴`);
-  } catch (error) {
-    console.error('Помилка при продажі:', error);
-    alert('Помилка при продажі фігурки');
-  }
-};
-
-  // Відкриваємо модалку "Забрати"
-  const openPickupModal = (entryIndex) => {
-    setSelectedFigure(userData.inventory[entryIndex]);
+  // Відкриття модалки дій (продати або забрати)
+  const openModal = (index) => {
+    setSelectedFigureIndex(index);
     setFormData({
       fullName: '',
       phone: '',
       city: '',
       branchNumber: '',
     });
+    setErrorMessage(null);
+    setIsError(false);
     setModalOpen(true);
   };
 
-  // Закриваємо модалку
   const closeModal = () => {
     setModalOpen(false);
-    setSelectedFigure(null);
+    setSelectedFigureIndex(null);
+    setErrorMessage(null);
   };
 
-  // Обробка введення у форму
+  // Обробка зміни у формі заявки
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Підтвердження "Забрати"
+  // Продаж фігурки
+  const handleSell = async () => {
+    if (selectedFigureIndex === null || !userData) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const figureEntry = userData.inventory[selectedFigureIndex];
+      if (!figureEntry) return;
+
+      const sellPrice = (figureEntry.price || 0) * 0.75 * 42;
+
+      // Видаляємо фігурку з інвентарю
+      const newInventory = [...userData.inventory];
+      newInventory.splice(selectedFigureIndex, 1);
+
+      // Мінімальні дані для відправки
+      const trimmedInventory = newInventory.map(item => ({
+        _id: item._id,
+        figure: item.figure._id,
+        caseName: item.caseName,
+        caseId: item.caseId,
+        price: item.price,
+        date: item.date,
+      }));
+
+      const newBalance = userData.balance + sellPrice;
+
+      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`, 
+        { inventory: trimmedInventory }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/balance`, 
+        { balance: newBalance },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setUserData(prev => ({ ...prev, inventory: newInventory, balance: newBalance }));
+      setErrorMessage(`Фігурку продано за ${Math.round(sellPrice)}₴`);
+      setIsError(false);
+      closeModal();
+    } catch (error) {
+      console.error('Помилка при продажі:', error);
+      setErrorMessage('Помилка при продажі фігурки');
+      setIsError(true);
+    }
+  };
+
+  // Підтвердження заявки "Забрати"
   const handlePickupSubmit = async () => {
-    // Валідація (можна розширити)
     if (!formData.fullName || !formData.phone || !formData.city || !formData.branchNumber) {
-      alert('Будь ласка, заповніть усі поля');
+      setErrorMessage('Будь ласка, заповніть усі поля');
+      setIsError(true);
       return;
     }
 
     try {
       const token = localStorage.getItem('token');
 
-      // Логіка заявки на відправку:  
-      // Тут можна відправити заявку на бекенд (наприклад, в окремий ендпоінт для заявок)
-      // Поки що просто видалимо фігурку з інвентарю
+      if (selectedFigureIndex === null) return;
 
-      const idx = userData.inventory.findIndex(i => i._id === selectedFigure._id);
-      if (idx === -1) return;
+      const selectedFigure = userData.inventory[selectedFigureIndex];
+      if (!selectedFigure) return;
 
+      // Поки просто видалимо фігурку як "заявку"
       const newInventory = [...userData.inventory];
-      newInventory.splice(idx, 1);
+      newInventory.splice(selectedFigureIndex, 1);
 
-      // Оновлюємо інвентар
-      await axios.patch(`https://funko-case-opener.onrender.com/api/users/${userData._id}/inventory`,
+      await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`,
         { inventory: newInventory },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setUserData(prev => ({ ...prev, inventory: newInventory }));
-      alert('Заявка на відправку отримана');
-
+      setErrorMessage('Заявка на відправку отримана');
+      setIsError(false);
       closeModal();
     } catch (error) {
       console.error('Помилка при оформленні заявки:', error);
-      alert('Помилка при оформленні заявки');
+      setErrorMessage('Помилка при оформленні заявки');
+      setIsError(true);
     }
   };
 
   if (loading) return <div className="profile-page">Завантаження...</div>;
   if (!userData) return <div className="profile-page">Помилка завантаження даних</div>;
+
+  const selectedFigure = selectedFigureIndex !== null ? userData.inventory[selectedFigureIndex] : null;
+  const sellPrice = selectedFigure ? (selectedFigure.price || 0) * 0.75 * 42 : 0;
 
   return (
     <div className="profile-page" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -170,9 +182,23 @@ const handleSell = async (entryIndex) => {
           <h2>{userData.nickname}</h2>
         </div>
         <p className="balance-text" style={{ fontSize: '1.4rem', marginTop: '10px' }}>
-          Баланс: <strong>{userData.balance}$</strong>
+          Баланс: <strong>{userData.balance}₴</strong>
         </p>
       </div>
+
+      {/* Повідомлення про помилку або успіх */}
+      {errorMessage && (
+        <div
+          style={{
+            textAlign: 'center',
+            color: isError ? 'red' : 'green',
+            marginBottom: '20px',
+            fontWeight: 'bold',
+          }}
+        >
+          {errorMessage}
+        </div>
+      )}
 
       <div style={{ flexGrow: 1 }}>
         <h3 style={{ textAlign: 'center', marginTop: '40px' }}>Інвентар:</h3>
@@ -183,7 +209,6 @@ const handleSell = async (entryIndex) => {
           <div className="won-figures-grid">
             {userData.inventory.map((entry, index) => {
               const figure = entry.figure || {};
-              const sellPrice = (entry.price || 0) * 0.75 * 42;
               return (
                 <div key={entry._id || index} className="figure-card">
                   <img src={figure.image || '/unknown.png'} alt={figure.name || 'Невідома фігурка'} />
@@ -198,8 +223,9 @@ const handleSell = async (entryIndex) => {
                     )}
                   </p>
                   <div className="figure-buttons">
-                    <button onClick={() => handleSell(index)} className="btn btn-sell">Продати за {Math.round(sellPrice)}₴</button>
-                    <button onClick={() => openPickupModal(index)} className="btn btn-pickup">Забрати</button>
+                    <button onClick={() => openModal(index)} className="btn btn-primary">
+                      Продати / Забрати
+                    </button>
                   </div>
                 </div>
               );
@@ -212,45 +238,71 @@ const handleSell = async (entryIndex) => {
         Вийти з акаунту
       </button>
 
-      {/* Модалка Забрати */}
+      {/* Модалка з кнопками Продати та Забрати */}
       {modalOpen && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3>Забрати фігурку: {selectedFigure?.figure?.name || 'Невідома'}</h3>
-            <input
-              type="text"
-              name="fullName"
-              placeholder="ПІБ"
-              value={formData.fullName}
-              onChange={handleFormChange}
-              className="modal-input"
-            />
-            <input
-              type="text"
-              name="phone"
-              placeholder="Номер телефону"
-              value={formData.phone}
-              onChange={handleFormChange}
-              className="modal-input"
-            />
-            <input
-              type="text"
-              name="city"
-              placeholder="Місто"
-              value={formData.city}
-              onChange={handleFormChange}
-              className="modal-input"
-            />
-            <input
-              type="text"
-              name="branchNumber"
-              placeholder="№ відділення"
-              value={formData.branchNumber}
-              onChange={handleFormChange}
-              className="modal-input"
-            />
-            <button onClick={handlePickupSubmit} className="btn btn-pickup-submit">Забрати</button>
-            <button onClick={closeModal} className="btn btn-close-modal">Закрити</button>
+            <h3>Фігурка: {selectedFigure?.figure?.name || 'Невідома'}</h3>
+
+            {/* Якщо вибрана фігурка, показуємо кнопки */}
+            <div style={{ marginBottom: '20px' }}>
+              <button onClick={handleSell} className="btn btn-sell" style={{ marginRight: '10px' }}>
+                Продати за {Math.round(sellPrice)}₴
+              </button>
+              <button
+                onClick={() => {
+                  // Покажемо форму заявки при натисканні кнопки "Забрати"
+                  setErrorMessage(null);
+                  setIsError(false);
+                }}
+                className="btn btn-pickup"
+              >
+                Забрати (оформити заявку)
+              </button>
+            </div>
+
+            {/* Форма заявки "Забрати" */}
+            <div>
+              <input
+                type="text"
+                name="fullName"
+                placeholder="ПІБ"
+                value={formData.fullName}
+                onChange={handleFormChange}
+                className="modal-input"
+              />
+              <input
+                type="text"
+                name="phone"
+                placeholder="Номер телефону"
+                value={formData.phone}
+                onChange={handleFormChange}
+                className="modal-input"
+              />
+              <input
+                type="text"
+                name="city"
+                placeholder="Місто"
+                value={formData.city}
+                onChange={handleFormChange}
+                className="modal-input"
+              />
+              <input
+                type="text"
+                name="branchNumber"
+                placeholder="№ відділення"
+                value={formData.branchNumber}
+                onChange={handleFormChange}
+                className="modal-input"
+              />
+              <button onClick={handlePickupSubmit} className="btn btn-pickup-submit" style={{ marginTop: '10px' }}>
+                Підтвердити заявку
+              </button>
+            </div>
+
+            <button onClick={closeModal} className="btn btn-close-modal" style={{ marginTop: '15px' }}>
+              Закрити
+            </button>
           </div>
         </div>
       )}
