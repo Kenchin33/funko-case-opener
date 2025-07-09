@@ -3,7 +3,7 @@ const Case = require('../models/Case');
 const User = require('../models/User');
 const router = express.Router();
 
-const { authMiddleware } = require('./auth'); // імпорт, як об'єкт
+const { authMiddleware } = require('./auth');
 
 // Отримати всі кейси
 router.get('/', async (req, res) => {
@@ -40,7 +40,6 @@ router.get('/:id', async (req, res) => {
 // Додати новий кейс
 router.post('/', async (req, res) => {
   try {
-    console.log('req.body:', req.body);
     const { name, price, figures, category } = req.body;
     const newCase = new Case({ name, price, figures, category });
     await newCase.save();
@@ -50,7 +49,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Відкрити кейс (з авторизацією, зніманням коштів та оновленням балансу)
+// Відкрити кейс (випадкова фігурка за шансами)
 router.post('/:id/open', authMiddleware, async (req, res) => {
   try {
     const caseItem = await Case.findById(req.params.id).populate('figures');
@@ -60,20 +59,14 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
     if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
 
     if (user.balance < caseItem.price) {
-      return res.status(400).json({ message: 'Недостатньо коштів для відкриття кейсу' });
+      return res.status(400).json({ message: 'Недостатньо коштів на балансі' });
     }
 
     user.balance -= caseItem.price;
     await user.save();
 
-    const figures = caseItem.figures;
-    if (figures.length === 0) {
-      return res.status(400).json({ message: 'У кейсі немає фігурок' });
-    }
-
-    const presentRarities = new Set(figures.map(f => f.rarity));
-
-    const defaultChances = {
+    // Визначення випадкової фігурки з урахуванням шансів
+    const chances = caseItem.rarityChances || {
       Common: 60,
       Exclusive: 20,
       Epic: 10,
@@ -81,79 +74,55 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
       Grail: 2,
     };
 
-    const chancesFromCase = caseItem.rarityChances || {};
-    const chances = {};
-
-    for (const rarity of presentRarities) {
-      const value = chancesFromCase.get?.(rarity) || chancesFromCase[rarity] || defaultChances[rarity] || 0;
-      chances[rarity] = value;
+    // Підрахунок сумарного вагового коефіцієнта
+    const rarityWeights = {};
+    let totalWeight = 0;
+    for (const [rarity, chance] of Object.entries(chances)) {
+      rarityWeights[rarity] = chance;
+      totalWeight += chance;
     }
 
-    const totalChance = Object.values(chances).reduce((a, b) => a + b, 0);
-    if (totalChance === 0) {
-      return res.status(400).json({ message: 'Немає валідних шансів для доступних рідкостей' });
-    }
-
-    const weightedPool = [];
-
-    figures.forEach(fig => {
-      const weight = chances[fig.rarity] || 0;
-      for (let i = 0; i < weight; i++) {
-        weightedPool.push(fig);
+    // Вибираємо раритет
+    const rand = Math.random() * totalWeight;
+    let accum = 0;
+    let chosenRarity = 'Common';
+    for (const [rarity, weight] of Object.entries(rarityWeights)) {
+      accum += weight;
+      if (rand <= accum) {
+        chosenRarity = rarity;
+        break;
       }
-    });
-
-    if (weightedPool.length === 0) {
-      return res.status(400).json({ message: 'Не знайдено жодної фігурки з валідними шансами' });
     }
 
-    const randomIndex = Math.floor(Math.random() * weightedPool.length);
-    const selectedFigure = weightedPool[randomIndex];
-    user.openedFigures.push({
-      figure: selectedFigure._id,
-      caseName: caseItem.name,
-      caseId: caseItem._id,
-      price: selectedFigure.price,
-      date: new Date(),
-    });
+    // Фільтруємо фігурки по вибраному раритету
+    const possibleFigures = caseItem.figures.filter(f => f.rarity === chosenRarity);
+    if (possibleFigures.length === 0) {
+      // Якщо нема фігурок цього раритету, повертаємо випадкову
+      return res.json(caseItem.figures[Math.floor(Math.random() * caseItem.figures.length)]);
+    }
+
+    // Випадкова фігурка серед обраного раритету
+    const chosenFigure = possibleFigures[Math.floor(Math.random() * possibleFigures.length)];
+
+    res.json(chosenFigure);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Продати фігурку (додати баланс користувачу)
+router.post('/sell-figure', authMiddleware, async (req, res) => {
+  try {
+    const { figureId, salePrice } = req.body;
+    if (!figureId || !salePrice) return res.status(400).json({ message: 'Некоректні дані' });
+
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ message: 'Користувача не знайдено' });
+
+    user.balance += salePrice;
     await user.save();
 
-    res.json({
-      ...selectedFigure.toObject ? selectedFigure.toObject() : selectedFigure,
-      newBalance: user.balance,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Видалити кейс
-router.delete('/:id', async (req, res) => {
-  try {
-    const deletedCase = await Case.findByIdAndDelete(req.params.id);
-
-    if (!deletedCase) {
-      return res.status(404).json({ message: 'Кейс не знайдено' });
-    }
-
-    res.json({ message: 'Кейс успішно видалено', deletedCase });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Часткове оновлення кейса
-router.patch('/:id', async (req, res) => {
-  try {
-    const updates = req.body;
-    const updatedCase = await Case.findByIdAndUpdate(req.params.id, updates, { new: true });
-
-    if (!updatedCase) {
-      return res.status(404).json({ message: 'Кейс не знайдено' });
-    }
-
-    res.json(updatedCase);
+    res.json({ newBalance: user.balance });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

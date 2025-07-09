@@ -733,3 +733,24 @@
   border-left: 5px solid #ffd700;
   padding-left: 12px;
 }
+
+.success-message {
+  background-color: #004d00cc;
+  color: #90ee90;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #90ee90aa;
+  opacity: 1;
+  animation: fadeOut 1s ease forwards;
+  animation-delay: 2s;
+  user-select: none;
+  min-width: 280px;
+  text-align: center;
+  font-size: 1.1rem;
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+}

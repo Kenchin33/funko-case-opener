@@ -30,19 +30,12 @@ const CasePage = () => {
     Grail: 'gold',
   };
 
-  // Функція для показу повідомлення з анімацією і автоматичним приховуванням через 2 секунди
   const showErrorMessage = (msg) => {
-    if (errorTimeoutRef.current) {
-      clearTimeout(errorTimeoutRef.current);
-    }
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
     setErrorMsg(msg);
-    setShowError(false); // скидаємо, щоб перезапустити анімацію
-    setTimeout(() => {
-      setShowError(true);
-    }, 10);
-    errorTimeoutRef.current = setTimeout(() => {
-      setShowError(false);
-    }, 2010);
+    setShowError(false);
+    setTimeout(() => setShowError(true), 10);
+    errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
   };
 
   useEffect(() => {
@@ -60,7 +53,7 @@ const CasePage = () => {
     if (token) {
       setIsLoggedIn(true);
       fetch('https://funko-case-opener.onrender.com/api/auth/me', {
-        headers: { 'Authorization': 'Bearer ' + token },
+        headers: { Authorization: 'Bearer ' + token },
       })
         .then(res => {
           if (!res.ok) throw new Error('Не авторизований');
@@ -97,10 +90,7 @@ const CasePage = () => {
 
   const openCase = async () => {
     if (!caseData) return;
-    // Викидаємо помилку, якщо є
-    //setErrorMsg('');
-    //setShowError(false);
-    if (showError) setShowError(false); // сховаємо повідомлення, якщо було
+    if (showError) setShowError(false);
 
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
@@ -125,8 +115,8 @@ const CasePage = () => {
       const token = localStorage.getItem('token');
       const res = await fetch(`https://funko-case-opener.onrender.com/api/cases/${id}/open`, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token },
-      })
+        headers: { Authorization: 'Bearer ' + token },
+      });
 
       if (!res.ok) {
         const err = await res.json();
@@ -150,13 +140,17 @@ const CasePage = () => {
       );
 
       const totalPrefix = randomFigures.length;
-      const insertAt = window.innerWidth < 480 ? totalPrefix + centerIndex + 28 : window.innerWidth < 768 ? totalPrefix + centerIndex + 3 : totalPrefix + centerIndex;
+      const insertAt = window.innerWidth < 480
+        ? totalPrefix + centerIndex + 28
+        : window.innerWidth < 768
+        ? totalPrefix + centerIndex + 3
+        : totalPrefix + centerIndex;
+
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
-      console.log('Повний список фігурок у стрічці:', finalReel);
 
       const fragment = document.createDocumentFragment();
-      finalReel.forEach((fig) => {
+      finalReel.forEach(fig => {
         const img = document.createElement('img');
         img.src = fig.image;
         img.alt = fig.name;
@@ -175,8 +169,8 @@ const CasePage = () => {
         const elapsed = timestamp - start;
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
-
         const currentPosition = finalOffset * easeOut;
+
         reel.style.transform = `translateX(${currentPosition}px)`;
 
         if (progress < 1) {
@@ -185,7 +179,6 @@ const CasePage = () => {
           setResultFigure(data);
           setRolling(false);
           setShowResult(true);
-
           if (audioRef.current) audioRef.current.pause();
           if (winAudioRef.current) {
             winAudioRef.current.currentTime = 0;
@@ -311,7 +304,12 @@ const CasePage = () => {
           <audio ref={winAudioRef} src="/sounds/win-sound.mp3" />
 
           {showError && (
-            <div className="error-message" role="alert" aria-live="assertive" style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10000 }}>
+            <div
+              className="error-message"
+              role="alert"
+              aria-live="assertive"
+              style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10000 }}
+            >
               {errorMsg}
             </div>
           )}
