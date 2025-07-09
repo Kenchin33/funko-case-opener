@@ -305,36 +305,49 @@ const CasePage = () => {
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
 
                 <div className="popup-buttons">
-                  <button className="btn btn-primary open-btn" onClick={async () => {
-                    const salePrice = Math.round(resultFigure.price * 0.75 * 42);
-                    const token = localStorage.getItem('token');
-                    try {
-                      const res = await fetch('https://funko-case-opener.onrender.com/api/auth/me', {
-                        headers: { 'Authorization': 'Bearer ' + token},
-                      });
-                      const user = await res.json();
-                      const currentBalance = Number(user.balance);
-                      if(isNaN(currentBalance)) {
-                        throw new Error('Баланс користувача некоректний');
-                      }
-                      const newBalance = currentBalance + salePrice;
-                      await fetch(`https://funko-case-opener.onrender.com/api/auth/${user._id}/balance`, {
-                        method: 'PATCH',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': 'Bearer ' + token,
-                        },
-                        body: JSON.stringify({balance: newBalance}),
-                      });
+                <button
+  className="btn-success"
+  onClick={async () => {
+    const salePrice = Math.round(resultFigure.price * 0.75 * 42);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('https://funko-case-opener.onrender.com/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+      if (!res.ok) throw new Error('Не вдалося отримати дані користувача');
 
-                      setBalance(newBalance);
-                      setShowResult(false);
-                      showErrorMessage(`Фігурку продано за ${salePrice} грн`);
-                    } catch (err) {
-                      console.error('Помилка при продажу фігурки:', err);
-                      showErrorMessage('Помилка під час продажу фігурки');
-                    }
-                  }}>Продати за {Math.round(resultFigure.price * 0.75 * 42)} грн</button>
+      const user = await res.json();
+
+      const currentBalance = Number(user.balance);
+      if (isNaN(currentBalance)) throw new Error('Баланс користувача некоректний');
+
+      const newBalance = currentBalance + salePrice;
+
+      const patchRes = await fetch(`https://funko-case-opener.onrender.com/api/auth/${user._id}/balance`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ balance: newBalance }),
+      });
+      if (!patchRes.ok) {
+        const errData = await patchRes.json();
+        throw new Error(errData.message || 'Не вдалося оновити баланс');
+      }
+
+      setBalance(newBalance);
+      setShowResult(false);
+      showErrorMessage(`Фігурку продано за ${salePrice} грн`);
+    } catch (err) {
+      console.error('Помилка при продажу фігурки:', err);
+      showErrorMessage('Помилка під час продажу фігурки');
+    }
+  }}
+>
+  Продати за {Math.round(resultFigure.price * 0.75 * 42)} грн
+</button>
+
                   <button className="btn btn-outline open-btn" onClick={() => {
                     setShowResult(false); 
                     showErrorMessage('Фігурку залишено')
