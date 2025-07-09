@@ -150,7 +150,7 @@ const CasePage = () => {
       );
 
       const totalPrefix = randomFigures.length;
-      const insertAt = window.innerWidth < 480 ? totalPrefix + centerIndex - 2 : window.innerWidth < 768 ? totalPrefix + centerIndex + 2 : totalPrefix + centerIndex;
+      const insertAt = window.innerWidth < 480 ? totalPrefix + centerIndex + 4 : window.innerWidth < 768 ? totalPrefix + centerIndex + 3 : totalPrefix + centerIndex;
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
 
