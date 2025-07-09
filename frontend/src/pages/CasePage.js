@@ -98,7 +98,7 @@ const CasePage = () => {
   const openCase = async () => {
     if (!caseData) return;
   
-    if (showError) setShowError(false);
+    if (showError) setShowError(false); // сховаємо попередні повідомлення
   
     if (!isLoggedIn) {
       showErrorMessage('Будь ласка, увійдіть до системи, щоб відкрити кейс.');
@@ -138,36 +138,37 @@ const CasePage = () => {
       const reel = reelRef.current;
       const figures = caseData.figures;
   
-      // Ширина одного елемента стрічки залежно від ширини вікна
+      // Визначення ширини елемента та кількості видимих елементів стрічки
       const reelItemWidth = window.innerWidth < 480 ? 80 : window.innerWidth < 768 ? 100 : 140;
       const visibleCount = Math.floor(reel.parentElement.offsetWidth / reelItemWidth);
       const centerIndex = Math.floor(visibleCount / 2);
   
-      // Корекція центру для смартфонів (адаптивна під iPhone 13/14/16)
+      // Визначення корекції для мобільних пристроїв
       let correction = 0;
       if (window.innerWidth <= 480) {
-        correction = 2.5; // вертикальна орієнтація
-      } else if (window.innerWidth <= 844) {
-        correction = 1.5; // горизонтальна орієнтація / планшет
-      } else {
-        correction = 0; // десктоп
+        if (window.innerWidth > window.innerHeight) {
+          correction = -1; // Горизонтальна орієнтація
+        } else {
+          correction = -2; // Вертикальна орієнтація
+        }
       }
   
       const repeatCount = 50;
   
-      // Генеруємо довгу стрічку випадкових фігурок
+      // Заповнюємо випадковими фігурками стрічку
       const randomFigures = Array.from({ length: repeatCount }, () =>
         figures[Math.floor(Math.random() * figures.length)]
       );
   
-      // Визначаємо індекс вставки виграшної фігурки з корекцією
+      // Обчислюємо позицію вставки виграшної фігурки з урахуванням корекції
       const insertAt = repeatCount + centerIndex + correction;
   
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
   
-      // Стрічка: випадкові + виграшна + частина випадкових для плавності прокрутки
+      // Формуємо фінальний масив фігурок для стрічки
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
   
+      // Очищаємо та додаємо елементи у DOM
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {
         const img = document.createElement('img');
@@ -180,11 +181,12 @@ const CasePage = () => {
       reel.innerHTML = '';
       reel.appendChild(fragment);
   
-      // Обчислюємо остаточне зміщення, щоб центр стрічки співпав з виграшною
+      // Обчислюємо кінцевий зсув стрічки
       const finalOffset = -(insertAt - centerIndex) * reelItemWidth;
       const duration = 5000;
       const start = performance.now();
   
+      // Анімація прокрутки з easing
       const animate = (timestamp) => {
         const elapsed = timestamp - start;
         const progress = Math.min(elapsed / duration, 1);
