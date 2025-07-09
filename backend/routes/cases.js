@@ -53,6 +53,7 @@ router.post('/', async (req, res) => {
 // Відкрити кейс (з авторизацією, зніманням коштів та оновленням балансу)
 // Відкрити кейс (з авторизацією, зніманням коштів та оновленням балансу)
 router.post('/:id/open', authMiddleware, async (req, res) => {
+  console.log('🎯 Відкрито кейс', req.params.id);
   try {
     const caseItem = await Case.findById(req.params.id).populate('figures');
     if (!caseItem) return res.status(404).json({ message: 'Кейс не знайдено' });
