@@ -3,7 +3,7 @@ const Case = require('../models/Case');
 const User = require('../models/User');
 const router = express.Router();
 
-const { authMiddleware } = require('./auth');
+const { authMiddleware } = require('./auth'); // імпорт, як об'єкт
 
 // Отримати всі кейси
 router.get('/', async (req, res) => {
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Отримати кейс за ID
+// Отримати кейс за id з заповненням фігурок
 router.get('/:id', async (req, res) => {
   try {
     const caseItem = await Case.findById(req.params.id).populate('figures');
@@ -40,6 +40,7 @@ router.get('/:id', async (req, res) => {
 // Додати новий кейс
 router.post('/', async (req, res) => {
   try {
+    console.log('req.body:', req.body);
     const { name, price, figures, category } = req.body;
     const newCase = new Case({ name, price, figures, category });
     await newCase.save();
@@ -49,8 +50,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Відкрити кейс
+// Відкрити кейс (з авторизацією, зніманням коштів та оновленням балансу)
 router.post('/:id/open', authMiddleware, async (req, res) => {
+  console.log('🎯 Відкрито кейс', req.params.id);
   try {
     const caseItem = await Case.findById(req.params.id).populate('figures');
     if (!caseItem) return res.status(404).json({ message: 'Кейс не знайдено' });
@@ -67,25 +69,19 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
     await user.save();
 
     const figures = caseItem.figures;
-    if (!figures || figures.length === 0) {
+    if (figures.length === 0) {
       return res.status(400).json({ message: 'У кейсі немає фігурок' });
     }
 
+    // Розрахунок шансів
+    const presentRarities = new Set(figures.map(f => f.rarity));
     const defaultChances = { Common: 60, Exclusive: 20, Epic: 10, Legendary: 8, Grail: 2 };
     const chancesFromCase = caseItem.rarityChances || {};
-
-    // Підготовка шансів на основі наявних рідкостей
     const chances = {};
-    const rarities = new Set(figures.map(f => f.rarity?.trim()));
 
-    for (const rarity of rarities) {
-      if (rarity in chancesFromCase) {
-        chances[rarity] = chancesFromCase[rarity];
-      } else if (rarity in defaultChances) {
-        chances[rarity] = defaultChances[rarity];
-      } else {
-        chances[rarity] = 0;
-      }
+    for (const rarity of presentRarities) {
+      const value = chancesFromCase.hasOwnProperty(rarity) ? chancesFromCase[rarity] : defaultChances[rarity] ?? 0;
+      chances[rarity] = value;
     }
 
     const totalChance = Object.values(chances).reduce((a, b) => a + b, 0);
@@ -93,32 +89,38 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Немає валідних шансів' });
     }
 
-    // Формування пулу фігурок на основі шансів
     const weightedPool = [];
-
-    for (const fig of figures) {
+    figures.forEach(fig => {
       const rarity = fig.rarity?.trim();
       const weight = chances[rarity] ?? 0;
-
+      console.log(`🔍 Фігурка: ${fig.name}, Рідкість: ${rarity}, Шанс: ${weight}`);
       if (weight > 0) {
         for (let i = 0; i < weight; i++) {
           weightedPool.push(fig);
         }
       }
-    }
+    });
+
+    const rarityCount = weightedPool.reduce((acc, fig) => {
+      acc[fig.rarity] = (acc[fig.rarity] || 0) + 1;
+      return acc;
+    }, {});
+    console.log('📦 Рідкості у фінальному пулі:', rarityCount);
 
     if (weightedPool.length === 0) {
       return res.status(400).json({ message: 'Немає фігурок з валідними шансами' });
     }
 
-    const selectedFigure = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+    const randomIndex = Math.floor(Math.random() * weightedPool.length);
+    const selectedFigure = weightedPool[randomIndex];
 
+    // ❌ НЕ додаємо в user, просто повертаємо фігуру
     res.json({
       ...selectedFigure.toObject(),
       newBalance: user.balance,
     });
   } catch (err) {
-    console.error('❌ Помилка відкриття кейсу:', err);
+    console.error('Помилка відкриття кейсу:', err);
     res.status(500).json({ message: 'Помилка сервера при відкритті кейсу' });
   }
 });
@@ -127,25 +129,34 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const deletedCase = await Case.findByIdAndDelete(req.params.id);
-    if (!deletedCase) return res.status(404).json({ message: 'Кейс не знайдено' });
+
+    if (!deletedCase) {
+      return res.status(404).json({ message: 'Кейс не знайдено' });
+    }
+
     res.json({ message: 'Кейс успішно видалено', deletedCase });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Оновити кейс
+// Часткове оновлення кейса
 router.patch('/:id', async (req, res) => {
   try {
-    const updatedCase = await Case.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedCase) return res.status(404).json({ message: 'Кейс не знайдено' });
+    const updates = req.body;
+    const updatedCase = await Case.findByIdAndUpdate(req.params.id, updates, { new: true });
+
+    if (!updatedCase) {
+      return res.status(404).json({ message: 'Кейс не знайдено' });
+    }
+
     res.json(updatedCase);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Додати фігурку в інвентар
+// Додати фігурку в інвентар користувача (при натисканні "залишити")
 router.post('/inventory/add', authMiddleware, async (req, res) => {
   try {
     const { figureId, caseId, caseName, price } = req.body;
