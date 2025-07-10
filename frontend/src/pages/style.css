@@ -1235,11 +1235,6 @@
 
 /* Пунктирна лінія по діагоналі */
 .dashed-line {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 424.26px; /* Довжина діагоналі квадрата 300x300 */
-  height: 2px;
   background-image: repeating-linear-gradient(
     45deg,
     #4cb7ff,
@@ -1247,12 +1242,8 @@
     transparent 4px,
     transparent 8px
   );
-  transform-origin: left bottom;
-  transform: rotate(45deg);
-  animation: dashmove 3s linear infinite;
 }
 
-/* Анімація руху пунктирної лінії */
 @keyframes dashmove {
   from {
     background-position: 0 0;
@@ -1261,6 +1252,7 @@
     background-position: 16px 16px;
   }
 }
+
 
 /* Літак */
 .plane {
@@ -1275,7 +1267,6 @@
 .plane img {
   width: 60px;
   height: 60px;
-  display: block;
 }
 
 .coefficient-label {
