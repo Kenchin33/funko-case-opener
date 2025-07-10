@@ -15,11 +15,11 @@ const CrashGame = () => {
 
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [coefficient, setCoefficient] = useState(1.0);
-  const [animationProgress, setAnimationProgress] = useState(0); // 0-1 прогрес анімації руху літака по діагоналі
+  const [animationProgress, setAnimationProgress] = useState(0); // 0..1, позиція літака
   const [gameOver, setGameOver] = useState(false);
   const [hasClaimed, setHasClaimed] = useState(false);
 
-  const maxDuration = 30000; // 30s
+  const maxDuration = 30000; // 30 секунд
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
 
@@ -33,7 +33,6 @@ const CrashGame = () => {
 
   const animate = useCallback(() => {
     if (!startTime) return;
-
     requestRef.current = requestAnimationFrame(animate);
     const elapsed = Date.now() - startTime;
 
@@ -42,12 +41,12 @@ const CrashGame = () => {
       return;
     }
 
+    // Коєфіцієнт росте
     const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
     setCoefficient(newCoef);
 
-    // Прогрес анімації руху літака по діагоналі (0 до 0.5 — рух, 0.5-1 — літак зафіксований в центрі)
-    // Рух до центру займає половину часу гри
-    const progress = Math.min(elapsed / (maxDuration / 2), 1);
+    // Позиція літака від 0 до 1, де 0 — низ ліворуч, 0.5 — центр, 1 — правий верхній (для виліту)
+    const progress = Math.min(elapsed / maxDuration, 1);
     setAnimationProgress(progress);
   }, [startTime, endGame]);
 
@@ -126,66 +125,57 @@ const CrashGame = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [isGameRunning, startTime, animate]);
 
-  // Обчислення позиції літака:
-  // maxPositionX, maxPositionY - розміри блоку анімації
-  // Літак рухається від (0%, 0%) (нижній лівий кут) до (50%, 50%) (центр блоку)
-  // Після centerProgress літак залишається в центрі, а коефіцієнт росте
-  // Коли гра закінчена, літак вилітає за верхній правий кут (за межі)
+  // Вираховуємо позицію літака по діагоналі (по відсотках від розмірів блоку)
+  // Літак летить від bottom-left (0%, 0%) до center (50%, 50%) на progress 0.5,
+  // далі залишаємо його в центрі до кінця гри,
+  // після закінчення (progress >= 1) - літак вилітає по діагоналі вправо вгору за межі блоку
+  const getPlaneStyle = () => {
+    const containerSize = 300; // px (висота блоку)
+    // Максимальна відстань виліту за межі (від центру)
+    const exitDistance = 150;
 
-  // Для відображення положення літака:
-  // bottom: для вертикального позиціювання (0 - низ, 100% - верх)
-  // left: для горизонтального позиціювання (0 - ліво, 100% - право)
-
-  //const maxAnimationSize = 300; // висота блоку, треба витягти з CSS або задати фіксовано
-
-  // Параметри позиціонування літака в пікселях:
-  //const blockWidthPercent = 100; // ширина блоку 100%
-  const blockHeightPx = 300; // висота блоку 300px
-
-  // Позиції у відсотках (0-50%) і пікселях (0-150px) для руху до центру:
-  // При прогресі від 0 до 1 літак рухається по діагоналі (x, y)
-  // Але обмежимо, що рух по діагоналі від 0 до 0.5, далі літак "застигає" в центрі (50% ширини, 150px висоти)
-
-  // Параметри для "вилітання" літака за межі після закінчення:
-  // Вилітання анімоване лінійно по горизонталі і вертикалі за межі блоку
-
-  // Відповідно до станів:
-  // якщо isGameRunning === false і hasClaimed або gameOver === true — запускаємо вилітання
-
-  // Обчислюємо позиції:
-  let planeLeftPercent;
-  let planeBottomPx;
-
-  if (isGameRunning) {
-    if (animationProgress <= 1) {
-      // Рух по діагоналі від 0 до 50% по ліву, від 0 до 150px по низу
-      // Якщо animationProgress <= 0.5 рух до центру
-      const moveProgress = Math.min(animationProgress * 2, 1); // шкалуємо 0-0.5 до 0-1
-      planeLeftPercent = moveProgress * 50;
-      planeBottomPx = moveProgress * (blockHeightPx / 2);
+    if (animationProgress < 0.5) {
+      // Рух до центру
+      const progress = animationProgress / 0.5; // 0..1
+      const leftPercent = progress * 50; // від 0 до 50%
+      const bottomPercent = progress * 50; // від 0 до 50%
+      return {
+        position: 'absolute',
+        left: `${leftPercent}%`,
+        bottom: `${bottomPercent}%`,
+        transform: 'translate(-50%, 50%)',
+        transition: 'none',
+      };
+    } else if (animationProgress < 1) {
+      // Літак стоїть у центрі (50%, 50%)
+      return {
+        position: 'absolute',
+        left: `50%`,
+        bottom: `50%`,
+        transform: 'translate(-50%, 50%)',
+        transition: 'none',
+      };
     } else {
-      // Уже в центрі
-      planeLeftPercent = 50;
-      planeBottomPx = blockHeightPx / 2;
+      // Виліт літака за межі верхнього правого кута
+      const exitProgress = (animationProgress - 1); // > 0
+      const leftPx = 50 / 100 * containerSize + exitProgress * exitDistance;
+      const bottomPx = 50 / 100 * containerSize + exitProgress * exitDistance;
+      return {
+        position: 'absolute',
+        left: `${leftPx}px`,
+        bottom: `${bottomPx}px`,
+        transform: 'translate(-50%, 50%)',
+        transition: 'none',
+      };
     }
-  } else if (gameOver || hasClaimed) {
-    // Вилітання за межі блоку (починаючи від центру)
-    // Для плавного вилітання зробимо анімацію на 2 секунди з прогресом часу з моменту закінчення гри
+  };
 
-    const endElapsed = startTime ? (Date.now() - (startTime + maxDuration)) : 0;
-    const exitProgress = Math.min(endElapsed / 2000, 1);
-
-    // Літак вилітає вгору вправо за межі блоку (100% + 50%) і висота блоку + 100px
-    planeLeftPercent = 50 + exitProgress * 50 + exitProgress * 50; // 50% + 50% + ще 50% для більшого виліту
-    planeBottomPx = blockHeightPx / 2 + exitProgress * 150; // вверх на 150px
-  } else {
-    // Початкова позиція - нижній лівий кут
-    planeLeftPercent = 0;
-    planeBottomPx = 0;
-  }
+  // Анімована траєкторія - хвиля, що рухається вічно
+  // Це SVG з анімацією шифрується CSS keyframes
+  // Додаємо окремий блок над літаком з цією траєкторією
 
   return (
-    <div className="crash-game-container" style={{ height: '600px' /* щоб було видно */, width: '100%' }}>
+    <div className="crash-game-container">
       <div className="crash-header">
         <button className="btn btn-outline back-button" onClick={() => navigate('/')}>
           ← Назад
@@ -203,8 +193,12 @@ const CrashGame = () => {
             </Link>
           ) : (
             <>
-              <Link to="/register" className="btn btn-outline">Реєстрація</Link>
-              <Link to="/login" className="btn btn-primary">Авторизація</Link>
+              <Link to="/register" className="btn btn-outline">
+                Реєстрація
+              </Link>
+              <Link to="/login" className="btn btn-primary">
+                Авторизація
+              </Link>
             </>
           )}
         </div>
@@ -216,8 +210,9 @@ const CrashGame = () => {
 
       {isLoggedIn && (
         <div className="crash-game-main" style={{ display: 'flex', gap: '20px' }}>
-          <div className="inventory-panel" style={{ flexBasis: '30%', overflowY: 'auto', maxHeight: '500px' }}>
-            <div className="inventory-header">
+          {/* Відновлений стиль інвентаря */}
+          <div className="inventory-panel" style={{ flex: '0 0 300px', border: '1px solid #ccc', padding: '10px', borderRadius: '8px', backgroundColor: '#222', color: 'white', height: '380px', overflowY: 'auto' }}>
+            <div className="inventory-header" style={{ marginBottom: '10px' }}>
               <h3>Ваш інвентар</h3>
               <div className="bet-sum">
                 Сума ставки: <strong>{Math.round(totalBetAmount)}₴</strong>
@@ -235,10 +230,15 @@ const CrashGame = () => {
                       key={index}
                       className={`figure-card ${selected ? 'selected' : ''}`}
                       style={{
-                        border: selected ? '2px solid #ff4081' : '1px solid #ccc',
-                        padding: '8px',
-                        borderRadius: '8px',
+                        border: selected ? '2px solid #4cb7ff' : '1px solid #555',
+                        borderRadius: '5px',
+                        padding: '6px',
                         cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        backgroundColor: selected ? '#1a2a3a' : '#111',
+                        color: 'white',
                       }}
                     >
                       <input
@@ -247,10 +247,12 @@ const CrashGame = () => {
                         checked={selected}
                         onChange={() => toggleSelectFigure(index)}
                       />
-                      <img src={figure.image} alt={figure.name} style={{ width: '100%', borderRadius: '6px' }} />
-                      <p>{figure.name}</p>
-                      <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
-                      <p>{entry.price}$</p>
+                      <img src={figure.image} alt={figure.name} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                      <p style={{ margin: '6px 0 0', fontWeight: '600' }}>{figure.name}</p>
+                      <p className={`rarity ${figure.rarity}`} style={{ fontSize: '0.8em', color: '#aaa' }}>
+                        {figure.rarity}
+                      </p>
+                      <p style={{ margin: '4px 0 0' }}>{entry.price}$</p>
                     </label>
                   );
                 })}
@@ -258,80 +260,63 @@ const CrashGame = () => {
             )}
           </div>
 
-          <div
-            className="game-field"
-            style={{
-              flexBasis: '70%',
-              position: 'relative',
-              height: blockHeightPx,
-              border: '1px solid #ccc',
-              overflow: 'hidden',
-              background: '#000814',
-              borderRadius: '12px',
-              color: 'white',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '20px',
-            }}
-          >
-            <h3>Ігрове поле</h3>
-
+          {/* Ігрове поле */}
+          <div className="game-field" style={{ flex: '1', position: 'relative', border: '1px solid #ccc', borderRadius: '8px', height: '380px', backgroundColor: '#111', overflow: 'hidden' }}>
+            <h3 style={{ color: 'white', padding: '8px', textAlign: 'center' }}>Ігрове поле</h3>
             {!isGameRunning && !gameOver && (
-              <button
-                onClick={handlePlaceBet}
-                className="btn btn-primary"
-                disabled={selectedIndexes.size === 0}
-                style={{ marginBottom: '15px' }}
-              >
+              <button onClick={handlePlaceBet} className="btn btn-primary" disabled={selectedIndexes.size === 0} style={{ margin: '10px auto', display: 'block' }}>
                 Поставити обрані фігурки
               </button>
             )}
 
-            {error && (
-              <p className="error-message" style={{ marginBottom: '15px', color: '#ff4c60' }}>
-                {error}
-              </p>
-            )}
+            {error && <p className="error-message">{error}</p>}
 
             {isGameRunning && (
               <>
-                <div
-                  className="plane-wrapper"
-                  style={{
-                    position: 'absolute',
-                    bottom: planeBottomPx,
-                    left: `${planeLeftPercent}%`,
-                    transform: 'translate(-50%, 0)',
-                    transition: 'bottom 0.1s linear, left 0.1s linear',
-                    pointerEvents: 'none',
-                  }}
+                {/* Траєкторія літака */}
+                <svg
+                  width="100%"
+                  height="60"
+                  style={{ position: 'absolute', bottom: '80px', left: 0, overflow: 'visible', userSelect: 'none' }}
+                  viewBox="0 0 300 60"
+                  preserveAspectRatio="none"
                 >
+                  <path
+                    fill="none"
+                    stroke="#4cb7ff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeDasharray="15 10"
+                    style={{ animation: 'dashmove 3s linear infinite' }}
+                    d="M0 50 Q50 10 100 50 T200 50 T300 50"
+                  />
+                </svg>
+
+                {/* Літак */}
+                <div style={getPlaneStyle()}>
                   <img src="/images/plane.png" alt="plane" style={{ width: '60px', height: '60px' }} />
-                  <div
-                    style={{
-                      color: 'white',
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      marginTop: '4px',
-                      textShadow: '0 0 5px #ff4081',
-                    }}
-                  >
-                    {coefficient}x
-                  </div>
+                  <div style={{ color: 'white', fontWeight: 'bold', textAlign: 'center', marginTop: '4px' }}>{coefficient}x</div>
                 </div>
-                <button onClick={handleClaim} className="btn btn-outline" style={{ marginTop: 'auto' }}>
+
+                <button onClick={handleClaim} className="btn btn-outline" style={{ marginTop: '20px', position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}>
                   Забрати виграш
                 </button>
               </>
             )}
 
-            {(gameOver || hasClaimed) && (
-              <p style={{ color: 'red', marginTop: '20px', fontWeight: '700' }}>💥 Ви не встигли забрати виграш!</p>
+            {gameOver && (
+              <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>💥 Ви не встигли забрати виграш!</p>
             )}
           </div>
         </div>
       )}
+      <style>{`
+        @keyframes dashmove {
+          to {
+            stroke-dashoffset: -25;
+          }
+        }
+      `}</style>
     </div>
   );
 };
