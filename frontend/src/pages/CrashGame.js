@@ -44,12 +44,16 @@ const CrashGame = () => {
 
   // Визначення хмаринок з позицією по top і left, швидкістю анімації та масштабом
   const clouds = [
-    { top: '10%', animationDuration: '6s', animationDelay: '0s', scale: 1, left: '10%' },
-    { top: '25%', animationDuration: '5s', animationDelay: '0.2s', scale: 0.4, left: '25%' },
+    { top: '10%', animationDuration: '8s', animationDelay: '0s', scale: 1, left: '10%' },
+    { top: '20%', animationDuration: '8s', animationDelay: '0.2s', scale: 0.4, left: '25%' },
     { top: '30%', animationDuration: '8s', animationDelay: '0.2s', scale: 0.8, left: '40%' },
-    { top: '50%', animationDuration: '7s', animationDelay: '0.1s', scale: 1.2, left: '70%' },
-    { top: '70%', animationDuration: '9s', animationDelay: '0.3s', scale: 0.9, left: '90%' },
-    { top: '90%', animationDuration: '9s', animationDelay: '0.3s', scale: 0.6, left: '50%' },
+    { top: '40%', animationDuration: '8s', animationDelay: '0.2s', scale: 0.4, left: '35%' },
+    { top: '50%', animationDuration: '8s', animationDelay: '0.1s', scale: 1.2, left: '75%' },
+    { top: '60%', animationDuration: '8s', animationDelay: '0.2s', scale: 0.5, left: '65%' },
+    { top: '70%', animationDuration: '8s', animationDelay: '0.3s', scale: 0.9, left: '95%' },
+    { top: '80%', animationDuration: '8s', animationDelay: '0.2s', scale: 0.4, left: '85%' },
+    { top: '90%', animationDuration: '8s', animationDelay: '0.3s', scale: 0.6, left: '58%' },
+    { top: '100%', animationDuration: '8s', animationDelay: '0.2s', scale: 1, left: '50%' },
   ];
 
   useEffect(() => {
