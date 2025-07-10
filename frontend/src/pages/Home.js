@@ -103,24 +103,23 @@ const Home = () => {
                       </div>
                     </Link>
                   ))}
-
-                  {/* Новий блок для літачка */}
-                  <Link to="/crash" className="case-card" style={{ cursor: 'pointer' }}>
-                    <img
-                      src="https://i.imgur.com/7v8JkAu.png"  // Можеш замінити на власне зображення літачка
-                      alt="Грати в Літачка"
-                      className="case-image"
-                    />
-                    <div className="case-info">
-                      <h3>Грати в Літачка</h3>
-                      <p>Спробуй виграти фігурки!</p>
-                    </div>
-                  </Link>
                 </div>
               </section>
             );
           })
         )}
+
+        <Link to="/crash" className="case-card" style={{ cursor: 'pointer' }}>
+          <img
+            src="https://i.imgur.com/7v8JkAu.png"  // Можеш замінити на власне зображення літачка
+            alt="Грати в Літачка"
+            className="case-image"
+            />
+              <div className="case-info">
+                <h3>Грати в Літачка</h3>
+                <p>Спробуй виграти фігурки!</p>
+              </div>
+        </Link>
       </main>
     </div>
   );

@@ -1095,3 +1095,39 @@
   position: relative;
   padding: 0 20px; /* щоб кнопки не прилипали до країв */
 }
+
+.inventory-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.figure-card {
+  width: 120px;
+  background-color: #222;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  color: white;
+  transition: border-color 0.3s ease;
+}
+
+.figure-card.selected {
+  border-color: orange;
+  box-shadow: 0 0 8px orange;
+}
+
+.figure-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+}
+
+.error-message {
+  color: #ff4d4d;
+  margin-top: 10px;
+  text-align: center;
+}
