@@ -163,10 +163,17 @@ const CrashGame = () => {
   const containerSize = Math.min(fieldSize.width, fieldSize.height); // квадрат
 
   // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
-  const getPlanePosition = () => {
+  // Змінимо функцію getPlanePosition так:
+const getPlanePosition = () => {
     const { width, height } = fieldSize;
   
-    if (!isGameRunning && !gameOver) return { x: 0, y: height };
+    // Якщо поле ще не проміряне, ставимо в 0,0
+    if (width === 0 || height === 0) return { x: 0, y: 0 };
+  
+    if (!isGameRunning && !gameOver && !hasClaimed) {
+      // Літак стоїть в лівому нижньому куті, з урахуванням transform translate(-50%, -50%)
+      return { x: 0, y: height };
+    }
   
     // Координати:
     // старт — нижній лівий (0, height)
