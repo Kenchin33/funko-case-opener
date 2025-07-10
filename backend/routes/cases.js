@@ -23,11 +23,12 @@ router.get('/:id', async (req, res) => {
 
     if (!caseItem.rarityChances) {
       caseItem.rarityChances = {
-        Common: 60,
+        Common: 58,
         Exclusive: 20,
         Epic: 10,
         Legendary: 8,
         Grail: 2,
+        Signed: 2,
       };
     }
 
@@ -76,7 +77,7 @@ router.post('/:id/open', authMiddleware, async (req, res) => {
       ? Object.fromEntries(caseItem.rarityChances.entries())
       : (caseItem.rarityChances || {});
 
-    const defaultChances = { Common: 60, Exclusive: 20, Epic: 10, Legendary: 8, Grail: 2 };
+    const defaultChances = { Common: 58, Exclusive: 20, Epic: 10, Legendary: 8, Grail: 2, Signed: 2 };
     const presentRarities = new Set(figures.map(f => f.rarity?.trim()));
 
     const chances = {};

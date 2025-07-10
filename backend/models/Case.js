@@ -10,11 +10,12 @@ const caseSchema = new mongoose.Schema({
     type: Map,
     of: Number,
     default: {
-      Common: 60,
+      Common: 58,
       Exclusive: 20,
       Epic: 10,
       Legendary: 8,
       Grail: 2,
+      Signed: 2,
     },
   },
 });
