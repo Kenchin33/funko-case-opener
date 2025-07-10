@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
@@ -25,26 +25,22 @@ const CrashGame = () => {
   const gameFieldRef = useRef();
   const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
 
-  // Генеруємо масив хмаринок один раз при першому рендері:
-  const clouds = useMemo(() => 
-    new Array(10).fill(null).map(() => ({
-      top: `${Math.random() * 80 + 10}%`,  // від 10% до 90%
-      left: `${Math.random() * 100}%`,      // від 0% до 100%
-      // Помножимо час анімації на 0.02, щоб пришвидшити хмаринки в ~50 разів
-      animationDuration: `${(Math.random() * 1.5 + 1) * 0.02}s`,
-      animationDelay: `${Math.random()}s`,
-      scale: 0.7 + Math.random() * 0.6,
-    })), []
-  );
+  // Визначення хмаринок з позицією по top і left, швидкістю анімації та масштабом
+  const clouds = [
+    { top: '10%', animationDuration: '0.06s', animationDelay: '0s', scale: 1, left: '10%' },
+    { top: '30%', animationDuration: '0.08s', animationDelay: '0.2s', scale: 0.8, left: '40%' },
+    { top: '50%', animationDuration: '0.07s', animationDelay: '0.1s', scale: 1.2, left: '70%' },
+    { top: '70%', animationDuration: '0.09s', animationDelay: '0.3s', scale: 0.9, left: '90%' },
+  ];
 
   useEffect(() => {
     const updateFieldSize = () => {
       if (gameFieldRef.current) {
         const { offsetWidth } = gameFieldRef.current;
-        setFieldSize({ width: offsetWidth, height: offsetWidth }); // квадрат
+        setFieldSize({ width: offsetWidth, height: offsetWidth });
       }
     };
-  
+
     updateFieldSize();
     window.addEventListener('resize', updateFieldSize);
     return () => window.removeEventListener('resize', updateFieldSize);
@@ -67,25 +63,26 @@ const CrashGame = () => {
         setHasClaimed(false);
         setError(null);
       }, 2000);
+
       return () => clearTimeout(timer);
     }
   }, [gameOver]);
 
   const animate = useCallback(() => {
     if (!startTime) return;
-  
+
     requestRef.current = requestAnimationFrame(animate);
     const elapsed = Date.now() - startTime;
-  
+
     if (elapsed >= maxDuration) {
       endGame();
       return;
     }
-  
+
     const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
     setCoefficient(newCoef);
     setAnimationY(elapsed / 10);
-  
+
     if (newCoef >= 3) {
       endGame();
     }
@@ -120,10 +117,12 @@ const CrashGame = () => {
 
   const handlePlaceBet = () => {
     if (isGameRunning || gameOver || hasClaimed) return;
+
     if (selectedIndexes.size === 0) {
       setError('Оберіть хоча б одну фігурку для ставки');
       return;
     }
+
     setError(null);
     startGame();
   };
@@ -171,6 +170,7 @@ const CrashGame = () => {
     if (isGameRunning && startTime !== null) {
       requestRef.current = requestAnimationFrame(animate);
     }
+
     return () => cancelAnimationFrame(requestRef.current);
   }, [isGameRunning, startTime, animate]);
 
@@ -178,11 +178,15 @@ const CrashGame = () => {
 
   const getPlanePosition = () => {
     const { width, height } = fieldSize;
+
     if (width === 0 || height === 0) return { x: 0, y: 0 };
+
     if (!isGameRunning && !gameOver && !hasClaimed) {
       return { x: 0, y: containerSize - 60 };
     }
+
     const startToCenterEndCoef = 1.7;
+
     if (coefficient < startToCenterEndCoef) {
       const progress = (coefficient - 1) / (startToCenterEndCoef - 1);
       return {
@@ -197,8 +201,8 @@ const CrashGame = () => {
     } else if (coefficient < 3) {
       const progress = (coefficient - 2.9) / (3 - 2.9);
       return {
-        x: width / 2 + progress * (width / 2) + progress * 100,
-        y: height / 2 - progress * (height / 2) - progress * 100 - 60,
+        x: (width / 2) + progress * (width / 2) + progress * 100,
+        y: (height / 2) - progress * (height / 2) - progress * 100 - 60,
       };
     } else {
       return {
@@ -222,7 +226,7 @@ const CrashGame = () => {
               to="/profile"
               className="profile-icon"
               title="Профіль"
-              style={{ display: 'flex', alignItems: 'flex-end', gap: 8, color: 'white', fontWeight: '600' }}
+              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
             >
               <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
               <FaUserCircle size={36} />
@@ -245,7 +249,7 @@ const CrashGame = () => {
       </h2>
 
       {isLoggedIn && (
-        <div className="crash-game-main" style={{ display: 'flex', gap: 20 }}>
+        <div className="crash-game-main" style={{ display: 'flex', gap: '20px' }}>
           {/* Інвентар */}
           <div className="inventory-panel">
             <div className="inventory-header">
@@ -290,26 +294,6 @@ const CrashGame = () => {
               overflow: 'hidden',
             }}
           >
-            {/* Хмаринки */}
-            {clouds.map((cloud, index) => (
-              <div
-                key={index}
-                className="cloud"
-                style={{
-                  position: 'absolute',
-                  top: cloud.top,
-                  left: cloud.left,
-                  animationName: 'moveCloud', 
-                  animationDuration: cloud.animationDuration,
-                  animationDelay: cloud.animationDelay,
-                  transform: `scale(${cloud.scale})`,
-                  opacity: 0.6,
-                  pointerEvents: 'none',
-                  userSelect: 'none',
-                }}
-              />
-            ))}
-
             <h3 style={{ textAlign: 'center' }}>Ігрове поле</h3>
 
             {(isGameRunning || gameOver || hasClaimed) && (
@@ -319,7 +303,7 @@ const CrashGame = () => {
                   textAlign: 'center',
                   fontWeight: 'bold',
                   fontSize: '1.5rem',
-                  marginBottom: 10,
+                  marginBottom: '10px',
                   color: hasClaimed ? 'limegreen' : gameOver ? 'red' : 'white',
                   userSelect: 'none',
                 }}
@@ -341,6 +325,36 @@ const CrashGame = () => {
 
             {error && <p className="error-message">{error}</p>}
 
+            {/* Хмаринки */}
+            <div
+              className="clouds-container"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: containerSize,
+                height: containerSize,
+                pointerEvents: 'none',
+                overflow: 'visible',
+                zIndex: 50,
+              }}
+            >
+              {clouds.map((cloud, index) => (
+                <div
+                  key={index}
+                  className="cloud"
+                  style={{
+                    position: 'absolute',
+                    top: cloud.top,
+                    left: cloud.left,
+                    animationDuration: cloud.animationDuration,
+                    animationDelay: cloud.animationDelay,
+                    transform: `scale(${cloud.scale})`,
+                  }}
+                />
+              ))}
+            </div>
+
             {/* Постійно відображається поле з літаком */}
             <div
               className="animation-container"
@@ -358,14 +372,24 @@ const CrashGame = () => {
 
               {/* Статичний літак до старту гри */}
               {!isGameRunning && !gameOver && (
-                <div className="plane" style={{ transform: `translate(0px, ${containerSize - 60}px)` }}>
+                <div
+                  className="plane"
+                  style={{
+                    transform: `translate(0px, ${containerSize - 60}px)`,
+                  }}
+                >
                   <img src="/images/plane.png" alt="plane" />
                 </div>
               )}
 
               {/* Анімований літак під час гри */}
               {isGameRunning && (
-                <div className="plane" style={{ transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)` }}>
+                <div
+                  className="plane"
+                  style={{
+                    transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
+                  }}
+                >
                   <img src="/images/plane.png" alt="plane" />
                 </div>
               )}
@@ -376,14 +400,16 @@ const CrashGame = () => {
               <button
                 onClick={handleClaim}
                 className="btn btn-outline"
-                style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)' }}
+                style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}
               >
                 Забрати виграш
               </button>
             )}
 
             {gameOver && (
-              <p style={{ color: 'red', marginTop: 20, textAlign: 'center' }}>💥 Ви не встигли забрати виграш!</p>
+              <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>
+                💥 Ви не встигли забрати виграш!
+              </p>
             )}
           </div>
         </div>
