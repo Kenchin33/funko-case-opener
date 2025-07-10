@@ -132,22 +132,35 @@ const Profile = () => {
       setIsError(true);
       return;
     }
-
+  
     try {
       const token = localStorage.getItem('token');
       if (selectedFigureIndex === null) return;
-
+  
       const selectedFigure = userData.inventory[selectedFigureIndex];
       if (!selectedFigure) return;
-
+  
+      // Оновлений інвентар без вибраної фігурки
       const newInventory = [...userData.inventory];
       newInventory.splice(selectedFigureIndex, 1);
-
+  
+      // Видаляємо все зайве: залишаємо тільки необхідні поля
+      const trimmedInventory = newInventory.map(item => ({
+        _id: item._id,
+        figure: item.figure._id, // тільки ID, а не весь об'єкт
+        caseName: item.caseName,
+        caseId: item.caseId,
+        price: item.price,
+        date: item.date,
+      }));
+  
+      // Оновлення інвентаря на сервері
       await axios.patch(`https://funko-case-opener.onrender.com/api/auth/${userData._id}/inventory`,
-        { inventory: newInventory },
+        { inventory: trimmedInventory },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
+      // Оновлюємо локальний стан
       setUserData(prev => ({ ...prev, inventory: newInventory }));
       setMessage('Заявка на відправку отримана');
       setIsError(false);
@@ -157,7 +170,7 @@ const Profile = () => {
       setMessage('Помилка при оформленні заявки');
       setIsError(true);
     }
-  };
+  };  
 
   const handleSellAll = async () => {
     if (!userData || userData.inventory.length === 0) return;
