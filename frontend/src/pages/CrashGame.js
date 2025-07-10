@@ -128,42 +128,44 @@ const CrashGame = () => {
 
   // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
   const getPlanePosition = () => {
-    if (!isGameRunning && !gameOver) return { x: 0, y: containerSize };
+    if (!isGameRunning && !gameOver) return { x: 0, y: containerHeight };
   
     const now = Date.now();
     const elapsed = now - startTime;
   
-    // 🚀 Швидший виліт до центру: 0 - 3000 мс
+    // 🚀 Швидкий виліт до центру: 0 - 3000 мс
     if (elapsed < 3000) {
       const progress = elapsed / 3000;
       return {
-        x: progress * (containerSize / 2),
-        y: containerSize - progress * (containerSize / 2),
+        x: progress * (containerWidth / 2),
+        y: containerHeight - progress * (containerHeight / 2),
       };
     }
+  
     // ✋ Затримка в центрі: 3000 - 6000 мс
-    else if (elapsed < 6000) {
+    if (elapsed < 6000) {
       return {
-        x: containerSize / 2,
-        y: containerSize / 2,
+        x: containerWidth / 2,
+        y: containerHeight / 2,
       };
     }
-    // ➡️ Виліт за межі: 6000 - 30000 мс
-    else if (elapsed < maxDuration) {
+  
+    // ➡️ Дальший виліт по діагоналі: 6000 - 30000 мс
+    if (elapsed < maxDuration) {
       const extra = (elapsed - 6000) / (maxDuration - 6000);
       return {
-        x: (containerSize / 2) + extra * (containerSize / 2),
-        y: (containerSize / 2) - extra * (containerSize / 2),
+        x: (containerWidth / 2) + extra * (containerWidth / 2),
+        y: (containerHeight / 2) - extra * (containerHeight / 2),
       };
     }
-    // 💥 Виліт повністю
-    else {
-      return {
-        x: containerSize + 100,
-        y: -100,
-      };
-    }
-  };  
+  
+    // 💥 Виліт повністю за межі
+    return {
+      x: containerWidth + 100,
+      y: -100,
+    };
+  };
+  
   
 
   const PlanePosition = getPlanePosition();
@@ -280,11 +282,8 @@ const CrashGame = () => {
                   <div
                     className="plane"
                     style={{
-                     position: 'absolute',
                      top: PlanePosition.y,
                      left: PlanePosition.x,
-                     transition: 'top 0.1s linear, left 0.1s linear',
-                     transform: 'rotate(45deg)',
                     }}
                   >
                     <img src="/images/plane.png" alt="plane" />
