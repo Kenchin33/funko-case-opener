@@ -25,6 +25,9 @@ const CrashGame = () => {
   const gameFieldRef = useRef();
   const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
 
+  // easing-функція для плавної анімації
+  const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
   useEffect(() => {
     const updateFieldSize = () => {
       if (gameFieldRef.current) {
@@ -32,12 +35,11 @@ const CrashGame = () => {
         setFieldSize({ width: offsetWidth, height: offsetWidth }); // квадрат
       }
     };
-  
+
     updateFieldSize();
     window.addEventListener('resize', updateFieldSize);
     return () => window.removeEventListener('resize', updateFieldSize);
   }, [isGameRunning]);
-  
 
   const endGame = useCallback(() => {
     setIsGameRunning(false);
@@ -140,47 +142,46 @@ const CrashGame = () => {
 
   const containerSize = Math.min(fieldSize.width, fieldSize.height); // квадрат
 
-  // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
+  // Оновлений розрахунок позиції літака з easing та гойданням
   const getPlanePosition = () => {
     const { width, height } = fieldSize;
-  
+
     if (!isGameRunning && !gameOver) return { x: 0, y: height };
-  
-    // Координати:
-    // старт — нижній лівий (0, height)
-    // центр — (width/2, height/2)
-    // фініш — правий верхній (width, 0)
-  
+
     if (coefficient < 2) {
-      // Літак рухається від нижнього лівого до центру пропорційно від 1.0 до 2.0
-      // Перерахунок progress від 1 до 2
-      const progress = (coefficient - 1) / (2 - 1);
+      // Літак рухається від нижнього лівого до центру з easing
+      const rawProgress = (coefficient - 1) / (2 - 1);
+      const progress = easeInOutQuad(rawProgress);
       return {
         x: progress * (width / 2),
         y: height - progress * (height / 2),
       };
     } else if (coefficient < 2.9) {
-      // Літак зависає в центрі
+      // Літак зависає в центрі і трохи гойдається по діагоналі
+      const centerX = width / 2;
+      const centerY = height / 2;
+      // Пульсація амплітуди 10px, 6 коливань на весь період
+      const oscillationProgress = (coefficient - 2) / (2.9 - 2);
+      const oscillation = Math.sin(oscillationProgress * Math.PI * 6) * 10;
       return {
-        x: width / 2,
-        y: height / 2,
+        x: centerX + oscillation,
+        y: centerY - oscillation,
       };
     } else if (coefficient < 3) {
-      // Літак летить швидко від центру до правого верхнього кута і вилітає за межі
-      // progress 0..1 за коефіцієнтом 2.9..3
-      const progress = (coefficient - 2.9) / (3 - 2.9);
+      // Швидкий виліт з easing
+      const rawProgress = (coefficient - 2.9) / (3 - 2.9);
+      const progress = easeInOutQuad(rawProgress);
       return {
-        x: (width / 2) + progress * (width / 2) + progress * 100, // +100 для виліту за межі
-        y: (height / 2) - progress * (height / 2) - progress * 100, // -100 виліт за межі
+        x: (width / 2) + progress * (width / 2) + progress * 100,
+        y: (height / 2) - progress * (height / 2) - progress * 100,
       };
     } else {
-      // Поза межами поля
       return {
         x: width + 100,
         y: -100,
       };
     }
-  };  
+  };
 
   const PlanePosition = getPlanePosition();
 
@@ -295,9 +296,9 @@ const CrashGame = () => {
                   <div
                     className="plane"
                     style={{
-                        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px) rotate(45deg)`,
+                      transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px) rotate(45deg)`,
                     }}
-                    >
+                  >
                     <img src="/images/plane.png" alt="plane" />
                     <div className="coefficient-label">{coefficient}x</div>
                   </div>
