@@ -113,7 +113,7 @@ const CrashGame = () => {
   };
 
   const handlePlaceBet = () => {
-    if (isGameRunning || gameOver) return;
+    if (isGameRunning || gameOver || hasClaimed) return;
   
     if (selectedIndexes.size === 0) {
       setError('Оберіть хоча б одну фігурку для ставки');
@@ -318,7 +318,7 @@ const getPlanePosition = () => {
                     </div>
             )}
 
-            {!isGameRunning && !gameOver && (
+            {!isGameRunning && !gameOver && !hasClaimed && (
                 <button
                 onClick={handlePlaceBet}
                 className="btn btn-primary"
