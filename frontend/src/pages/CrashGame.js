@@ -133,30 +133,37 @@ const CrashGame = () => {
     const now = Date.now();
     const elapsed = now - startTime;
   
-    if (elapsed < 15000) {
-      const progress = elapsed / 15000;
+    // 🚀 Швидший виліт до центру: 0 - 3000 мс
+    if (elapsed < 3000) {
+      const progress = elapsed / 3000;
       return {
         x: progress * (containerSize / 2),
         y: containerSize - progress * (containerSize / 2),
       };
-    } else if (elapsed < 27000) {
+    }
+    // ✋ Затримка в центрі: 3000 - 6000 мс
+    else if (elapsed < 6000) {
       return {
         x: containerSize / 2,
         y: containerSize / 2,
       };
-    } else if (elapsed < maxDuration) {
-      const extra = (elapsed - 27000) / (maxDuration - 27000);
+    }
+    // ➡️ Виліт за межі: 6000 - 30000 мс
+    else if (elapsed < maxDuration) {
+      const extra = (elapsed - 6000) / (maxDuration - 6000);
       return {
         x: (containerSize / 2) + extra * (containerSize / 2),
         y: (containerSize / 2) - extra * (containerSize / 2),
       };
-    } else {
+    }
+    // 💥 Виліт повністю
+    else {
       return {
         x: containerSize + 100,
         y: -100,
       };
     }
-  };
+  };  
   
 
   const PlanePosition = getPlanePosition();
@@ -277,6 +284,7 @@ const CrashGame = () => {
                      top: PlanePosition.y,
                      left: PlanePosition.x,
                      transition: 'top 0.1s linear, left 0.1s linear',
+                     transform: 'rotate(45deg)',
                     }}
                   >
                     <img src="/images/plane.png" alt="plane" />
