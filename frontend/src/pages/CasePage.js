@@ -284,8 +284,13 @@ const CasePage = () => {
               <h3>Можуть випасти:</h3>
               <div className="figures-grid">
                 {caseData.figures.map(fig => (
-                  <div key={fig._id} className="figure-card">
-                    <img src={fig.image} alt={fig.name} />
+                  <div key={fig._id} className="figure-card rarity-wrapper">
+                    <div className="figure-image-container">
+                      <img src={fig.image} alt={fig.name} />
+                      <span className="rarity-badge" style={{backgroundColor: rarityColors[fig.rarity] || 'gray'}}>
+                        {fig.rarity}
+                      </span>
+                    </div>
                     <p>{fig.name}</p>
                   </div>
                 ))}
