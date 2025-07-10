@@ -112,10 +112,13 @@ const CrashGame = () => {
   };
 
   const handlePlaceBet = () => {
+    if (isGameRunning || gameOver) return;
+  
     if (selectedIndexes.size === 0) {
       setError('Оберіть хоча б одну фігурку для ставки');
       return;
     }
+  
     setError(null);
     startGame();
   };
@@ -343,7 +346,7 @@ const getPlanePosition = () => {
                 <div className="dashed-line" />
 
                     {/* Статичний літак до старту гри */}
-                    {!isGameRunning && !gameOver && !hasClaimed && (
+                    {!isGameRunning && !gameOver && (
                         <div
                             className="plane"
                             style={{
