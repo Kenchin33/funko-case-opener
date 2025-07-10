@@ -4,6 +4,23 @@ import { FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
 import './style.css';
 
+
+const Cloud = ({ style }) => (
+    <div className="cloud" style={style}>
+      <svg
+        width="60"
+        height="40"
+        viewBox="0 0 60 40"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <ellipse cx="20" cy="20" rx="20" ry="15" fill="white" />
+        <ellipse cx="40" cy="20" rx="20" ry="15" fill="white" />
+        <ellipse cx="30" cy="15" rx="25" ry="18" fill="white" />
+      </svg>
+    </div>
+  );
+
 const CrashGame = () => {
   const navigate = useNavigate();
   const [, setLoadingInventory] = useState(false);
@@ -326,38 +343,27 @@ const CrashGame = () => {
             {error && <p className="error-message">{error}</p>}
 
             {/* Хмаринки */}
-            <div
-              className="clouds-container"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: containerSize,
-                height: containerSize,
-                pointerEvents: 'none',
-                overflow: 'visible',
-                zIndex: 50,
-              }}
-            >
-              {clouds.map((cloud, index) => (
-                <div
-                  key={index}
-                  className="cloud"
-                  style={{
-                    position: 'absolute',
-                    top: cloud.top,
-                    left: cloud.left,
-                    animationName: 'moveCloud',
-                    animationDuration: cloud.animationDuration,
-                    animationDelay: cloud.animationDelay,
-                    animationTimingFunction: 'linear',
-                    animationIterationCount: 'infinite',
-                    transform: `scale(${cloud.scale})`,
-                    willChange: 'transform',
-                  }}
-                />
-              ))}
-            </div>
+            {clouds.map((cloud, i) => (
+              <Cloud
+                key={i}
+                style={{
+                  top: cloud.top,
+                  left: cloud.left,
+                  animationName: 'moveCloud',
+                  animationDuration: cloud.animationDuration,
+                  animationDelay: cloud.animationDelay,
+                  transform: `scale(${cloud.scale})`,
+                  animationTimingFunction: 'linear',
+                  animationIterationCount: 'infinite',
+                  position: 'absolute',
+                  willChange: 'transform',
+                  opacity: 0.8,
+                  filter: 'drop-shadow(0 0 1px #bbb)',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                }}
+              />
+            ))}
 
             {/* Постійно відображається поле з літаком */}
             <div
