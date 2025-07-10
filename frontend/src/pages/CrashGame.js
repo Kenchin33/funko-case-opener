@@ -22,6 +22,15 @@ const CrashGame = () => {
   const maxDuration = 30000; // 30 секунд
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
+  const gameFieldRef = useRef();
+  const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (gameFieldRef.current) {
+      const { offsetWidth, offsetHeight } = gameFieldRef.current;
+      setFieldSize({ width: offsetWidth, height: offsetHeight });
+    }
+  }, [isGameRunning]);
 
   const endGame = useCallback(() => {
     setIsGameRunning(false);
@@ -127,43 +136,37 @@ const CrashGame = () => {
 
   // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
   const getPlanePosition = () => {
-    if (!isGameRunning && !gameOver) return { x: 0, y: containerHeight };
+    const { width, height } = fieldSize;
+  
+    if (!isGameRunning && !gameOver) return { x: 0, y: height };
   
     const now = Date.now();
     const elapsed = now - startTime;
   
-    // 🚀 Швидкий виліт до центру: 0 - 3000 мс
     if (elapsed < 3000) {
       const progress = elapsed / 3000;
       return {
-        x: progress * (containerWidth / 2),
-        y: containerHeight - progress * (containerHeight / 2),
+        x: progress * (width / 2),
+        y: height - progress * (height / 2),
       };
-    }
-  
-    // ✋ Затримка в центрі: 3000 - 6000 мс
-    if (elapsed < 6000) {
+    } else if (elapsed < 6000) {
       return {
-        x: containerWidth / 2,
-        y: containerHeight / 2,
+        x: width / 2,
+        y: height / 2,
       };
-    }
-  
-    // ➡️ Дальший виліт по діагоналі: 6000 - 30000 мс
-    if (elapsed < maxDuration) {
+    } else if (elapsed < maxDuration) {
       const extra = (elapsed - 6000) / (maxDuration - 6000);
       return {
-        x: (containerWidth / 2) + extra * (containerWidth / 2),
-        y: (containerHeight / 2) - extra * (containerHeight / 2),
+        x: (width / 2) + extra * (width / 2),
+        y: (height / 2) - extra * (height / 2),
+      };
+    } else {
+      return {
+        x: width + 100,
+        y: -100,
       };
     }
-  
-    // 💥 Виліт повністю за межі
-    return {
-      x: containerWidth + 100,
-      y: -100,
-    };
-  };
+  };  
   
   
 
@@ -238,6 +241,7 @@ const CrashGame = () => {
           {/* Ігрове поле */}
           <div
             className="game-field"
+            ref={gameFieldRef}
             style={{
               position: 'relative',
               height: containerHeight,
