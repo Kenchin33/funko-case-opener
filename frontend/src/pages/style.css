@@ -1303,9 +1303,9 @@
 
 @keyframes moveCloud {
   from {
-    transform: translateX(100%);
+    transform: translateX(0);  /* старт на left: 100% */
   }
   to {
-    transform: translateX(-220%);
+    transform: translateX(calc(-100vw - 100%)); /* рух вліво повністю за межі viewport */
   }
 }
