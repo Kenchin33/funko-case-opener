@@ -172,7 +172,7 @@ const getPlanePosition = () => {
   
     if (!isGameRunning && !gameOver && !hasClaimed) {
       // Літак стоїть в лівому нижньому куті, з урахуванням transform translate(-50%, -50%)
-      return { x: 0, y: height };
+      return { x: 0, y: containerSize - 60, };
     }
   
     // Координати:
@@ -187,20 +187,20 @@ const getPlanePosition = () => {
       const progress = (coefficient - 1) / (startToCenterEndCoef - 1);
       return {
         x: progress * (width / 2),
-        y: height - progress * (height / 2),
+        y: height - progress * (height / 2) - 60,
       };
     } else if (coefficient < 2.9) {
       // Літак зависає в центрі з 1.7 до 2.9
       return {
         x: width / 2,
-        y: height / 2,
+        y: height / 2 - 60,
       };
     } else if (coefficient < 3) {
       // Літак летить швидко від центру до правого верхнього кута і вилітає за межі
       const progress = (coefficient - 2.9) / (3 - 2.9);
       return {
         x: (width / 2) + progress * (width / 2) + progress * 100,
-        y: (height / 2) - progress * (height / 2) - progress * 100,
+        y: (height / 2) - progress * (height / 2) - progress * 100 - 60,
       };
     } else {
       // Поза межами поля
