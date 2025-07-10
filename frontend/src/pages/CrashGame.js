@@ -47,6 +47,22 @@ const CrashGame = () => {
     }
   }, [hasClaimed]);
 
+  useEffect(() => {
+    if (gameOver) {
+      const timer = setTimeout(() => {
+        setGameOver(false);
+        setCoefficient(1.0);
+        setStartTime(null);
+        setHasClaimed(false);
+        setError(null);
+        // Можна додатково скинути інші стани, якщо треба
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [gameOver]);
+
+
   const animate = useCallback(() => {
     if (!startTime) return;
   
