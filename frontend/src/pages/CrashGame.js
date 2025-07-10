@@ -15,7 +15,7 @@ const CrashGame = () => {
 
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [coefficient, setCoefficient] = useState(1.0);
-  const [, setAnimationY] = useState(0);
+  const [, setAnimationY] = useState(0); // для анімації, якщо треба (поки не використовується)
   const [gameOver, setGameOver] = useState(false);
   const [hasClaimed, setHasClaimed] = useState(false);
 
@@ -44,7 +44,7 @@ const CrashGame = () => {
 
     const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
     setCoefficient(newCoef);
-    setAnimationY(elapsed / 10);
+    setAnimationY(elapsed / 10); // можна прибрати, якщо не потрібно
   }, [startTime, endGame]);
 
   const startGame = () => {
@@ -122,22 +122,14 @@ const CrashGame = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [isGameRunning, startTime, animate]);
 
-  // Параметри блоку
   const containerHeight = 300; // px
   const containerWidth = 300; // px
+  const exitDistance = 150; // px
 
-  // Параметри анімації літака
-  const maxFlightBottom = containerHeight / 2; // 150px (центр по висоті)
-  const maxFlightLeft = containerWidth / 2; // 150px (центр по ширині)
-  const exitDistance = 150; // відстань виліту за межі після завершення
-
-  // Функція для розрахунку позиції літака
+  // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
   const getPlanePosition = () => {
     if (!isGameRunning && !gameOver) {
-      return {
-        bottom: 0,
-        left: 0,
-      };
+      return { position: 0 };
     }
 
     const now = Date.now();
@@ -145,27 +137,16 @@ const CrashGame = () => {
     const normalizedElapsed = elapsed / maxDuration;
 
     if (normalizedElapsed < 0.5) {
-      // Літак летить до центру по діагоналі
-      const p = normalizedElapsed / 0.5; // 0..1
-      return {
-        bottom: maxFlightBottom * p,
-        left: maxFlightLeft * p,
-      };
+      // Літак летить від 0 до 0.5 (півдороги)
+      return { position: normalizedElapsed / 0.5 };
     } else if (normalizedElapsed < 1) {
-      // Літак стоїть у центрі
-      return {
-        bottom: maxFlightBottom,
-        left: maxFlightLeft,
-      };
+      // Літак стоїть у кінці діагоналі
+      return { position: 1 };
     } else {
-      // Виліт за межі швидко (за 500 мс)
+      // Виліт за межі по діагоналі (за 500 мс)
       const exitElapsed = (now - (startTime + maxDuration)) / 500;
       const p = Math.min(exitElapsed, 1);
-
-      return {
-        bottom: maxFlightBottom + exitDistance * p,
-        left: maxFlightLeft + exitDistance * p,
-      };
+      return { position: 1 + p };
     }
   };
 
@@ -266,6 +247,7 @@ const CrashGame = () => {
             {isGameRunning && (
               <>
                 <div
+                  className="animation-container"
                   style={{
                     position: 'absolute',
                     bottom: 0,
@@ -275,44 +257,19 @@ const CrashGame = () => {
                     overflow: 'visible',
                   }}
                 >
-                  {/* Пунктирна лінія, що рухається по діагоналі */}
-                  <div
-                    className="dashed-line"
-                    style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      width: '150%',
-                      height: '2px',
-                      backgroundImage:
-                        'repeating-linear-gradient(45deg, #4cb7ff, #4cb7ff 4px, transparent 4px, transparent 8px)',
-                      animation: 'dashmove 3s linear infinite',
-                    }}
-                  />
+                  {/* Пунктирна лінія по діагоналі */}
+                  <div className="dashed-line" />
 
                   {/* Літак */}
                   <div
+                    className="plane"
                     style={{
-                      position: 'absolute',
-                      bottom: planePos.bottom,
-                      left: planePos.left,
-                      width: '60px',
-                      height: '60px',
-                      transform: 'rotate(0deg)',
-                      transition: 'bottom 0.1s linear, left 0.1s linear',
+                      bottom: planePos.position * containerHeight,
+                      left: planePos.position * containerWidth,
                     }}
                   >
-                    <img src="/images/plane.png" alt="plane" style={{ width: '60px', height: '60px' }} />
-                    <div
-                      style={{
-                        color: 'white',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        marginTop: '4px',
-                      }}
-                    >
-                      {coefficient}x
-                    </div>
+                    <img src="/images/plane.png" alt="plane" />
+                    <div className="coefficient-label">{coefficient}x</div>
                   </div>
                 </div>
 
@@ -334,16 +291,6 @@ const CrashGame = () => {
           </div>
         </div>
       )}
-      <style>{`
-        @keyframes dashmove {
-          from {
-            background-position: 0 0;
-          }
-          to {
-            background-position: 100% 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 };
