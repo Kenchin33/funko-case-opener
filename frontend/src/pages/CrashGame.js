@@ -49,19 +49,25 @@ const CrashGame = () => {
 
   const animate = useCallback(() => {
     if (!startTime) return;
-
+  
     requestRef.current = requestAnimationFrame(animate);
     const elapsed = Date.now() - startTime;
-
+  
+    // Якщо минув максимум часу — кінець гри
     if (elapsed >= maxDuration) {
       endGame();
       return;
     }
-
+  
     const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
     setCoefficient(newCoef);
     setAnimationY(elapsed / 10); // можна прибрати, якщо не потрібно
-  }, [startTime, endGame]);
+  
+    // Якщо літак вилетів за межі (коеф >= 3) — кінець гри
+    if (newCoef >= 3) {
+      endGame();
+    }
+  }, [startTime, endGame]);  
 
   const startGame = () => {
     setIsGameRunning(true);
@@ -295,7 +301,7 @@ const CrashGame = () => {
                   <div
                     className="plane"
                     style={{
-                        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px) rotate(45deg)`,
+                        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
                     }}
                     >
                     <img src="/images/plane.png" alt="plane" />
