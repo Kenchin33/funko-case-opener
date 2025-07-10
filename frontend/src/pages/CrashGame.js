@@ -6,7 +6,7 @@ import './style.css';
 
 const CrashGame = () => {
     const navigate = useNavigate();
-    const [loadingInventory, setLoadingInventory] = useState(false);
+    const [, setLoadingInventory] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [balance, setBalance] = useState(null);
     const [inventory, setInventory] = useState([]);
