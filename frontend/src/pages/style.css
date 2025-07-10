@@ -1206,6 +1206,10 @@
 
 /* Права панель - ігрове поле */
 .game-field {
+  background: linear-gradient(to top, #87ceeb 0%, #b0e0ff 100%);
+  position: relative;
+  border: 1px solid #ccc;
+  overflow: hidden;
   flex: 1 1 60%;
   background-color: #222;
   padding: 15px;
@@ -1284,4 +1288,23 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   /* Можна додати тінь для кращої видимості */
   text-shadow: 0 0 5px rgba(0,0,0,0.7);
+}
+
+.cloud {
+  position: absolute;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 1px #bbb);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
+@keyframes moveCloud {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-120%);
+  }
 }
