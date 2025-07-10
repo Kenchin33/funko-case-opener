@@ -251,8 +251,8 @@ const CrashGame = () => {
             ref={gameFieldRef}
             style={{
               position: 'relative',
-              height: containerHeight,
-              width: containerWidth,
+              height: containerSize,
+              width: containerSize,
               border: '1px solid #ccc',
               overflow: 'hidden',
             }}
