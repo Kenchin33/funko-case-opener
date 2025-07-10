@@ -146,35 +146,41 @@ const CrashGame = () => {
   
     if (!isGameRunning && !gameOver) return { x: 0, y: height };
   
-    const now = Date.now();
-    const elapsed = now - startTime;
+    // Координати:
+    // старт — нижній лівий (0, height)
+    // центр — (width/2, height/2)
+    // фініш — правий верхній (width, 0)
   
-    if (elapsed < 3000) {
-      const progress = elapsed / 3000;
+    if (coefficient < 2) {
+      // Літак рухається від нижнього лівого до центру пропорційно від 1.0 до 2.0
+      // Перерахунок progress від 1 до 2
+      const progress = (coefficient - 1) / (2 - 1);
       return {
         x: progress * (width / 2),
         y: height - progress * (height / 2),
       };
-    } else if (elapsed < 6000) {
+    } else if (coefficient < 2.9) {
+      // Літак зависає в центрі
       return {
         x: width / 2,
         y: height / 2,
       };
-    } else if (elapsed < maxDuration) {
-      const extra = (elapsed - 6000) / (maxDuration - 6000);
+    } else if (coefficient < 3) {
+      // Літак летить швидко від центру до правого верхнього кута і вилітає за межі
+      // progress 0..1 за коефіцієнтом 2.9..3
+      const progress = (coefficient - 2.9) / (3 - 2.9);
       return {
-        x: (width / 2) + extra * (width / 2),
-        y: (height / 2) - extra * (height / 2),
+        x: (width / 2) + progress * (width / 2) + progress * 100, // +100 для виліту за межі
+        y: (height / 2) - progress * (height / 2) - progress * 100, // -100 виліт за межі
       };
     } else {
+      // Поза межами поля
       return {
         x: width + 100,
         y: -100,
       };
     }
   };  
-  
-  
 
   const PlanePosition = getPlanePosition();
 
