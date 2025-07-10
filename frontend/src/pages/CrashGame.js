@@ -323,7 +323,7 @@ const getPlanePosition = () => {
                 onClick={handlePlaceBet}
                 className="btn btn-primary"
                 disabled={selectedIndexes.size === 0}
-                style={{ display: 'block', margin: '10px auto' }}
+                style={{ display: 'block', margin: '10px auto', zIndex: 1000}}
               >
                 Поставити обрані фігурки
               </button>              
