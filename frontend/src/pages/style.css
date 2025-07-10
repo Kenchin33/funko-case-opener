@@ -157,7 +157,6 @@
     padding: 6px 14px;
     background-color: #d18e00;
     color: black;
-    order: 1;
   }
   
   .back-button:hover {
@@ -1088,11 +1087,15 @@
 
 .crash-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* розміщуємо кнопки по краях */
   align-items: center;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto 20px;
   position: relative;
-  padding: 0 20px;
+  padding: 0 20px; /* щоб кнопки не прилипали до країв */
+}
+
+.user-menu {
+  order: 2;
 }
