@@ -347,7 +347,7 @@ const CrashGame = () => {
                     position: 'absolute',
                     top: cloud.top,
                     left: cloud.left,
-                    animationName: moveCloud,
+                    animationName: 'moveCloud',
                     animationDuration: cloud.animationDuration,
                     animationDelay: cloud.animationDelay,
                     transform: `scale(${cloud.scale})`,
