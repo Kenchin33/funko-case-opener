@@ -23,12 +23,12 @@ const CasePage = () => {
   const winAudioRef = useRef(null);
 
   const rarityColors = {
-    Common: 'rgba(255, 255, 255, 0.123);',
+    Common: 'rgba(255, 255, 255, 0.123)',
     Exclusive: '#ff1900',
     Epic: '#9f07db',
     Legendary: '#4cb7ff',
     Grail: 'gold',
-    Signed: 'rgb(245, 104, 128);',
+    Signed: 'rgb(245, 104, 128)',
   };
 
   // Функція для показу повідомлення з анімацією і автоматичним приховуванням через 2 секунди
