@@ -23,17 +23,16 @@ const CrashGame = () => {
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
 
-  // ---------- Головна логіка гри ----------
-  const startGame = () => {
-    setIsGameRunning(true);
-    setCoefficient(1.0);
-    setAnimationY(0);
-    setStartTime(Date.now());
-    setGameOver(false);
-    setHasClaimed(false);
-    setError(null);
-  };
+  // Використовуємо useCallback для endGame, бо вона в animate
+  const endGame = useCallback(() => {
+    setIsGameRunning(false);
+    cancelAnimationFrame(requestRef.current);
+    if (!hasClaimed) {
+      setGameOver(true);
+    }
+  }, [hasClaimed]);
 
+  // Animate теж useCallback з залежністю endGame
   const animate = useCallback(() => {
     if (!startTime) return;
 
@@ -45,20 +44,19 @@ const CrashGame = () => {
       return;
     }
 
-    // Коефіцієнт росте з пришвидшенням
     const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
     setCoefficient(newCoef);
+    setAnimationY(elapsed / 10);
+  }, [startTime, endGame]);
 
-    // Літачок летить все швидше
-    setAnimationY(elapsed / 10); // регулюй швидкість тут
-  }, [startTime]);
-
-  const endGame = () => {
-    setIsGameRunning(false);
-    cancelAnimationFrame(requestRef.current);
-    if (!hasClaimed) {
-      setGameOver(true); // Програв
-    }
+  const startGame = () => {
+    setIsGameRunning(true);
+    setCoefficient(1.0);
+    setAnimationY(0);
+    setStartTime(Date.now());
+    setGameOver(false);
+    setHasClaimed(false);
+    setError(null);
   };
 
   const handleClaim = () => {
@@ -67,14 +65,9 @@ const CrashGame = () => {
     cancelAnimationFrame(requestRef.current);
 
     const winAmount = totalBetAmount * coefficient;
-
     alert(`Ви виграли ${Math.round(winAmount)}₴! (поки без оновлення інвентаря)`);
-
-    // TODO: Повернення фігурок в інвентар за суму winAmount
-    // Замінимо пізніше на API-запит з оновленням
   };
 
-  // ---------- Початок гри після ставки ----------
   const handlePlaceBet = () => {
     if (selectedIndexes.size === 0) {
       setError('Оберіть хоча б одну фігурку для ставки');
@@ -84,7 +77,6 @@ const CrashGame = () => {
     startGame();
   };
 
-  // ---------- Завантаження даних ----------
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -132,7 +124,6 @@ const CrashGame = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [isGameRunning, startTime, animate]);
 
-  // ---------- UI ----------
   return (
     <div className="crash-game-container">
       <div className="crash-header">
