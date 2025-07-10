@@ -320,42 +320,43 @@ const getPlanePosition = () => {
 
             {error && <p className="error-message">{error}</p>}
 
-            {isGameRunning && (
-              <>
-                <div
-                  className="animation-container"
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    height: containerSize,
-                    width: containerSize,
-                    overflow: 'visible',
-                  }}
-                >
-                  {/* Пунктирна лінія по діагоналі */}
-                  <div className="dashed-line" />
+            <div
+  className="animation-container"
+  style={{
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    height: containerSize,
+    width: containerSize,
+    overflow: 'visible',
+    pointerEvents: 'none', // Щоб не блокувало кліки
+  }}
+>
+  {/* Пунктирна лінія по діагоналі (можна показувати тільки під час гри) */}
+  {isGameRunning && <div className="dashed-line" />}
 
-                  {/* Літак */}
-                  <div
-                    className="plane"
-                    style={{
-                        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
-                    }}
-                    >
-                    <img src="/images/plane.png" alt="plane" />
-                  </div>
-                </div>
+  {/* Літак — завжди видимий */}
+  <div
+    className="plane"
+    style={{
+      transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
+    }}
+  >
+    <img src="/images/plane.png" alt="plane" />
+  </div>
+</div>
 
-                <button
-                  onClick={handleClaim}
-                  className="btn btn-outline"
-                  style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}
-                >
-                  Забрати виграш
-                </button>
-              </>
-            )}
+{/* Кнопка забрати виграш — тільки під час гри */}
+{isGameRunning && (
+  <button
+    onClick={handleClaim}
+    className="btn btn-outline"
+    style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}
+  >
+    Забрати виграш
+  </button>
+)}
+
 
             {gameOver && (
               <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>
