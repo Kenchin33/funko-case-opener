@@ -1126,8 +1126,109 @@
   border-radius: 5px;
 }
 
+.crash-game-container {
+  padding: 20px;
+  color: white;
+  min-height: 100vh;
+  background-color: #121212;
+  position: relative;
+}
+
+.crash-game-main {
+  display: flex;
+  gap: 24px;
+  margin-top: 20px;
+  height: 70vh; /* щоб було місце для гри */
+}
+
+/* Ліва панель - інвентар */
+.inventory-panel {
+  flex: 1 1 40%;
+  background-color: #222;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.bet-sum {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: orange;
+}
+
+.inventory-grid {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.figure-card {
+  width: 110px;
+  background-color: #333;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  color: white;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+  position: relative;
+}
+
+.figure-card.selected {
+  border-color: orange;
+  box-shadow: 0 0 8px orange;
+}
+
+.figure-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin-bottom: 6px;
+}
+
+.figure-card p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* Права панель - ігрове поле */
+.game-field {
+  flex: 1 1 60%;
+  background-color: #222;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
 .error-message {
   color: #ff4d4d;
   margin-top: 10px;
+  margin-bottom: 10px;
   text-align: center;
+  font-weight: bold;
+}
+
+.btn {
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

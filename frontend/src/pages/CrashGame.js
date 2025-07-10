@@ -9,7 +9,7 @@ const CrashGame = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [balance, setBalance] = useState(null);
   const [inventory, setInventory] = useState([]);
-  const [selectedFigureIndex, setSelectedFigureIndex] = useState(null);
+  const [selectedIndexes, setSelectedIndexes] = useState(new Set());
   const [loadingInventory, setLoadingInventory] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,7 +23,6 @@ const CrashGame = () => {
       })
         .then(res => {
           setBalance(res.data.balance ?? 0);
-          // Масив інвентарю з populated figure
           setInventory(res.data.inventory || []);
           setLoadingInventory(false);
         })
@@ -38,23 +37,37 @@ const CrashGame = () => {
     }
   }, []);
 
-  const handleSelectFigure = (index) => {
-    setSelectedFigureIndex(index);
+  const toggleSelectFigure = (index) => {
+    setSelectedIndexes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
   };
 
+  const totalBetAmount = [...selectedIndexes].reduce((acc, idx) => {
+    const figureEntry = inventory[idx];
+    const price = figureEntry?.price ?? 0;
+    return acc + price * 0.75 * 42;
+  }, 0);
+
   const handlePlaceBet = () => {
-    if (selectedFigureIndex === null) {
-      setError('Оберіть фігурку для ставки');
+    if (selectedIndexes.size === 0) {
+      setError('Оберіть хоча б одну фігурку для ставки');
       return;
     }
     setError(null);
-    const selectedFigure = inventory[selectedFigureIndex];
-    // Тут можна додати логіку старту гри з вибраною фігуркою
-    alert(`Поставлено фігурку: ${selectedFigure.figure.name}`);
+    // Логіка початку гри з вибраними фігурками
+    const selectedFigures = [...selectedIndexes].map(i => inventory[i].figure.name);
+    alert(`Поставлено фігурки: ${selectedFigures.join(', ')}\nСума ставки: ${Math.round(totalBetAmount)}₴`);
   };
 
   return (
-    <div className="case-page">
+    <div className="crash-game-container">
       <div className="crash-header">
         <button className="btn btn-outline back-button" onClick={() => navigate('/')}>← Назад</button>
 
@@ -80,54 +93,70 @@ const CrashGame = () => {
 
       <h2 className="case-title">Гра "Літачок"</h2>
       <p className="crash-description">
-        Постав одну зі своїх фігурок і спробуй забрати виграш до того, як літачок зникне!
+        Постав одну або кілька своїх фігурок і спробуй забрати виграш до того, як літачок зникне!
       </p>
 
       {loadingInventory && <p>Завантаження інвентарю...</p>}
 
-      {isLoggedIn && !loadingInventory && (
-        <>
-          {inventory.length === 0 ? (
-            <p>У вас немає фігурок в інвентарі для ставки.</p>
-          ) : (
-            <div className="inventory-grid">
-              {inventory.map((entry, index) => {
-                const figure = entry.figure || {};
-                const isSelected = index === selectedFigureIndex;
-                return (
-                  <div
-                    key={entry._id || index}
-                    className={`figure-card ${isSelected ? 'selected' : ''}`}
-                    onClick={() => handleSelectFigure(index)}
-                    style={{ cursor: 'pointer' }}
-                    title={`Фігурка: ${figure.name}`}
-                  >
-                    <img src={figure.image || '/unknown.png'} alt={figure.name || 'Невідома фігурка'} />
-                    <p>{figure.name || 'Невідома фігурка'}</p>
-                    <p className={`rarity ${figure.rarity || ''}`}>{figure.rarity || ''}</p>
-                    <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{entry.price ?? '–'}₴</p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {error && <p className="error-message">{error}</p>}
-
-          <button
-            onClick={handlePlaceBet}
-            className="btn btn-primary"
-            disabled={selectedFigureIndex === null}
-            style={{ marginTop: '20px' }}
-          >
-            Поставити фігурку
-          </button>
-        </>
-      )}
-
-      {!isLoggedIn && (
+      {!isLoggedIn && !loadingInventory && (
         <div className="crash-placeholder">
           🚀 Літачок скоро злетить...
+        </div>
+      )}
+
+      {isLoggedIn && !loadingInventory && (
+        <div className="crash-game-main">
+          {/* Ліва панель - Інвентар */}
+          <div className="inventory-panel">
+            <div className="inventory-header">
+              <h3>Ваш інвентар</h3>
+              <div className="bet-sum">Сума ставки: <strong>{Math.round(totalBetAmount)}₴</strong></div>
+            </div>
+
+            {inventory.length === 0 ? (
+              <p>У вас немає фігурок в інвентарі.</p>
+            ) : (
+              <div className="inventory-grid">
+                {inventory.map((entry, index) => {
+                  const figure = entry.figure || {};
+                  const isSelected = selectedIndexes.has(index);
+                  return (
+                    <label
+                      key={entry._id || index}
+                      className={`figure-card ${isSelected ? 'selected' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelectFigure(index)}
+                        style={{ display: 'none' }}
+                      />
+                      <img src={figure.image || '/unknown.png'} alt={figure.name || 'Невідома фігурка'} />
+                      <p>{figure.name || 'Невідома фігурка'}</p>
+                      <p className={`rarity ${figure.rarity || ''}`}>{figure.rarity || ''}</p>
+                      <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{entry.price ?? '–'}$</p>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Права панель - Ігрове поле */}
+          <div className="game-field">
+            <h3>Ігрове поле</h3>
+            {/* Тут можна додати графіку гри, стан, кнопки і тд */}
+
+            {error && <p className="error-message">{error}</p>}
+
+            <button
+              onClick={handlePlaceBet}
+              className="btn btn-primary"
+              disabled={selectedIndexes.size === 0}
+            >
+              Поставити обрані фігурки
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -111,7 +111,7 @@ const Home = () => {
 
         <Link to="/crash" className="case-card" style={{ cursor: 'pointer' }}>
           <img
-            src="https://i.imgur.com/7v8JkAu.png"  // Можеш замінити на власне зображення літачка
+            src="/images/image.jpg"  // Можеш замінити на власне зображення літачка
             alt="Грати в Літачка"
             className="case-image"
             />
