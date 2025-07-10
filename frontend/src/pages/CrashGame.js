@@ -124,7 +124,6 @@ const CrashGame = () => {
 
   const containerHeight = 300; // px
   const containerWidth = 300; // px
-  const exitDistance = 150; // px
 
   // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
   const getPlanePosition = () => {
