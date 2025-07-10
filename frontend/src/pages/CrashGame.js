@@ -15,7 +15,7 @@ const CrashGame = () => {
 
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [coefficient, setCoefficient] = useState(1.0);
-  const [animationY, setAnimationY] = useState(0);
+  const [, setAnimationY] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [hasClaimed, setHasClaimed] = useState(false);
 
