@@ -350,7 +350,10 @@ const CrashGame = () => {
                     animationName: 'moveCloud',
                     animationDuration: cloud.animationDuration,
                     animationDelay: cloud.animationDelay,
+                    animationTimingFunction: 'linear',
+                    animationIterationCount: 'infinite',
                     transform: `scale(${cloud.scale})`,
+                    willChange: 'transform',
                   }}
                 />
               ))}
