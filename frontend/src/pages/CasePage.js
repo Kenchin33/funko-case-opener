@@ -29,6 +29,7 @@ const CasePage = () => {
     Legendary: '#4cb7ff',
     Grail: 'gold',
     Signed: '#cc2c8c',
+    Protection: "black",
   };
 
   // Функція для показу повідомлення з анімацією і автоматичним приховуванням через 2 секунди

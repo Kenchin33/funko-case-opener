@@ -5,7 +5,7 @@ const funkoFigureSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   rarity: {
     type: String,
-    enum: ['Common', 'Exclusive', 'Epic', 'Legendary', 'Grail', 'Signed'],
+    enum: ['Common', 'Exclusive', 'Epic', 'Legendary', 'Grail', 'Signed', 'Protection'],
     required: true,
   },
   description: { type: String },

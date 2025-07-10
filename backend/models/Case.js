@@ -16,6 +16,7 @@ const caseSchema = new mongoose.Schema({
       Legendary: 8,
       Grail: 2,
       Signed: 2,
+      Protection: 0
     },
   },
 });
