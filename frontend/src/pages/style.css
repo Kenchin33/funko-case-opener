@@ -1279,3 +1279,9 @@
   text-align: center;
   margin-top: 4px;
 }
+
+.coefficient-static {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Можна додати тінь для кращої видимості */
+  text-shadow: 0 0 5px rgba(0,0,0,0.7);
+}

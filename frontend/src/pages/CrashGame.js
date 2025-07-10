@@ -284,15 +284,31 @@ const CrashGame = () => {
           >
             <h3 style={{ textAlign: 'center' }}>Ігрове поле</h3>
 
+            {(isGameRunning || gameOver || hasClaimed) && (
+                <div
+                    className="coefficient-static"
+                    style={{
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        fontSize: '1.5rem',
+                        marginBottom: '10px',
+                        color: hasClaimed ? 'limegreen' : gameOver ? 'red' : 'white',
+                        userSelect: 'none',
+                      }}
+                    >
+                      {coefficient}x
+                    </div>
+            )}
+
             {!isGameRunning && !gameOver && (
-              <button
+                <button
                 onClick={handlePlaceBet}
                 className="btn btn-primary"
                 disabled={selectedIndexes.size === 0}
                 style={{ display: 'block', margin: '10px auto' }}
               >
                 Поставити обрані фігурки
-              </button>
+              </button>              
             )}
 
             {error && <p className="error-message">{error}</p>}
@@ -321,7 +337,6 @@ const CrashGame = () => {
                     }}
                     >
                     <img src="/images/plane.png" alt="plane" />
-                    <div className="coefficient-label">{coefficient}x</div>
                   </div>
                 </div>
 
