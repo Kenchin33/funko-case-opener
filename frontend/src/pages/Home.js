@@ -108,6 +108,11 @@ const Home = () => {
             );
           })
         )}
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <Link to="/crash" className="btn btn-primary" style={{ fontSize: '1.2rem', padding: '12px 24px' }}>
+            Грати в Літачка
+          </Link>
+        </div>
       </main>
     </div>
   );

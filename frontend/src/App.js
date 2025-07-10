@@ -6,6 +6,7 @@ import CasePage from './pages/CasePage';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CrashGame from './pages/CrashGame';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/crash" element={<CrashGame />} />
       </Routes>
     </Router>
   );

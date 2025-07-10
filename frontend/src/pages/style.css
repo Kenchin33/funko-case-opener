@@ -1060,3 +1060,27 @@
   pointer-events: none;
   z-index: 2;
 }
+
+.crash-description {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+  color: #ccc;
+}
+
+.crash-placeholder {
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  margin: 0 auto;
+  background-color: #1f1f1f;
+  border-radius: 12px;
+  border: 3px solid #f0a500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #f0a500;
+  box-shadow: 0 0 12px #f0a50088;
+}
