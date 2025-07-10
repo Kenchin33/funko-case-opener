@@ -19,7 +19,7 @@ const CrashGame = () => {
   const [gameOver, setGameOver] = useState(false);
   const [hasClaimed, setHasClaimed] = useState(false);
 
-  const maxDuration = 30000; // 30s
+  const maxDuration = 30000; // 30 секунд
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
 
@@ -122,18 +122,16 @@ const CrashGame = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [isGameRunning, startTime, animate]);
 
-  // Визначаємо позицію літака по bottom з обмеженням щоб він не вилітав раніше часу
-  const containerHeight = 300; // px висота блоку
-  const containerWidth = 300;  // px ширина блоку
+  // Параметри блоку
+  const containerHeight = 300; // px
+  const containerWidth = 300; // px
 
-  // Максимальне сміщення літака по bottom (0..300)
-  // Літак летить до середини блоку (150px) по bottom та left, далі залишається по центру, поки гра не завершена.
-  // Після закінчення гри літак вилітає по діагоналі вправо вгору.
-  const maxFlightBottom = containerHeight / 2; // 150 px
-  const maxFlightLeft = containerWidth / 2; // 150 px
-  const exitDistance = 150; // Відстань виліту за межі
+  // Параметри анімації літака
+  const maxFlightBottom = containerHeight / 2; // 150px (центр по висоті)
+  const maxFlightLeft = containerWidth / 2; // 150px (центр по ширині)
+  const exitDistance = 150; // відстань виліту за межі після завершення
 
-  // Розрахунок позиції літака з урахуванням стану гри і анімації
+  // Функція для розрахунку позиції літака
   const getPlanePosition = () => {
     if (!isGameRunning && !gameOver) {
       return {
@@ -142,25 +140,28 @@ const CrashGame = () => {
       };
     }
 
-    // Прогрес польоту від 0 до 1
-    const progress = Math.min(animationY / maxDuration * maxDuration, maxDuration) / maxDuration;
+    const now = Date.now();
+    const elapsed = Math.min(now - startTime, maxDuration);
+    const normalizedElapsed = elapsed / maxDuration;
 
-    if (progress < 0.5) {
-      // Літак рухається до центру по діагоналі
-      const p = progress / 0.5; // 0..1
+    if (normalizedElapsed < 0.5) {
+      // Літак летить до центру по діагоналі
+      const p = normalizedElapsed / 0.5; // 0..1
       return {
         bottom: maxFlightBottom * p,
         left: maxFlightLeft * p,
       };
-    } else if (progress < 1) {
-      // Літак стоїть в центрі
+    } else if (normalizedElapsed < 1) {
+      // Літак стоїть у центрі
       return {
         bottom: maxFlightBottom,
         left: maxFlightLeft,
       };
     } else {
-      // Виліт за межі по діагоналі
-      const p = (progress - 1) * 2; // виходить > 0
+      // Виліт за межі швидко (за 500 мс)
+      const exitElapsed = (now - (startTime + maxDuration)) / 500;
+      const p = Math.min(exitElapsed, 1);
+
       return {
         bottom: maxFlightBottom + exitDistance * p,
         left: maxFlightLeft + exitDistance * p,
@@ -189,12 +190,8 @@ const CrashGame = () => {
             </Link>
           ) : (
             <>
-              <Link to="/register" className="btn btn-outline">
-                Реєстрація
-              </Link>
-              <Link to="/login" className="btn btn-primary">
-                Авторизація
-              </Link>
+              <Link to="/register" className="btn btn-outline">Реєстрація</Link>
+              <Link to="/login" className="btn btn-primary">Авторизація</Link>
             </>
           )}
         </div>
@@ -206,7 +203,7 @@ const CrashGame = () => {
 
       {isLoggedIn && (
         <div className="crash-game-main" style={{ display: 'flex', gap: '20px' }}>
-          {/* Інвентар - повернуто стиль як у твому коді */}
+          {/* Інвентар */}
           <div className="inventory-panel">
             <div className="inventory-header">
               <h3>Ваш інвентар</h3>
@@ -268,7 +265,6 @@ const CrashGame = () => {
 
             {isGameRunning && (
               <>
-                {/* Контейнер для літака і стрічки (повернутий на 45 градусів) */}
                 <div
                   style={{
                     position: 'absolute',
@@ -276,20 +272,20 @@ const CrashGame = () => {
                     left: 0,
                     height: containerHeight,
                     width: containerWidth,
-                    transform: 'rotate(45deg)',
-                    transformOrigin: 'bottom left',
                     overflow: 'visible',
                   }}
                 >
-                  {/* Рухома стрічка - пунктирна лінія, що рухається вправо */}
+                  {/* Пунктирна лінія, що рухається по діагоналі */}
                   <div
+                    className="dashed-line"
                     style={{
                       position: 'absolute',
-                      top: '50%',
-                      left: '-200%', // починаємо далеко зліва
-                      width: '400%',
+                      bottom: 0,
+                      left: 0,
+                      width: '150%',
                       height: '2px',
-                      borderBottom: '2px dashed #4cb7ff',
+                      backgroundImage:
+                        'repeating-linear-gradient(45deg, #4cb7ff, #4cb7ff 4px, transparent 4px, transparent 8px)',
                       animation: 'dashmove 3s linear infinite',
                     }}
                   />
@@ -302,7 +298,7 @@ const CrashGame = () => {
                       left: planePos.left,
                       width: '60px',
                       height: '60px',
-                      transform: 'rotate(-45deg)', // щоб літак не був повернутий разом з контейнером
+                      transform: 'rotate(0deg)',
                       transition: 'bottom 0.1s linear, left 0.1s linear',
                     }}
                   >
@@ -330,14 +326,21 @@ const CrashGame = () => {
               </>
             )}
 
-            {gameOver && <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>💥 Ви не встигли забрати виграш!</p>}
+            {gameOver && (
+              <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>
+                💥 Ви не встигли забрати виграш!
+              </p>
+            )}
           </div>
         </div>
       )}
       <style>{`
         @keyframes dashmove {
+          from {
+            background-position: 0 0;
+          }
           to {
-            transform: translateX(100%);
+            background-position: 100% 100%;
           }
         }
       `}</style>
