@@ -20,7 +20,6 @@ const CrashGame = () => {
   const [hasClaimed, setHasClaimed] = useState(false);
 
   const maxDuration = 30000; // 30 секунд
-  const containerSize = 300;
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
 
