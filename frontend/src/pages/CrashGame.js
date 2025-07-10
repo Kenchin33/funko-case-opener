@@ -102,6 +102,13 @@ const CrashGame = () => {
 
     const winAmount = totalBetAmount * coefficient;
     alert(`Ви виграли ${Math.round(winAmount)}₴! (поки без оновлення інвентаря)`);
+
+    setTimeout(() => {
+        setCoefficient(1.0);
+        setStartTime(null);
+        setHasClaimed(false);
+        setError(null);
+      }, 2000)
   };
 
   const handlePlaceBet = () => {
@@ -307,7 +314,7 @@ const getPlanePosition = () => {
                     </div>
             )}
 
-            {!isGameRunning && !gameOver && (
+            {!isGameRunning && !gameOver && !hasClaimed && (
                 <button
                 onClick={handlePlaceBet}
                 className="btn btn-primary"
@@ -321,55 +328,55 @@ const getPlanePosition = () => {
             {error && <p className="error-message">{error}</p>}
 
             {/* Постійно відображається поле з літаком */}
-<div
-  className="animation-container"
-  style={{
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    height: containerSize,
-    width: containerSize,
-    overflow: 'visible',
-  }}
->
-  {/* Пунктирна лінія по діагоналі */}
-  <div className="dashed-line" />
+            <div
+                className="animation-container"
+                style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    height: containerSize,
+                    width: containerSize,
+                    overflow: 'visible',
+                }}
+            >
+                {/* Пунктирна лінія по діагоналі */}
+                <div className="dashed-line" />
 
-  {/* Статичний літак до старту гри */}
-  {!isGameRunning && !gameOver && !hasClaimed && (
-    <div
-      className="plane"
-      style={{
-        transform: `translate(0px, ${containerSize - 60}px)`,
-      }}
-    >
-      <img src="/images/plane.png" alt="plane" />
-    </div>
-  )}
+                    {/* Статичний літак до старту гри */}
+                    {!isGameRunning && !gameOver && !hasClaimed && (
+                        <div
+                            className="plane"
+                            style={{
+                                transform: `translate(0px, ${containerSize - 60}px)`,
+                            }}
+                        >
+                            <img src="/images/plane.png" alt="plane" />
+                        </div>
+                    )}
 
-  {/* Анімований літак під час гри */}
-  {isGameRunning && (
-    <div
-      className="plane"
-      style={{
-        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
-      }}
-    >
-      <img src="/images/plane.png" alt="plane" />
-    </div>
-  )}
-</div>
+                {/* Анімований літак під час гри */}
+                {isGameRunning && (
+                    <div
+                        className="plane"
+                        style={{
+                            transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
+                        }}
+                    >
+                        <img src="/images/plane.png" alt="plane" />
+                    </div>
+                )}
+            </div>
 
-{/* Кнопка "Забрати виграш" */}
-{isGameRunning && (
-  <button
-    onClick={handleClaim}
-    className="btn btn-outline"
-    style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}
-  >
-    Забрати виграш
-  </button>
-)}
+            {/* Кнопка "Забрати виграш" */}
+            {isGameRunning && (
+                <button
+                    onClick={handleClaim}
+                    className="btn btn-outline"
+                    style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}
+                >
+                    Забрати виграш
+                </button>
+            )}
 
 
             {gameOver && (
