@@ -157,6 +157,7 @@
     padding: 6px 14px;
     background-color: #d18e00;
     color: black;
+    order: 1;
   }
   
   .back-button:hover {
@@ -1093,4 +1094,5 @@
   max-width: 1200px;
   margin: 0 auto 20px;
   position: relative;
+  padding: 0 20px;
 }
