@@ -280,90 +280,100 @@ const getPlanePosition = () => {
           </div>
 
           {/* Ігрове поле */}
-          <div
-            className="game-field"
-            ref={gameFieldRef}
-            style={{
-              position: 'relative',
-              border: '1px solid #ccc',
-              overflow: 'hidden',
-            }}
-          >
-            <h3 style={{ textAlign: 'center' }}>Ігрове поле</h3>
-
-            {(isGameRunning || gameOver || hasClaimed) && (
-                <div
-                    className="coefficient-static"
-                    style={{
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        fontSize: '1.5rem',
-                        marginBottom: '10px',
-                        color: hasClaimed ? 'limegreen' : gameOver ? 'red' : 'white',
-                        userSelect: 'none',
-                      }}
-                    >
-                      {coefficient}x
-                    </div>
-            )}
-
-            {!isGameRunning && !gameOver && (
-                <button
-                onClick={handlePlaceBet}
-                className="btn btn-primary"
-                disabled={selectedIndexes.size === 0}
-                style={{ display: 'block', margin: '10px auto' }}
-              >
-                Поставити обрані фігурки
-              </button>              
-            )}
-
-            {error && <p className="error-message">{error}</p>}
-
-            <div
-  className="animation-container"
+          {/* Ігрове поле */}
+<div
+  className="game-field"
+  ref={gameFieldRef}
   style={{
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    height: containerSize,
-    width: containerSize,
-    overflow: 'visible',
-    pointerEvents: 'none', // Щоб не блокувало кліки
+    position: 'relative',
+    border: '1px solid #ccc',
+    overflow: 'hidden',
   }}
 >
-  {/* Пунктирна лінія по діагоналі (можна показувати тільки під час гри) */}
-  {isGameRunning && <div className="dashed-line" />}
+  <h3 style={{ textAlign: 'center' }}>Ігрове поле</h3>
 
-  {/* Літак — завжди видимий */}
+  {/* Коефіцієнт */}
+  {(isGameRunning || gameOver || hasClaimed) && (
+    <div
+      className="coefficient-static"
+      style={{
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: '1.5rem',
+        marginBottom: '10px',
+        color: hasClaimed ? 'limegreen' : gameOver ? 'red' : 'white',
+        userSelect: 'none',
+      }}
+    >
+      {coefficient}x
+    </div>
+  )}
+
+  {/* Кнопка ставки до старту гри */}
+  {!isGameRunning && !gameOver && (
+    <button
+      onClick={handlePlaceBet}
+      className="btn btn-primary"
+      disabled={selectedIndexes.size === 0}
+      style={{ display: 'block', margin: '10px auto' }}
+    >
+      Поставити обрані фігурки
+    </button>
+  )}
+
+  {/* Повідомлення про помилку */}
+  {error && <p className="error-message">{error}</p>}
+
+  {/* Анімація поля та літак — завжди показується */}
   <div
-    className="plane"
+    className="animation-container"
     style={{
-      transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      height: containerSize,
+      width: containerSize,
+      overflow: 'visible',
     }}
   >
-    <img src="/images/plane.png" alt="plane" />
+    {/* Пунктирна лінія по діагоналі */}
+    <div className="dashed-line" />
+
+    {/* Літак */}
+    <div
+      className="plane"
+      style={{
+        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
+      }}
+    >
+      <img src="/images/plane.png" alt="plane" />
+    </div>
   </div>
+
+  {/* Кнопка "Забрати виграш" під час гри */}
+  {isGameRunning && (
+    <button
+      onClick={handleClaim}
+      className="btn btn-outline"
+      style={{
+        position: 'absolute',
+        bottom: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+      }}
+    >
+      Забрати виграш
+    </button>
+  )}
+
+  {/* Кінець гри */}
+  {gameOver && (
+    <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>
+      💥 Ви не встигли забрати виграш!
+    </p>
+  )}
 </div>
 
-{/* Кнопка забрати виграш — тільки під час гри */}
-{isGameRunning && (
-  <button
-    onClick={handleClaim}
-    className="btn btn-outline"
-    style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}
-  >
-    Забрати виграш
-  </button>
-)}
-
-
-            {gameOver && (
-              <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>
-                💥 Ви не встигли забрати виграш!
-              </p>
-            )}
-          </div>
         </div>
       )}
     </div>
