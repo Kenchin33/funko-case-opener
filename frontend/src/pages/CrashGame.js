@@ -285,10 +285,9 @@ const CrashGame = () => {
                   <div
                     className="plane"
                     style={{
-                     top: PlanePosition.y,
-                     left: PlanePosition.x,
+                        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px) rotate(45deg)`,
                     }}
-                  >
+                    >
                     <img src="/images/plane.png" alt="plane" />
                     <div className="coefficient-label">{coefficient}x</div>
                   </div>

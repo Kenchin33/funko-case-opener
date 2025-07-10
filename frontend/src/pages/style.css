@@ -1259,8 +1259,8 @@
   position: absolute;
   width: 60px;
   height: 60px;
-  transform: translate(-50%, 50%);
-  transition: bottom 0.1s linear, left 0.1s linear;
+  transform: translate(-50%, -50%);
+  will-change: transform;
   pointer-events: none;
 }
 
