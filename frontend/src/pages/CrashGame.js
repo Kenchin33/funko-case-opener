@@ -317,7 +317,7 @@ const getPlanePosition = () => {
                     </div>
             )}
 
-            {!isGameRunning && !gameOver && !hasClaimed && (
+            {!isGameRunning && !gameOver && (
                 <button
                 onClick={handlePlaceBet}
                 className="btn btn-primary"
