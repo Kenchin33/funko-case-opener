@@ -1095,7 +1095,3 @@
   position: relative;
   padding: 0 20px; /* щоб кнопки не прилипали до країв */
 }
-
-.user-menu {
-  order: 2;
-}
