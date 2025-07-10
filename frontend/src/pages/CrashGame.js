@@ -108,6 +108,7 @@ const CrashGame = () => {
         setStartTime(null);
         setHasClaimed(false);
         setError(null);
+        setSelectedIndexes(new Set());
       }, 2000)
   };
 
@@ -150,10 +151,10 @@ const CrashGame = () => {
 
   const toggleSelectFigure = (index) => {
     setSelectedIndexes((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) newSet.delete(index);
-      else newSet.add(index);
-      return newSet;
+      const updated = new Set(prev);
+      if (updated.has(index)) updated.delete(index);
+      else updated.add(index);
+      return new Set(updated);
     });
   };
 
