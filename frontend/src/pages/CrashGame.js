@@ -32,7 +32,6 @@ const CrashGame = () => {
       setGameOver(false);
       setHasClaimed(false);
       setError(null);
-      animate();
     };
   
     const animate = () => {
@@ -121,25 +120,38 @@ const CrashGame = () => {
       const price = inventory[idx]?.price ?? 0;
       return acc + price * 0.75 * 42;
     }, 0);
-  
+
+    useEffect(() => {
+        if (isGameRunning && startTime !== null) {
+          requestRef.current = requestAnimationFrame(animate);
+        }
+      
+        return () => cancelAnimationFrame(requestRef.current);
+      }, [isGameRunning, startTime]);      
+
     // ---------- UI ----------
     return (
       <div className="crash-game-container">
         <div className="crash-header">
           <button className="btn btn-outline back-button" onClick={() => navigate('/')}>← Назад</button>
-          <div style={{ position: 'absolute', top: 20, right: 20 }}>
-            {isLoggedIn ? (
-              <Link to="/profile" className="profile-icon" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'white' }}>
-                <span>{balance !== null ? balance + '₴' : '...'}</span>
-                <FaUserCircle size={36} />
-              </Link>
-            ) : (
-              <>
-                <Link to="/register" className="btn btn-outline">Реєстрація</Link>
-                <Link to="/login" className="btn btn-primary">Авторизація</Link>
-              </>
-            )}
-          </div>
+          <div className="user-menu">
+          {isLoggedIn ? (
+            <Link
+              to="/profile"
+              className="profile-icon"
+              title="Профіль"
+              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
+            >
+              <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
+              <FaUserCircle size={36} />
+            </Link>
+          ) : (
+            <>
+              <Link to="/register" className="btn btn-outline">Реєстрація</Link>
+              <Link to="/login" className="btn btn-primary">Авторизація</Link>
+            </>
+          )}
+        </div>
         </div>
   
         <h2 className="case-title" style={{ textAlign: 'center' }}>Гра "Літачок"</h2>
