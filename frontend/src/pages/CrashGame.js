@@ -15,23 +15,30 @@ const CrashGame = () => {
 
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [coefficient, setCoefficient] = useState(1.0);
+  const [, setAnimationY] = useState(0); // для анімації, якщо треба (поки не використовується)
   const [gameOver, setGameOver] = useState(false);
   const [hasClaimed, setHasClaimed] = useState(false);
 
-  const maxDuration = 30000;
+  const maxDuration = 30000; // 30 секунд
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
   const gameFieldRef = useRef();
   const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
 
-  const containerSize = 350; // квадратне поле
-
   useEffect(() => {
-    if (gameFieldRef.current) {
-      const { offsetWidth, offsetHeight } = gameFieldRef.current;
-      setFieldSize({ width: offsetWidth, height: offsetHeight });
-    }
-  }, [isGameRunning]);
+    const updateSize = () => {
+      if (gameFieldRef.current) {
+        const { offsetWidth, offsetHeight } = gameFieldRef.current;
+        const size = Math.min(offsetWidth, offsetHeight);
+        setFieldSize({ width: size, height: size });
+      }
+    };
+  
+    window.addEventListener('resize', updateSize);
+    updateSize(); // одразу при монтуванні
+  
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);  
 
   const endGame = useCallback(() => {
     setIsGameRunning(false);
@@ -54,11 +61,13 @@ const CrashGame = () => {
 
     const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
     setCoefficient(newCoef);
+    setAnimationY(elapsed / 10); // можна прибрати, якщо не потрібно
   }, [startTime, endGame]);
 
   const startGame = () => {
     setIsGameRunning(true);
     setCoefficient(1.0);
+    setAnimationY(0);
     setStartTime(Date.now());
     setGameOver(false);
     setHasClaimed(false);
@@ -126,28 +135,47 @@ const CrashGame = () => {
     if (isGameRunning && startTime !== null) {
       requestRef.current = requestAnimationFrame(animate);
     }
+
     return () => cancelAnimationFrame(requestRef.current);
   }, [isGameRunning, startTime, animate]);
 
+  const containerSize = Math.min(fieldSize.width, fieldSize.height); // квадрат
+
+  // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
   const getPlanePosition = () => {
     const { width, height } = fieldSize;
+  
     if (!isGameRunning && !gameOver) return { x: 0, y: height };
-
-    if (coefficient < 6.95) {
+  
+    const now = Date.now();
+    const elapsed = now - startTime;
+  
+    if (elapsed < 3000) {
+      const progress = elapsed / 3000;
+      return {
+        x: progress * (width / 2),
+        y: height - progress * (height / 2),
+      };
+    } else if (elapsed < 6000) {
       return {
         x: width / 2,
         y: height / 2,
       };
+    } else if (elapsed < maxDuration) {
+      const extra = (elapsed - 6000) / (maxDuration - 6000);
+      return {
+        x: (width / 2) + extra * (width / 2),
+        y: (height / 2) - extra * (height / 2),
+      };
+    } else {
+      return {
+        x: width + 100,
+        y: -100,
+      };
     }
-
-    const maxCoef = 10;
-    const progress = Math.min((coefficient - 6.95) / (maxCoef - 6.95), 1);
-
-    return {
-      x: (width / 2) + progress * (width / 2),
-      y: (height / 2) - progress * (height / 2),
-    };
-  };
+  };  
+  
+  
 
   const PlanePosition = getPlanePosition();
 
@@ -159,8 +187,12 @@ const CrashGame = () => {
         </button>
         <div className="user-menu">
           {isLoggedIn ? (
-            <Link to="/profile" className="profile-icon" title="Профіль"
-              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}>
+            <Link
+              to="/profile"
+              className="profile-icon"
+              title="Профіль"
+              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
+            >
               <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
               <FaUserCircle size={36} />
             </Link>
@@ -173,10 +205,12 @@ const CrashGame = () => {
         </div>
       </div>
 
-      <h2 className="case-title" style={{ textAlign: 'center' }}>Гра "Літачок"</h2>
+      <h2 className="case-title" style={{ textAlign: 'center' }}>
+        Гра "Літачок"
+      </h2>
 
       {isLoggedIn && (
-        <div className="crash-game-main">
+        <div className="crash-game-main" style={{ display: 'flex', gap: '20px' }}>
           {/* Інвентар */}
           <div className="inventory-panel">
             <div className="inventory-header">
@@ -217,8 +251,8 @@ const CrashGame = () => {
             ref={gameFieldRef}
             style={{
               position: 'relative',
-              height: containerSize,
-              width: containerSize,
+              height: containerHeight,
+              width: containerWidth,
               border: '1px solid #ccc',
               overflow: 'hidden',
             }}
@@ -251,13 +285,16 @@ const CrashGame = () => {
                     overflow: 'visible',
                   }}
                 >
+                  {/* Пунктирна лінія по діагоналі */}
                   <div className="dashed-line" />
+
+                  {/* Літак */}
                   <div
                     className="plane"
                     style={{
-                      transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px) rotate(45deg)`,
+                        transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px) rotate(45deg)`,
                     }}
-                  >
+                    >
                     <img src="/images/plane.png" alt="plane" />
                     <div className="coefficient-label">{coefficient}x</div>
                   </div>
