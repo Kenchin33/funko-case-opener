@@ -158,19 +158,10 @@ const CasePage = () => {
       console.log('Повний список фігурок у стрічці:', finalReel);
 
       const fragment = document.createDocumentFragment();
-      finalReel.forEach((fig, index) => {
+      finalReel.forEach((fig) => {
         const img = document.createElement('img');
-        const isSecret = ['Legendary', 'Grail', 'Signed'].includes(fig.rarity);
-        const isWinningFigure = index === insertAt;
-
-        if (isSecret && !isWinningFigure) {
-          img.src = '/images/image.jpg';
-          img.alt = '????';
-        } else {  
-          img.src = fig.image;
-          img.alt = fig.name;
-        }
-
+        img.src = fig.image;
+        img.alt = fig.name;
         img.className = 'reel-item';
         fragment.appendChild(img);
       });
