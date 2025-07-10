@@ -224,11 +224,13 @@ const CrashGame = () => {
 
   // Хмаринки для анімації
   const clouds = [
-    { top: '10%', animationDuration: '60s', animationDelay: '0s', scale: 1 },
-    { top: '30%', animationDuration: '80s', animationDelay: '10s', scale: 0.8 },
-    { top: '50%', animationDuration: '70s', animationDelay: '5s', scale: 1.2 },
-    { top: '70%', animationDuration: '90s', animationDelay: '15s', scale: 0.9 },
+    { top: '10%', animationDuration: '1.2s', animationDelay: '0s', scale: 1 },
+    { top: '30%', animationDuration: '1.6s', animationDelay: '0.2s', scale: 0.8 },
+    { top: '50%', animationDuration: '1.4s', animationDelay: '0.1s', scale: 1.2 },
+    { top: '70%', animationDuration: '1.8s', animationDelay: '0.3s', scale: 0.9 },
+    { top: '80%', animationDuration: '2s', animationDelay: '0.3s', scale: 0.7 },
   ];
+  
 
   return (
     <div className="crash-game-container">
