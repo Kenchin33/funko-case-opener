@@ -15,36 +15,42 @@ const CrashGame = () => {
 
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [coefficient, setCoefficient] = useState(1.0);
+  const [, setAnimationY] = useState(0); // для анімації, якщо треба (поки не використовується)
   const [gameOver, setGameOver] = useState(false);
   const [hasClaimed, setHasClaimed] = useState(false);
+
+  const maxDuration = 30000; // 30 секунд
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
-
-  const maxDuration = 30000; // 30s
-  const containerSize = 300;
-  const diagonalLength = Math.sqrt(containerSize ** 2 + containerSize ** 2);
 
   const endGame = useCallback(() => {
     setIsGameRunning(false);
     cancelAnimationFrame(requestRef.current);
-    if (!hasClaimed) setGameOver(true);
+    if (!hasClaimed) {
+      setGameOver(true);
+    }
   }, [hasClaimed]);
 
   const animate = useCallback(() => {
     if (!startTime) return;
+
     requestRef.current = requestAnimationFrame(animate);
     const elapsed = Date.now() - startTime;
+
     if (elapsed >= maxDuration) {
       endGame();
       return;
     }
+
     const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
     setCoefficient(newCoef);
+    setAnimationY(elapsed / 10); // можна прибрати, якщо не потрібно
   }, [startTime, endGame]);
 
   const startGame = () => {
     setIsGameRunning(true);
     setCoefficient(1.0);
+    setAnimationY(0);
     setStartTime(Date.now());
     setGameOver(false);
     setHasClaimed(false);
@@ -55,8 +61,9 @@ const CrashGame = () => {
     setHasClaimed(true);
     setIsGameRunning(false);
     cancelAnimationFrame(requestRef.current);
+
     const winAmount = totalBetAmount * coefficient;
-    alert(`Ви виграли ${Math.round(winAmount)}₴!`);
+    alert(`Ви виграли ${Math.round(winAmount)}₴! (поки без оновлення інвентаря)`);
   };
 
   const handlePlaceBet = () => {
@@ -82,7 +89,8 @@ const CrashGame = () => {
           setInventory(res.data.inventory || []);
           setLoadingInventory(false);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error('Помилка завантаження профілю:', err);
           setIsLoggedIn(false);
           setBalance(null);
           setInventory([]);
@@ -95,7 +103,8 @@ const CrashGame = () => {
   const toggleSelectFigure = (index) => {
     setSelectedIndexes((prev) => {
       const newSet = new Set(prev);
-      newSet.has(index) ? newSet.delete(index) : newSet.add(index);
+      if (newSet.has(index)) newSet.delete(index);
+      else newSet.add(index);
       return newSet;
     });
   };
@@ -109,29 +118,47 @@ const CrashGame = () => {
     if (isGameRunning && startTime !== null) {
       requestRef.current = requestAnimationFrame(animate);
     }
+
     return () => cancelAnimationFrame(requestRef.current);
   }, [isGameRunning, startTime, animate]);
 
+  const containerHeight = 300; // px
+  const containerWidth = 300; // px
+
+  // Розрахунок позиції літака по діагоналі 0..1 і виліт за межі
   const getPlanePosition = () => {
-    if (!isGameRunning && !gameOver) return 0;
+    if (!isGameRunning && !gameOver) return { x: 0, y: containerSize };
+  
     const now = Date.now();
     const elapsed = now - startTime;
-
+  
     if (elapsed < 15000) {
-      return (elapsed / 15000) * 0.5;
+      const progress = elapsed / 15000;
+      return {
+        x: progress * (containerSize / 2),
+        y: containerSize - progress * (containerSize / 2),
+      };
     } else if (elapsed < 27000) {
-      return 0.5;
+      return {
+        x: containerSize / 2,
+        y: containerSize / 2,
+      };
     } else if (elapsed < maxDuration) {
       const extra = (elapsed - 27000) / (maxDuration - 27000);
-      return 0.5 + extra;
+      return {
+        x: (containerSize / 2) + extra * (containerSize / 2),
+        y: (containerSize / 2) - extra * (containerSize / 2),
+      };
     } else {
-      return 1.5;
+      return {
+        x: containerSize + 100,
+        y: -100,
+      };
     }
   };
+  
 
-  const position = getPlanePosition();
-  const planeTop = containerSize - position * containerSize - 30;
-  const planeLeft = position * containerSize - 30;
+  const PlanePosition = getPlanePosition();
 
   return (
     <div className="crash-game-container">
@@ -141,7 +168,12 @@ const CrashGame = () => {
         </button>
         <div className="user-menu">
           {isLoggedIn ? (
-            <Link to="/profile" className="profile-icon" style={{ color: 'white', fontWeight: '600' }}>
+            <Link
+              to="/profile"
+              className="profile-icon"
+              title="Профіль"
+              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
+            >
               <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
               <FaUserCircle size={36} />
             </Link>
@@ -154,14 +186,19 @@ const CrashGame = () => {
         </div>
       </div>
 
-      <h2 className="case-title" style={{ textAlign: 'center' }}>Гра "Літачок"</h2>
+      <h2 className="case-title" style={{ textAlign: 'center' }}>
+        Гра "Літачок"
+      </h2>
 
       {isLoggedIn && (
-        <div className="crash-game-main">
+        <div className="crash-game-main" style={{ display: 'flex', gap: '20px' }}>
+          {/* Інвентар */}
           <div className="inventory-panel">
             <div className="inventory-header">
               <h3>Ваш інвентар</h3>
-              <div className="bet-sum">Сума ставки: <strong>{Math.round(totalBetAmount)}₴</strong></div>
+              <div className="bet-sum">
+                Сума ставки: <strong>{Math.round(totalBetAmount)}₴</strong>
+              </div>
             </div>
             {inventory.length === 0 ? (
               <p>Немає фігурок</p>
@@ -189,7 +226,17 @@ const CrashGame = () => {
             )}
           </div>
 
-          <div className="game-field" style={{ width: containerSize, height: containerSize, overflow: 'visible' }}>
+          {/* Ігрове поле */}
+          <div
+            className="game-field"
+            style={{
+              position: 'relative',
+              height: containerHeight,
+              width: containerWidth,
+              border: '1px solid #ccc',
+              overflow: 'hidden',
+            }}
+          >
             <h3 style={{ textAlign: 'center' }}>Ігрове поле</h3>
 
             {!isGameRunning && !gameOver && (
@@ -207,28 +254,28 @@ const CrashGame = () => {
 
             {isGameRunning && (
               <>
-                <div className="animation-container" style={{ position: 'absolute', bottom: 0, left: 0 }}>
-                  <div
-                    className="dashed-line"
-                    style={{
-                      width: diagonalLength,
-                      height: 2,
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      transform: 'rotate(45deg)',
-                      transformOrigin: 'left bottom',
-                      animation: 'dashmove 3s linear infinite',
-                    }}
-                  />
+                <div
+                  className="animation-container"
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    height: containerHeight,
+                    width: containerWidth,
+                    overflow: 'visible',
+                  }}
+                >
+                  {/* Пунктирна лінія по діагоналі */}
+                  <div className="dashed-line" />
 
+                  {/* Літак */}
                   <div
                     className="plane"
                     style={{
-                      position: 'absolute',
-                      top: planeTop,
-                      left: planeLeft,
-                      transition: 'top 0.1s linear, left 0.1s linear',
+                     position: 'absolute',
+                     top: PlanePosition.y,
+                     left: PlanePosition.x,
+                     transition: 'top 0.1s linear, left 0.1s linear',
                     }}
                   >
                     <img src="/images/plane.png" alt="plane" />
