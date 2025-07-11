@@ -123,6 +123,7 @@ const CrashGame = () => {
     }
   }, [gameOver, hasClaimed]);
 
+
   const animate = useCallback(() => {
     if (!isGameRunning || !startTime) return;
 
@@ -142,6 +143,7 @@ const CrashGame = () => {
       endGame();
     }
   }, [ isGameRunning, startTime, endGame]);
+
 
   const startGame = () => {
 
@@ -163,32 +165,34 @@ const CrashGame = () => {
     }
   };
 
+
   const handleClaim = async () => {
-    const token = localStorage.getItem('token');
-    const winCoef = coefficient;
-    const selected = Array.from(selectedIndexes);
+    if (!isGameRunning || hasClaimed) return;
+
+    cancelAnimationFrame(requestRef.current);
+    setIsGameRunning(false);
+    setHasClaimed(true);
+
+    if (gameAudioRef.current) {
+      gameAudioRef.current.pause();
+      gameAudioRef.current.currentTime = 0;
+    }
+
+    const claimedCoefficient = coefficient;
   
     try {
+      const token = localStorage.getItem('token');
+      const selected = Array.from(selectedIndexes);
+
       const resp = await axios.post(
         'https://funko-case-opener.onrender.com/api/crash/claim-reward',
-        { selectedIds: selected, coefficient: winCoef },
+        { selectedIds: selected, coefficient: claimedCoefficient },
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
       setInventory(resp.data.inventory);
       setBalance(resp.data.balance);
       setSelectedIndexes(new Set());
-
-      // очистка стану
-      setHasClaimed(true);
-      setIsGameRunning(false);
-      cancelAnimationFrame(requestRef.current);
-  
-      if (gameAudioRef.current) {
-        gameAudioRef.current.pause();
-        gameAudioRef.current.currentTime = 0;
-      }
-
   
       setTimeout(() => {
         setCoefficient(1.0);
