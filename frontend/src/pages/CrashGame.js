@@ -92,7 +92,7 @@ const CrashGame = () => {
   }, [hasClaimed]);
 
   useEffect(() => {
-    if (gameOver) {
+    if (gameOver || hasClaimed) {
       const timer = setTimeout(() => {
         setGameOver(false);
         setCoefficient(1.0);
@@ -103,7 +103,7 @@ const CrashGame = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [gameOver]);
+  }, [gameOver, hasClaimed]);
 
   const animate = useCallback(() => {
     if (!startTime) return;
@@ -159,6 +159,8 @@ const CrashGame = () => {
   
       setInventory(resp.data.inventory);
       setBalance(resp.data.balance);
+      setSelectedIndexes(new Set());
+
       // очистка стану
       setHasClaimed(true);
       setIsGameRunning(false);
@@ -171,7 +173,6 @@ const CrashGame = () => {
   
       alert(`Призові фігурки додано✅ Баланс поповнено!`);
 
-      setSelectedIndexes(new Set());
   
       setTimeout(() => {
         setCoefficient(1.0);
@@ -187,7 +188,7 @@ const CrashGame = () => {
   
 
   const handlePlaceBet = () => {
-    if (isGameRunning || gameOver || hasClaimed) return;
+    if (isGameRunning || gameOver ) return;
   
     if (selectedIndexes.size === 0) {
       setError('Оберіть хоча б одну фігурку для ставки');
