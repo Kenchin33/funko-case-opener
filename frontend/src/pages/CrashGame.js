@@ -87,8 +87,26 @@ const CrashGame = () => {
     }
 
     if (!hasClaimed) {
+      // Гравець програв — видаляємо поставлені фігурки
+      const token = localStorage.getItem('token');
+      const selected = Array.from(selectedIndexes);
+    
+      if (token && selected.length > 0) {
+        axios.post(
+          'https://funko-case-opener.onrender.com/api/crash/lost-bet',
+          { selectedIds: selected },
+          { headers: { Authorization: `Bearer ${token}` } }
+        ).then((res) => {
+          setInventory(res.data.inventory);
+          setBalance(res.data.balance);
+          setSelectedIndexes(new Set());
+        }).catch((err) => {
+          console.error('❌ Помилка при програші:', err);
+        });
+      }
+    
       setGameOver(true);
-    }
+    }    
   }, [hasClaimed]);
 
   useEffect(() => {
