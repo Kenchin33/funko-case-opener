@@ -59,48 +59,6 @@ const CrashGame = () => {
     { top: '100%', animationDuration: '4s', animationDelay: '0.2s', scale: 1, left: '100%' },
   ];  
 
-  const generateCrashCoefficient = () => {
-    const rand = Math.random();
-  
-    let coef = 1.0;
-  
-    if (rand < instantCrashChance) {
-      coef = 1.0;
-      setInstantCrashChance(0.10); // наступна гра: збільшуємо шанс інстант-крашу
-      console.log('%c💥 Instant Crash! Коефіцієнт: 1.00x', 'color: red; font-weight: bold;');
-    } else {
-      // нормальна гра – повертаємо шанси назад, якщо вони були збільшені
-      if (instantCrashChance > 0.01) {
-        setInstantCrashChance(0.01);
-      }
-  
-      const ranges = [
-        { chance: 0.55, min: 1.01, max: 1.99 },
-        { chance: instantCrashChance > 0.01 ? 0.20 : 0.30, min: 2.0, max: 4.99 },
-        { chance: 0.10, min: 5.0, max: 9.99 },
-        { chance: 0.03, min: 10.0, max: 100.0 },
-        { chance: 0.01, min: 100.0, max: 500.0 }
-      ];
-  
-      let cumulative = 0;
-      const r = Math.random();
-  
-      for (const range of ranges) {
-        cumulative += range.chance;
-        if (r < cumulative) {
-          coef = parseFloat(
-            (range.min + Math.random() * (range.max - range.min)).toFixed(2)
-          );
-          break;
-        }
-      }
-  
-      console.log(`🎲 Згенерований коефіцієнт: ${coef}x`);
-    }
-  
-    generatedCoefficientRef.current = coef;
-  };
-
   useEffect(() => {
     const updateFieldSize = () => {
       if (gameFieldRef.current) {
@@ -141,34 +99,11 @@ const CrashGame = () => {
         setStartTime(null);
         setHasClaimed(false);
         setError(null);
-        setSelectedIndexes(new Set()); // обов'язково очищай вибрані фігурки, щоб кнопка активувалась
-        generateCrashCoefficient();
       }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [gameOver, generateCrashCoefficient]);
-
-  useEffect(() => {
-    if (gameOver && !hasClaimed && selectedIndexes.size > 0) {
-      // Викликаємо API для видалення фігурок при програші
-      const token = localStorage.getItem('token');
-      axios.post(
-        'https://funko-case-opener.onrender.com/api/crash/lost-bet',
-        { selectedIds: Array.from(selectedIndexes) },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then((resp) => {
-        setInventory(resp.data.inventory);
-        setBalance(resp.data.balance);
-        setSelectedIndexes(new Set());
-      })
-      .catch((err) => {
-        console.error('Error removing lost bet figures', err);
-      });
-    }
-  }, [gameOver, hasClaimed, selectedIndexes]);
-  
+  }, [gameOver]);
 
   const animate = useCallback(() => {
     if (!startTime) return;
@@ -190,15 +125,12 @@ const CrashGame = () => {
     }
   }, [startTime, endGame]);
 
-
   const startGame = () => {
 
     if (gameAudioRef.current) {
       gameAudioRef.current.currentTime = 0;
       gameAudioRef.current.play().catch(() => {}); // щоб не було помилки, якщо без звуку
     }
-
-    generateCrashCoefficient();
 
     setIsGameRunning(true);
     setCoefficient(1.0);
@@ -222,7 +154,7 @@ const CrashGame = () => {
       const resp = await axios.post(
         'https://funko-case-opener.onrender.com/api/crash/claim-reward',
         { selectedIds: selected, coefficient: winCoef },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: Bearer ${token} } }
       );
   
       setInventory(resp.data.inventory);
@@ -237,12 +169,13 @@ const CrashGame = () => {
         gameAudioRef.current.currentTime = 0;
       }
   
-      alert(`Призові фігурки додано✅ Баланс поповнено!`);
+      alert(Призові фігурки додано✅ Баланс поповнено!);
   
       setTimeout(() => {
         setCoefficient(1.0);
         setStartTime(null);
         setError(null);
+        setSelectedIndexes(new Set());
       }, 2000);
   
     } catch (err) {
@@ -272,7 +205,7 @@ const CrashGame = () => {
       setLoadingInventory(true);
       axios
         .get('https://funko-case-opener.onrender.com/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: Bearer ${token} },
         })
         .then((res) => {
           setBalance(res.data.balance ?? 0);
@@ -372,6 +305,51 @@ const CrashGame = () => {
   const PlanePosition = getPlanePosition();
 
 
+  const generateCrashCoefficient = () => {
+    const rand = Math.random();
+  
+    let coef = 1.0;
+  
+    if (rand < instantCrashChance) {
+      coef = 1.0;
+      setInstantCrashChance(0.10); // наступна гра: збільшуємо шанс інстант-крашу
+      console.log('%c💥 Instant Crash! Коефіцієнт: 1.00x', 'color: red; font-weight: bold;');
+    } else {
+      // нормальна гра – повертаємо шанси назад, якщо вони були збільшені
+      if (instantCrashChance > 0.01) {
+        setInstantCrashChance(0.01);
+      }
+  
+      const ranges = [
+        { chance: 0.55, min: 1.01, max: 1.99 },
+        { chance: instantCrashChance > 0.01 ? 0.20 : 0.30, min: 2.0, max: 4.99 },
+        { chance: 0.10, min: 5.0, max: 9.99 },
+        { chance: 0.03, min: 10.0, max: 100.0 },
+        { chance: 0.01, min: 100.0, max: 500.0 }
+      ];
+  
+      let cumulative = 0;
+      const r = Math.random();
+  
+      for (const range of ranges) {
+        cumulative += range.chance;
+        if (r < cumulative) {
+          coef = parseFloat(
+            (range.min + Math.random() * (range.max - range.min)).toFixed(2)
+          );
+          break;
+        }
+      }
+  
+      console.log(🎲 Згенерований коефіцієнт: ${coef}x);
+    }
+  
+    generatedCoefficientRef.current = coef;
+  };
+  
+
+
+
   return (
     <div className="crash-game-container">
       <div className="crash-header">
@@ -420,7 +398,7 @@ const CrashGame = () => {
                   const figure = entry.figure || {};
                   const selected = selectedIndexes.has(index);
                   return (
-                    <label key={index} className={`figure-card ${selected ? 'selected' : ''}`}>
+                    <label key={index} className={figure-card ${selected ? 'selected' : ''}}>
                       <input
                         type="checkbox"
                         style={{ display: 'none' }}
@@ -429,7 +407,7 @@ const CrashGame = () => {
                       />
                       <img src={figure.image} alt={figure.name} />
                       <p>{figure.name}</p>
-                      <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
+                      <p className={rarity ${figure.rarity}}>{figure.rarity}</p>
                       <p>{entry.price}$</p>
                     </label>
                   );
@@ -489,7 +467,7 @@ const CrashGame = () => {
                   animationName: 'moveCloud',
                   animationDuration: cloud.animationDuration,
                   animationDelay: cloud.animationDelay,
-                  transform: `scale(${cloud.scale})`,
+                  transform: scale(${cloud.scale}),
                   animationTimingFunction: 'linear',
                   animationIterationCount: 'infinite',
                   position: 'absolute',
@@ -522,7 +500,7 @@ const CrashGame = () => {
                 <div
                   className="plane"
                   style={{
-                    transform: `translate(0px, ${containerSize - 60}px)`,
+                    transform: translate(0px, ${containerSize - 60}px),
                   }}
                 >
                   <img src="/images/plane.png" alt="plane" />
@@ -534,7 +512,7 @@ const CrashGame = () => {
                 <div
                   className="plane"
                   style={{
-                    transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
+                    transform: translate(${PlanePosition.x}px, ${PlanePosition.y}px),
                   }}
                 >
                   <img src="/images/plane1.png" alt="plane" />
