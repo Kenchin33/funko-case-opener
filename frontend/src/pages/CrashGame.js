@@ -152,7 +152,7 @@ const CrashGame = () => {
   
     try {
       const resp = await axios.post(
-        '/api/crash/claim-reward',
+        'https://funko-case-opener.onrender.com/api/crash/claim-reward',
         { selectedIds: selected, coefficient: winCoef },
         { headers: { Authorization: `Bearer ${token}` } }
       );
