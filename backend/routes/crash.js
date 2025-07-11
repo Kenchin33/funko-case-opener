@@ -52,4 +52,25 @@ router.post('/claim-reward', authMiddleware, async (req, res) => {
   }
 });
 
+router.post('/lost-bet', authMiddleware, async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      const { selectedIds } = req.body;
+      const user = await User.findById(userId).populate('inventory.figure');
+      if (!user) return res.status(404).json({ message: 'User not found' });
+  
+      // Видаляємо поставлені фігурки
+      user.inventory = user.inventory.filter((_, idx) => !selectedIds.includes(idx));
+  
+      await user.save();
+  
+      const populated = await User.findById(userId).populate('inventory.figure');
+      res.json({ inventory: populated.inventory, balance: populated.balance });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
+
 module.exports = router;

@@ -99,11 +99,34 @@ const CrashGame = () => {
         setStartTime(null);
         setHasClaimed(false);
         setError(null);
+        setSelectedIndexes(new Set()); // обов'язково очищай вибрані фігурки, щоб кнопка активувалась
+        generateCrashCoefficient();
       }, 2000);
 
       return () => clearTimeout(timer);
     }
   }, [gameOver]);
+
+  useEffect(() => {
+    if (gameOver && !hasClaimed && selectedIndexes.size > 0) {
+      // Викликаємо API для видалення фігурок при програші
+      const token = localStorage.getItem('token');
+      axios.post(
+        'https://funko-case-opener.onrender.com/api/crash/lost-bet',
+        { selectedIds: Array.from(selectedIndexes) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then((resp) => {
+        setInventory(resp.data.inventory);
+        setBalance(resp.data.balance);
+        setSelectedIndexes(new Set());
+      })
+      .catch((err) => {
+        console.error('Error removing lost bet figures', err);
+      });
+    }
+  }, [gameOver, hasClaimed]);
+  
 
   const animate = useCallback(() => {
     if (!startTime) return;
@@ -125,12 +148,15 @@ const CrashGame = () => {
     }
   }, [startTime, endGame]);
 
+
   const startGame = () => {
 
     if (gameAudioRef.current) {
       gameAudioRef.current.currentTime = 0;
       gameAudioRef.current.play().catch(() => {}); // щоб не було помилки, якщо без звуку
     }
+
+    generateCrashCoefficient();
 
     setIsGameRunning(true);
     setCoefficient(1.0);
@@ -175,7 +201,6 @@ const CrashGame = () => {
         setCoefficient(1.0);
         setStartTime(null);
         setError(null);
-        setSelectedIndexes(new Set());
       }, 2000);
   
     } catch (err) {
