@@ -188,8 +188,6 @@ const CrashGame = () => {
         gameAudioRef.current.pause();
         gameAudioRef.current.currentTime = 0;
       }
-  
-      alert(`Призові фігурки додано✅ Баланс поповнено!`);
 
   
       setTimeout(() => {
@@ -306,7 +304,7 @@ const CrashGame = () => {
     } else if (coefficient < 2.9) {
       return {
         x: width / 2,
-        y: height / 2 - 60,
+        y: height / 2.2 - 60,
       };
     } else if (coefficient < 3) {
       const progress = (coefficient - 2.9) / (3 - 2.9);
