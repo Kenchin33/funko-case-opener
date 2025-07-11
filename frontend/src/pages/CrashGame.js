@@ -107,7 +107,7 @@ const CrashGame = () => {
     
       setGameOver(true);
     }    
-  }, [hasClaimed]);
+  }, [hasClaimed, selectedIndexes]);
 
   useEffect(() => {
     if (gameOver || hasClaimed) {
