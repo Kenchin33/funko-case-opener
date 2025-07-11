@@ -19,17 +19,26 @@ router.post('/claim-reward', authMiddleware, async (req, res) => {
     for (const entry of user.inventory.filter((_, idx) => selectedIds.includes(idx))) {
       const winAmount = entry.price * coefficient;
       // знайти фігурку з price <= winAmount найбільшу
-      const found = await FunkoFigure.findOne({ price: { $lte: winAmount } }).sort({ price: -1 });
-      if (found) {
+      // Знайти всі фігурки, які не перевищують winAmount, і відсортувати за спаданням ціни
+      const candidates = await FunkoFigure.find({ price: { $lte: winAmount } }).sort({ price: -1 });
+
+      if (candidates.length > 0) {
+        const topPrice = candidates[0].price;
+        // Відібрати всі фігурки з найбільшою ціною серед можливих
+        const topFigures = candidates.filter(f => f.price === topPrice);
+        // Випадково вибрати одну з них
+        const randomFigure = topFigures[Math.floor(Math.random() * topFigures.length)];
+
         newInventoryEntries.push({
-          figure: found._id,
-          price: found.price,
-          caseName: entry.caseName,
-          caseId: entry.caseId,
+            figure: randomFigure._id,
+            price: randomFigure.price,
+            caseName: entry.caseName,
+            caseId: entry.caseId,
         });
-        const diff = winAmount - found.price;
+
+        const diff = winAmount - randomFigure.price;
         if (diff > 0) extraBalance += diff * 42;
-      }
+    }
     }
 
     // 2. Видаляємо поставлені фігурки
