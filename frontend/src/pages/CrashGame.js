@@ -193,9 +193,7 @@ const CrashGame = () => {
     setHasClaimed(false);
     setError(null);
 
-    if (!generatedCoefficientRef.current) {
-      generateCrashCoefficient();
-    }
+    generateCrashCoefficient();
   };
 
 
