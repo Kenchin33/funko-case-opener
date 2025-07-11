@@ -21,6 +21,7 @@ const CasePage = () => {
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const winAudioRef = useRef(null);
+  const nothingId = '686f9c79b62dd7c2154d21e9';
 
   const rarityColors = {
     Common: '#7a7a7a',
@@ -305,6 +306,10 @@ const CasePage = () => {
                 <button 
                   className="popup-close" 
                   onClick={async () => {
+                    if (resultFigure._id === nothingId) {
+                      setShowResult(false); // просто закриває
+                      return;
+                    }
                     try {
                       const token = localStorage.getItem('token');
                       const responce = await fetch('https://funko-case-opener.onrender.com/api/cases/inventory/add', {
@@ -333,7 +338,7 @@ const CasePage = () => {
                       showErrorMessage(err.message);
                     }
                   }}>✖</button>
-                <h3>Випала фігурка!</h3>
+                <h3>{resultFigure._id === nothingId ? 'На жаль, нічого не випало 😞' : 'Випала фігурка!'}</h3>
                 <img src={resultFigure.image} alt={resultFigure.name} />
                 <p className="popup-name">
                   <strong>{resultFigure.name}</strong> —{' '}
@@ -341,7 +346,8 @@ const CasePage = () => {
                 </p>
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
 
-                <div className="popup-buttons">
+                {resultFigure._id !== nothingId && (
+                  <div className="popup-buttons">
                   <button className="btn btn-outline open-btn" onClick={async () => {
                     console.log('Натиснули кнопку продати');
                     const salePrice = Math.round(resultFigure.price * 0.75 * 42);
@@ -408,6 +414,7 @@ const CasePage = () => {
                   }}}
                   > Залишити </button>
                 </div>
+                )}
               </div>
             </div>
           )}
