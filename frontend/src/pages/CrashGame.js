@@ -154,7 +154,7 @@ const CrashGame = () => {
       const resp = await axios.post(
         'https://funko-case-opener.onrender.com/api/crash/claim-reward',
         { selectedIds: selected, coefficient: winCoef },
-        { headers: { Authorization: Bearer ${token} } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
   
       setInventory(resp.data.inventory);
@@ -169,7 +169,7 @@ const CrashGame = () => {
         gameAudioRef.current.currentTime = 0;
       }
   
-      alert(Призові фігурки додано✅ Баланс поповнено!);
+      alert(`Призові фігурки додано✅ Баланс поповнено!`);
   
       setTimeout(() => {
         setCoefficient(1.0);
@@ -205,7 +205,7 @@ const CrashGame = () => {
       setLoadingInventory(true);
       axios
         .get('https://funko-case-opener.onrender.com/api/auth/me', {
-          headers: { Authorization: Bearer ${token} },
+          headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
           setBalance(res.data.balance ?? 0);
@@ -341,7 +341,7 @@ const CrashGame = () => {
         }
       }
   
-      console.log(🎲 Згенерований коефіцієнт: ${coef}x);
+      console.log(`🎲 Згенерований коефіцієнт: ${coef}x`);
     }
   
     generatedCoefficientRef.current = coef;
@@ -398,7 +398,7 @@ const CrashGame = () => {
                   const figure = entry.figure || {};
                   const selected = selectedIndexes.has(index);
                   return (
-                    <label key={index} className={figure-card ${selected ? 'selected' : ''}}>
+                    <label key={index} className={`figure-card ${selected ? 'selected' : ''}`}>
                       <input
                         type="checkbox"
                         style={{ display: 'none' }}
@@ -407,7 +407,7 @@ const CrashGame = () => {
                       />
                       <img src={figure.image} alt={figure.name} />
                       <p>{figure.name}</p>
-                      <p className={rarity ${figure.rarity}}>{figure.rarity}</p>
+                      <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
                       <p>{entry.price}$</p>
                     </label>
                   );
@@ -467,7 +467,7 @@ const CrashGame = () => {
                   animationName: 'moveCloud',
                   animationDuration: cloud.animationDuration,
                   animationDelay: cloud.animationDelay,
-                  transform: scale(${cloud.scale}),
+                  transform: `scale(${cloud.scale})`,
                   animationTimingFunction: 'linear',
                   animationIterationCount: 'infinite',
                   position: 'absolute',
@@ -500,7 +500,7 @@ const CrashGame = () => {
                 <div
                   className="plane"
                   style={{
-                    transform: translate(0px, ${containerSize - 60}px),
+                    transform: `translate(0px, ${containerSize - 60}px)`,
                   }}
                 >
                   <img src="/images/plane.png" alt="plane" />
@@ -512,7 +512,7 @@ const CrashGame = () => {
                 <div
                   className="plane"
                   style={{
-                    transform: translate(${PlanePosition.x}px, ${PlanePosition.y}px),
+                    transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
                   }}
                 >
                   <img src="/images/plane1.png" alt="plane" />
