@@ -114,7 +114,7 @@ const Home = () => {
   <div className="cases-list">
     <Link to="/crash" className="case-card" style={{ cursor: 'pointer' }}>
       <img
-        src="/images/image.jpg"
+        src="/images/logo.PNG"
         alt="Грати в Літачка"
         className="case-image"
       />
