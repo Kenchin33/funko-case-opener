@@ -124,7 +124,7 @@ const CrashGame = () => {
   }, [gameOver, hasClaimed]);
 
   const animate = useCallback(() => {
-    if (!startTime) return;
+    if (!isGameRunning || !startTime) return;
 
     requestRef.current = requestAnimationFrame(animate);
     const elapsed = Date.now() - startTime;
@@ -141,7 +141,7 @@ const CrashGame = () => {
     if (newCoef >= generatedCoefficientRef.current) {
       endGame();
     }
-  }, [startTime, endGame]);
+  }, [ isGameRunning, startTime, endGame]);
 
   const startGame = () => {
 
@@ -304,7 +304,7 @@ const CrashGame = () => {
     } else if (coefficient < 2.9) {
       return {
         x: width / 2,
-        y: height / 2.2 - 60,
+        y: height / 1.8 - 60,
       };
     } else if (coefficient < 3) {
       const progress = (coefficient - 2.9) / (3 - 2.9);
