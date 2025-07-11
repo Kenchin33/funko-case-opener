@@ -1319,7 +1319,7 @@
   .game-field {
     order: 1;               /* Перший блок */
     width: 100%;
-    max-width: none;
+    max-width: 320px;
     aspect-ratio: 1 / 1;    /* Залишаємо квадрат */
     height: auto;           /* Висота під aspect-ratio */
     margin-bottom: 20px;
@@ -1337,5 +1337,13 @@
   .game-field {
     /* Висота під aspect-ratio вже адаптується, можна додати максимальну висоту, якщо треба */
     max-height: 300px;      /* Наприклад, максимум 300px по висоті */
+  }
+
+  h2.case-title {
+    margin-top: 60px; /* Збільшуємо верхній відступ, щоб не перекривало хедер */
+  }
+
+  .crash-game-main {
+    margin-top: 20px;
   }
 }
