@@ -343,22 +343,11 @@ const CrashGame = () => {
         x: progress * (width / 2),
         y: height - progress * (height / 2) - 60,
       };
-    } else if (coefficient < 2.9) {
-      return {
-        x: width / 2,
-        y: height / 1.8 - 60,
-      };
-    } else if (coefficient < 3) {
-      const progress = (coefficient - 2.9) / (3 - 2.9);
-      return {
-        x: (width / 2) + progress * (width / 2) + progress * 100,
-        y: (height / 2) - progress * (height / 2) - progress * 100 - 60,
-      };
     } else {
       return {
-        x: width + 100,
-        y: -100,
-      };
+        x: width / 2,
+        y: height / 1.8 - 60
+      }
     }
   };
 
