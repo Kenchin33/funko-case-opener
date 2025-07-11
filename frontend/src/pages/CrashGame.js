@@ -170,12 +170,13 @@ const CrashGame = () => {
       }
   
       alert(`Призові фігурки додано✅ Баланс поповнено!`);
+
+      setSelectedIndexes(new Set());
   
       setTimeout(() => {
         setCoefficient(1.0);
         setStartTime(null);
         setError(null);
-        setSelectedIndexes(new Set());
       }, 2000);
   
     } catch (err) {
