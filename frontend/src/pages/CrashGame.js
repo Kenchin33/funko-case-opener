@@ -163,11 +163,11 @@ const CrashGame = () => {
       return;
     }
 
-    const newCoef = parseFloat((1 + Math.pow(elapsed / 10000, 1.7)).toFixed(2));
-    setCoefficient(newCoef);
+    const rawCoef = 1 + Math.row(elapsed/10000, 1.7);
+    setCoefficient(parseFloat(rawCoef.toFixed(2)));
     setAnimationY(elapsed / 10);
 
-    if (newCoef >= generatedCoefficientRef.current) {
+    if (rawCoef >= generatedCoefficientRef.current) {
       endGame();
     }
   }, [ isGameRunning, startTime, endGame]);
@@ -193,7 +193,9 @@ const CrashGame = () => {
     setHasClaimed(false);
     setError(null);
 
-    generateCrashCoefficient();
+    if (!generatedCoefficientRef.current) {
+      generateCrashCoefficient();
+    }
   };
 
 
@@ -368,8 +370,8 @@ const CrashGame = () => {
       }
   
       const ranges = [
-        { chance: 0.55, min: 1.01, max: 1.99 },
-        { chance: instantCrashChance > 0.01 ? 0.20 : 0.30, min: 2.0, max: 4.99 },
+        { chance: 0.66, min: 1.01, max: 1.99 },
+        { chance: instantCrashChance > 0.01 ? 0.10 : 0.20, min: 2.0, max: 4.99 },
         { chance: 0.10, min: 5.0, max: 9.99 },
         { chance: 0.03, min: 10.0, max: 100.0 },
         { chance: 0.01, min: 100.0, max: 500.0 }
