@@ -59,6 +59,48 @@ const CrashGame = () => {
     { top: '100%', animationDuration: '4s', animationDelay: '0.2s', scale: 1, left: '100%' },
   ];  
 
+  const generateCrashCoefficient = () => {
+    const rand = Math.random();
+  
+    let coef = 1.0;
+  
+    if (rand < instantCrashChance) {
+      coef = 1.0;
+      setInstantCrashChance(0.10); // наступна гра: збільшуємо шанс інстант-крашу
+      console.log('%c💥 Instant Crash! Коефіцієнт: 1.00x', 'color: red; font-weight: bold;');
+    } else {
+      // нормальна гра – повертаємо шанси назад, якщо вони були збільшені
+      if (instantCrashChance > 0.01) {
+        setInstantCrashChance(0.01);
+      }
+  
+      const ranges = [
+        { chance: 0.55, min: 1.01, max: 1.99 },
+        { chance: instantCrashChance > 0.01 ? 0.20 : 0.30, min: 2.0, max: 4.99 },
+        { chance: 0.10, min: 5.0, max: 9.99 },
+        { chance: 0.03, min: 10.0, max: 100.0 },
+        { chance: 0.01, min: 100.0, max: 500.0 }
+      ];
+  
+      let cumulative = 0;
+      const r = Math.random();
+  
+      for (const range of ranges) {
+        cumulative += range.chance;
+        if (r < cumulative) {
+          coef = parseFloat(
+            (range.min + Math.random() * (range.max - range.min)).toFixed(2)
+          );
+          break;
+        }
+      }
+  
+      console.log(`🎲 Згенерований коефіцієнт: ${coef}x`);
+    }
+  
+    generatedCoefficientRef.current = coef;
+  };
+
   useEffect(() => {
     const updateFieldSize = () => {
       if (gameFieldRef.current) {
@@ -328,51 +370,6 @@ const CrashGame = () => {
   };
 
   const PlanePosition = getPlanePosition();
-
-
-  const generateCrashCoefficient = () => {
-    const rand = Math.random();
-  
-    let coef = 1.0;
-  
-    if (rand < instantCrashChance) {
-      coef = 1.0;
-      setInstantCrashChance(0.10); // наступна гра: збільшуємо шанс інстант-крашу
-      console.log('%c💥 Instant Crash! Коефіцієнт: 1.00x', 'color: red; font-weight: bold;');
-    } else {
-      // нормальна гра – повертаємо шанси назад, якщо вони були збільшені
-      if (instantCrashChance > 0.01) {
-        setInstantCrashChance(0.01);
-      }
-  
-      const ranges = [
-        { chance: 0.55, min: 1.01, max: 1.99 },
-        { chance: instantCrashChance > 0.01 ? 0.20 : 0.30, min: 2.0, max: 4.99 },
-        { chance: 0.10, min: 5.0, max: 9.99 },
-        { chance: 0.03, min: 10.0, max: 100.0 },
-        { chance: 0.01, min: 100.0, max: 500.0 }
-      ];
-  
-      let cumulative = 0;
-      const r = Math.random();
-  
-      for (const range of ranges) {
-        cumulative += range.chance;
-        if (r < cumulative) {
-          coef = parseFloat(
-            (range.min + Math.random() * (range.max - range.min)).toFixed(2)
-          );
-          break;
-        }
-      }
-  
-      console.log(`🎲 Згенерований коефіцієнт: ${coef}x`);
-    }
-  
-    generatedCoefficientRef.current = coef;
-  };
-  
-
 
 
   return (
