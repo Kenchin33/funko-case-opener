@@ -338,11 +338,11 @@ const CasePage = () => {
                       showErrorMessage(err.message);
                     }
                   }}>✖</button>
-                <h3>{resultFigure._id === nothingId ? 'На жаль, нічого не випало 😞' : 'Випала фігурка!'}</h3>
+                <h3>{resultFigure._id === nothingId ? 'На жаль, нічого не випало' : 'Випала фігурка!'}</h3>
                 <img src={resultFigure.image} alt={resultFigure.name} />
                 <p className="popup-name">
                   <strong>{resultFigure.name}</strong> —{' '}
-                  <span className={`rarity ${resultFigure.rarity}`}>{resultFigure.rarity}</span>
+                  <span className={`rarity ${resultFigure.rarity}`}>{resultFigure._id === nothingId ? '' : `${resultFigure.rarity}`}</span>
                 </p>
                 <p className="popup-price"><strong>{resultFigure.price}$</strong></p>
 
