@@ -119,7 +119,7 @@ const Home = () => {
         className="case-image"
       />
       <div className="case-info">
-        <h3>Літачок</h3>
+        <h3>Ракетка</h3>
         <p>Зроби свої фігурки ціннішими!</p>
       </div>
     </Link>
