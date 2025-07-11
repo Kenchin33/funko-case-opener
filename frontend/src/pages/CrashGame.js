@@ -40,6 +40,7 @@ const CrashGame = () => {
   const [startTime, setStartTime] = useState(null);
   const requestRef = useRef();
   const gameFieldRef = useRef();
+  const gameAudioRef = useRef(null);
   const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
   const [instantCrashChance, setInstantCrashChance] = useState(0.01);
   const generatedCoefficientRef = useRef(null);
@@ -71,9 +72,20 @@ const CrashGame = () => {
     return () => window.removeEventListener('resize', updateFieldSize);
   }, [isGameRunning]);
 
+  useEffect(() => {
+    gameAudioRef.current = new Audio('/sounds/win-sound.mp3');
+    gameAudioRef.current.loop = true; // щоб звук крутився циклічно
+  }, []);
+
   const endGame = useCallback(() => {
     setIsGameRunning(false);
     cancelAnimationFrame(requestRef.current);
+
+    if (gameAudioRef.current) {
+      gameAudioRef.current.pause();
+      gameAudioRef.current.currentTime = 0;
+    }
+
     if (!hasClaimed) {
       setGameOver(true);
     }
@@ -114,6 +126,12 @@ const CrashGame = () => {
   }, [startTime, endGame]);
 
   const startGame = () => {
+
+    if (gameAudioRef.current) {
+      gameAudioRef.current.currentTime = 0;
+      gameAudioRef.current.play().catch(() => {}); // щоб не було помилки, якщо без звуку
+    }
+
     setIsGameRunning(true);
     setCoefficient(1.0);
     setAnimationY(0);
@@ -131,6 +149,11 @@ const CrashGame = () => {
     setHasClaimed(true);
     setIsGameRunning(false);
     cancelAnimationFrame(requestRef.current);
+
+    if (gameAudioRef.current) {
+      gameAudioRef.current.pause();
+      gameAudioRef.current.currentTime = 0;
+    }
 
     const winAmount = totalBetAmount * coefficient;
     alert(`Ви виграли ${Math.round(winAmount)}$! (поки без оновлення інвентаря)`);
@@ -212,6 +235,7 @@ const CrashGame = () => {
 
   const containerSize = Math.min(fieldSize.width, fieldSize.height);
 
+  
   const getPlanePosition = () => {
     const { width, height } = fieldSize;
 
@@ -221,7 +245,18 @@ const CrashGame = () => {
       return { x: 0, y: containerSize - 60 };
     }
 
-    const startToCenterEndCoef = 1.7;
+    const coefLeft = generatedCoefficientRef.current - coefficient;
+
+    if (coefLeft < 0.1 && generatedCoefficientRef.current > 1.01) {
+      // Літак вилітає швидко вправо вгору
+      // Позиція дуже далеко праворуч і вгору з анімацією, припустимо
+      return {
+        x: width + 300,
+        y: -200,
+      };
+    }
+
+    const startToCenterEndCoef = 1.2;
 
     if (coefficient < startToCenterEndCoef) {
       const progress = (coefficient - 1) / (startToCenterEndCoef - 1);
