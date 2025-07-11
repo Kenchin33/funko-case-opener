@@ -76,10 +76,27 @@ const CrashGame = () => {
   useEffect(() => {
     gameAudioRef.current = new Audio('/sounds/plane.mp3');
     gameAudioRef.current.loop = true; // щоб звук крутився циклічно
-    gameAudioRef.current.volume = 0.01; // тиха гучність
+    gameAudioRef.current.volume = 0.3; // тиха гучність
 
     ambientAudioRef.current = new Audio('/sounds/fon.mp3');
     ambientAudioRef.current.loop = true;
+
+    const unlockAudio = () => {
+      gameAudioRef.current.play().then(() => gameAudioRef.current.pause());
+      ambientAudioRef.current.play().then(() => ambientAudioRef.current.pause());
+  
+      // Видаляємо після першого запуску
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
+  
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
   }, []);
 
   const endGame = useCallback(() => {
