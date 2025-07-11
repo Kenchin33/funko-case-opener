@@ -76,7 +76,7 @@ const CrashGame = () => {
   useEffect(() => {
     gameAudioRef.current = new Audio('/sounds/plane.mp3');
     gameAudioRef.current.loop = true; // щоб звук крутився циклічно
-    gameAudioRef.current.volume = 0.3; // тиха гучність
+    gameAudioRef.current.volume = 0.2; // тиха гучність
 
     ambientAudioRef.current = new Audio('/sounds/fon.mp3');
     ambientAudioRef.current.loop = true;
