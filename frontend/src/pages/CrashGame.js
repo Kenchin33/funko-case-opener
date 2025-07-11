@@ -41,6 +41,7 @@ const CrashGame = () => {
   const requestRef = useRef();
   const gameFieldRef = useRef();
   const gameAudioRef = useRef(null);
+  const ambientAudioRef = useRef(null);
   const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
   const [instantCrashChance, setInstantCrashChance] = useState(0.01);
   const generatedCoefficientRef = useRef(null);
@@ -73,8 +74,12 @@ const CrashGame = () => {
   }, [isGameRunning]);
 
   useEffect(() => {
-    gameAudioRef.current = new Audio('/sounds/win-sound.mp3');
+    gameAudioRef.current = new Audio('/sounds/plane.mp3');
     gameAudioRef.current.loop = true; // щоб звук крутився циклічно
+
+    ambientAudioRef.current = new Audio('/sounds/fon.mp3');
+    ambientAudioRef.current.loop = true;
+    ambientAudioRef.current.volume = 0.2; // тиха гучність
   }, []);
 
   const endGame = useCallback(() => {
@@ -84,6 +89,11 @@ const CrashGame = () => {
     if (gameAudioRef.current) {
       gameAudioRef.current.pause();
       gameAudioRef.current.currentTime = 0;
+    }
+
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.pause();
+      ambientAudioRef.current.currentTime = 0;
     }
 
     if (!hasClaimed) {
@@ -152,6 +162,11 @@ const CrashGame = () => {
       gameAudioRef.current.play().catch(() => {}); // щоб не було помилки, якщо без звуку
     }
 
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.currentTime = 0;
+      ambientAudioRef.current.play().catch(() => {});
+    }
+
     setIsGameRunning(true);
     setCoefficient(1.0);
     setAnimationY(0);
@@ -176,6 +191,11 @@ const CrashGame = () => {
     if (gameAudioRef.current) {
       gameAudioRef.current.pause();
       gameAudioRef.current.currentTime = 0;
+    }
+
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.pause();
+      ambientAudioRef.current.currentTime = 0;
     }
 
     const claimedCoefficient = coefficient;
