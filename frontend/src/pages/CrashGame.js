@@ -80,7 +80,6 @@ const CrashGame = () => {
 
     ambientAudioRef.current = new Audio('/sounds/fon.mp3');
     ambientAudioRef.current.loop = true;
-    ambientAudioRef.current.volume = 1.5;
   }, []);
 
   const endGame = useCallback(() => {
