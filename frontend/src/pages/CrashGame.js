@@ -105,7 +105,7 @@ const CrashGame = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [gameOver]);
+  }, [gameOver, generateCrashCoefficient]);
 
   useEffect(() => {
     if (gameOver && !hasClaimed && selectedIndexes.size > 0) {
@@ -125,7 +125,7 @@ const CrashGame = () => {
         console.error('Error removing lost bet figures', err);
       });
     }
-  }, [gameOver, hasClaimed]);
+  }, [gameOver, hasClaimed, selectedIndexes]);
   
 
   const animate = useCallback(() => {
