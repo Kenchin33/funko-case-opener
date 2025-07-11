@@ -154,23 +154,28 @@ const CrashGame = () => {
 
   const animate = useCallback(() => {
     if (!isGameRunning || !startTime) return;
-
+  
     requestRef.current = requestAnimationFrame(animate);
     const elapsed = Date.now() - startTime;
-
-    if (elapsed >= maxDuration) {
-      endGame();
-      return;
-    }
-
-    const rawCoef = 1 + Math.row(elapsed/10000, 1.7);
-    setCoefficient(parseFloat(rawCoef.toFixed(2)));
+  
+    const targetCoef = generatedCoefficientRef.current;
+    const durationUntilCrash = maxDuration; // або розраховуй пропорційно
+  
+    // Прогрес гри (від 0 до 1)
+    const progress = Math.min(elapsed / durationUntilCrash, 1);
+  
+    // Новий коефіцієнт — інтерполяція від 1.0 до targetCoef
+    const newCoef = parseFloat(
+      (1 + (targetCoef - 1) * progress).toFixed(2)
+    );
+  
+    setCoefficient(newCoef);
     setAnimationY(elapsed / 10);
-
-    if (rawCoef >= generatedCoefficientRef.current) {
+  
+    if (progress >= 1 || newCoef >= targetCoef) {
       endGame();
     }
-  }, [ isGameRunning, startTime, endGame]);
+  }, [isGameRunning, startTime, endGame]);  
 
 
   const startGame = () => {
