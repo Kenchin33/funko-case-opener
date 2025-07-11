@@ -163,10 +163,12 @@ const CrashGame = () => {
   
     // Прогрес гри (від 0 до 1)
     const progress = Math.min(elapsed / durationUntilCrash, 1);
+
+    const easedProgress = Math.pow(progress, 2); 
   
     // Новий коефіцієнт — інтерполяція від 1.0 до targetCoef
     const newCoef = parseFloat(
-      (1 + (targetCoef - 1) * progress).toFixed(2)
+      (1 + (targetCoef - 1) * easedProgress).toFixed(2)
     );
   
     setCoefficient(newCoef);
