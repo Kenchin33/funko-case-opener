@@ -159,16 +159,15 @@ const CrashGame = () => {
     const elapsed = Date.now() - startTime;
   
     const targetCoef = generatedCoefficientRef.current;
-    const durationUntilCrash = maxDuration; // або розраховуй пропорційно
   
-    // Прогрес гри (від 0 до 1)
+    // Визначаємо тривалість анімації на основі формули з ростом: 1 + (t / base)^1.7 = targetCoef
+    const base = 10000;
+    const exponent = 1.7;
+    const durationUntilCrash = Math.pow(targetCoef - 1, 1 / exponent) * base;
+  
     const progress = Math.min(elapsed / durationUntilCrash, 1);
-
-    const easedProgress = Math.pow(progress, 2); 
-  
-    // Новий коефіцієнт — інтерполяція від 1.0 до targetCoef
     const newCoef = parseFloat(
-      (1 + (targetCoef - 1) * easedProgress).toFixed(2)
+      (1 + Math.pow(progress * durationUntilCrash / base, exponent)).toFixed(2)
     );
   
     setCoefficient(newCoef);
