@@ -1310,34 +1310,32 @@
   }
 }
 
-/* Для планшетів і менших екранів до 768px */
 @media (max-width: 768px) {
   .crash-game-main {
-    flex-direction: column;  /* Вертикальний стік */
-    height: auto;            /* Не фіксована висота */
-  }
-
-  .inventory-panel,
-  .game-field {
-    flex: none;              /* Забираємо флекси */
-    width: 100%;             /* Розтягуємо на всю ширину */
-    max-width: none;         /* Забираємо максимальну ширину */
-    margin-bottom: 20px;     /* Відступ між блоками */
+    flex-direction: column; /* Вертикальний стік */
+    height: auto;
   }
 
   .game-field {
-    aspect-ratio: unset;     /* Знімаємо обмеження квадратності, щоб не сплющувалось */
-    height: 300px;           /* Можеш підкоригувати висоту, щоб було зручно */
-  }
-}
-
-/* Для дуже маленьких екранів до 480px */
-@media (max-width: 480px) {
-  .game-field {
-    height: 250px;           /* Ще менша висота для кращої помітності */
+    order: 1;               /* Перший блок */
+    width: 100%;
+    max-width: none;
+    aspect-ratio: 1 / 1;    /* Залишаємо квадрат */
+    height: auto;           /* Висота під aspect-ratio */
+    margin-bottom: 20px;
   }
 
   .inventory-panel {
-    margin-bottom: 15px;
+    order: 2;               /* Другий блок */
+    width: 100%;
+    max-width: none;
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-field {
+    /* Висота під aspect-ratio вже адаптується, можна додати максимальну висоту, якщо треба */
+    max-height: 300px;      /* Наприклад, максимум 300px по висоті */
   }
 }
