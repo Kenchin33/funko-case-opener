@@ -10,6 +10,7 @@ const app = express();
 const authRoutes = require('./routes/auth');
 const casesRoutes = require('./routes/cases');
 const figuresRoutes = require('./routes/figures');
+const crashRoutes = require('./routes/crash');
 
 app.use(cors());
 app.use(express.json());
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes.router);  // Зверни увагу на .router
 app.use('/api/cases', casesRoutes);
 app.use('/api/figures', figuresRoutes);
+app.use('/api/crash', crashRoutes);
 
 app.get('/', (req, res) => {
   res.send('Funko Case Opener API');

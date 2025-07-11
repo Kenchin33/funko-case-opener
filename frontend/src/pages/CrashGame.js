@@ -145,39 +145,58 @@ const CrashGame = () => {
     }
   };
 
-  const handleClaim = () => {
-    setHasClaimed(true);
-    setIsGameRunning(false);
-    cancelAnimationFrame(requestRef.current);
-
-    if (gameAudioRef.current) {
-      gameAudioRef.current.pause();
-      gameAudioRef.current.currentTime = 0;
+  const handleClaim = async () => {
+    const token = localStorage.getItem('token');
+    const winCoef = coefficient;
+    const selected = Array.from(selectedIndexes);
+  
+    try {
+      const resp = await axios.post(
+        '/api/crash/claim-reward',
+        { selectedIds: selected, coefficient: winCoef },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      setInventory(resp.data.inventory);
+      setBalance(resp.data.balance);
+      // очистка стану
+      setHasClaimed(true);
+      setIsGameRunning(false);
+      cancelAnimationFrame(requestRef.current);
+  
+      if (gameAudioRef.current) {
+        gameAudioRef.current.pause();
+        gameAudioRef.current.currentTime = 0;
+      }
+  
+      alert(`Призові фігурки додано✅ Баланс поповнено!`);
+  
+      setTimeout(() => {
+        setCoefficient(1.0);
+        setStartTime(null);
+        setError(null);
+        setSelectedIndexes(new Set());
+      }, 2000);
+  
+    } catch (err) {
+      console.error('Claim error', err);
+      alert('Помилка при виплаті призу');
     }
-
-    const winAmount = totalBetAmount * coefficient;
-    alert(`Ви виграли ${Math.round(winAmount)}$! (поки без оновлення інвентаря)`);
-
-    setTimeout(() => {
-      setCoefficient(1.0);
-      setStartTime(null);
-      setHasClaimed(false);
-      setError(null);
-      setSelectedIndexes(new Set());
-    }, 2000);
-  };
+  };  
+  
 
   const handlePlaceBet = () => {
     if (isGameRunning || gameOver || hasClaimed) return;
-
+  
     if (selectedIndexes.size === 0) {
       setError('Оберіть хоча б одну фігурку для ставки');
       return;
     }
-
+  
     setError(null);
-    startGame();
+    startGame(); // Просто запускає гру без змін інвентаря
   };
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -247,7 +266,7 @@ const CrashGame = () => {
 
     const coefLeft = generatedCoefficientRef.current - coefficient;
 
-    if (coefLeft < 0.1 && generatedCoefficientRef.current > 1.01) {
+    if (coefLeft < 0.02 && generatedCoefficientRef.current > 1.01) {
       // Літак вилітає швидко вправо вгору
       // Позиція дуже далеко праворуч і вгору з анімацією, припустимо
       return {
