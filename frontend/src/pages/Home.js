@@ -108,18 +108,21 @@ const Home = () => {
             );
           })
         )}
-
-        <Link to="/crash" className="case-card" style={{ cursor: 'pointer' }}>
-          <img
-            src="/images/image.jpg"  // Можеш замінити на власне зображення літачка
-            alt="Грати в Літачка"
-            className="case-image"
-            />
-              <div className="case-info">
-                <h3>Грати в Літачка</h3>
-                <p>Спробуй виграти фігурки!</p>
-              </div>
-        </Link>
+              <div className="cases-list">
+                  {filtered.map(c => (
+                    <Link to="/crash" className="case-card" style={{ cursor: 'pointer' }}>
+                    <img
+                      src="/images/image.jpg"  // Можеш замінити на власне зображення літачка
+                      alt="Грати в Літачка"
+                      className="case-image"
+                      />
+                        <div className="case-info">
+                          <h3>Грати в Літачка</h3>
+                          <p>Спробуй виграти фігурки!</p>
+                        </div>
+                  </Link>
+                  ))}
+                </div>
       </main>
     </div>
   );
