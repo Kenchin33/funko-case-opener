@@ -127,7 +127,7 @@ const CrashGame = () => {
     cancelAnimationFrame(requestRef.current);
 
     const winAmount = totalBetAmount * coefficient;
-    alert(`Ви виграли ${Math.round(winAmount)}₴! (поки без оновлення інвентаря)`);
+    alert(`Ви виграли ${Math.round(winAmount)}$! (поки без оновлення інвентаря)`);
 
     setTimeout(() => {
       setCoefficient(1.0);
@@ -186,7 +186,7 @@ const CrashGame = () => {
 
   const totalBetAmount = [...selectedIndexes].reduce((acc, idx) => {
     const price = inventory[idx]?.price ?? 0;
-    return acc + price * 0.75 * 42;
+    return acc + price;
   }, 0);
 
   useEffect(() => {
@@ -241,30 +241,26 @@ const CrashGame = () => {
     <div className="crash-game-container">
       <div className="crash-header">
         <button className="btn btn-outline back-button" onClick={() => navigate('/')}>
-          ← Назад
+          ← На головну
         </button>
-        <div className="user-menu">
-          {isLoggedIn ? (
-            <Link
-              to="/profile"
-              className="profile-icon"
-              title="Профіль"
-              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
-            >
-              <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
-              <FaUserCircle size={36} />
-            </Link>
-          ) : (
-            <>
-              <Link to="/register" className="btn btn-outline">
-                Реєстрація
-              </Link>
-              <Link to="/login" className="btn btn-primary">
-                Авторизація
-              </Link>
-            </>
-          )}
-        </div>
+        <div style={{ position: 'absolute', top: 20, right: 20 }}>
+        {isLoggedIn ? (
+          <Link
+            to="/profile"
+            className="profile-icon"
+            title="Профіль"
+            style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
+          >
+            <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
+            <FaUserCircle size={36} />
+          </Link>
+        ) : (
+          <>
+            <Link to="/register" className="btn btn-outline">Реєстрація</Link>
+            <Link to="/login" className="btn btn-primary">Авторизація</Link>
+          </>
+        )}
+      </div>
       </div>
 
       <h2 className="case-title" style={{ textAlign: 'center' }}>
@@ -278,7 +274,7 @@ const CrashGame = () => {
             <div className="inventory-header">
               <h3>Ваш інвентар</h3>
               <div className="bet-sum">
-                Сума ставки: <strong>{Math.round(totalBetAmount)}₴</strong>
+                Сума ставки: <strong>{Math.round(totalBetAmount)}$</strong>
               </div>
             </div>
             {inventory.length === 0 ? (
@@ -406,7 +402,7 @@ const CrashGame = () => {
                     transform: `translate(${PlanePosition.x}px, ${PlanePosition.y}px)`,
                   }}
                 >
-                  <img src="/images/plane.png" alt="plane" />
+                  <img src="/images/plane1.png" alt="plane" />
                 </div>
               )}
             </div>
