@@ -143,12 +143,12 @@ const showErrorMessage = (msg) => {
 
 
   const handleExchange = async (removeIndex, newFigure) => {
-    setError(null);
+    setErrorMsg(null);
     const userId = localStorage.getItem('userId'); // або інший спосіб отримати userId
     const token = localStorage.getItem('token');
 
     if (!userId || !token) {
-        setError('Користувач не авторизований');
+        setErrorMsg('Користувач не авторизований');
         return;
       }
   
