@@ -1411,3 +1411,11 @@
   padding: 10px;
   border-radius: 8px;
 }
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
