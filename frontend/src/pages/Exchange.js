@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 import './style.css';
 
+const EXCLUDED_ID = "686f9c79b62dd7c2154d21e9";
+
 const Exchange = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [balance, setBalance] = useState(null);
@@ -54,8 +56,11 @@ const Exchange = () => {
   };
 
   const getSortedAllFigures = () => {
-    if (!sortOrderRight) return allFigures;
-    return [...allFigures].sort((a, b) =>
+
+    const filteredFigures = allFigures.filter(fig => fig._id !== EXCLUDED_ID);
+
+    if (!sortOrderRight) return filteredFigures;
+    return [...filteredFigures].sort((a, b) =>
       sortOrderRight === 'asc' ? a.price - b.price : b.price - a.price
     );
   };
@@ -88,7 +93,7 @@ const Exchange = () => {
 
         <div className="exchange-area">
           {/* Лівий блок — інвентар */}
-          <div className="inventory-panel">
+          <div className="inventory-panel-exchange">
             <div className="inventory-header">
               <h3>Ваш інвентар</h3>
               <button

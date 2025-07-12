@@ -1353,6 +1353,7 @@
     flex-direction: column;
   }
 
+  .inventory-panel-exchange,
   .exchange-panel {
     width: 100%;
   }
@@ -1373,12 +1374,23 @@
   }
 }
 
+.inventory-panel-exchange {
+  flex: 1 1 40%;
+  background-color: #222;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
 .exchange-area {
   display: flex;
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
   padding: 20px;
+  align-items: flex-start;
+  overflow: hidden; 
 }
 
 .exchange-panel {
@@ -1389,4 +1401,13 @@
   padding: 10px;
   box-shadow: 0 0 8px rgba(0,0,0,0.3);
   min-width: 300px;
+}
+
+.inventory-panel-exchange, .exchange-panel {
+  flex: 1 1 0; /* кожен блок займатиме рівну ширину */
+  max-height: 80vh; /* обмежуємо висоту блоку до 80% висоти вікна */
+  overflow-y: auto; /* додаємо вертикальний скрол при переповненні */
+  background-color: #222; /* трохи тла, можна змінити */
+  padding: 10px;
+  border-radius: 8px;
 }
