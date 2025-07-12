@@ -142,18 +142,14 @@ const showErrorMessage = (msg) => {
   }, 0);
 
 
-  const handleExchange = async (removeIndex, newFigure) => {
-    setErrorMsg(null);
-    const userId = localStorage.getItem('userId'); // або інший спосіб отримати userId
-    const token = localStorage.getItem('token');
-
-    if (!userId || !token) {
-        setErrorMsg('Користувач не авторизований');
-        return;
-      }
+  const handleExchange = async () => {
+    if (!token || !isLoggedIn) return;
   
     try {
+      // 1. Отримати нові фігурки для додавання
       const newFigures = allFigures.filter(f => selectedFiguresRight.has(f._id));
+  
+      // 2. Створити нові об'єкти інвентаря (аналогічні до тих, що зберігаються у User)
       const newInventoryEntries = newFigures.map(fig => ({
         figure: fig._id,
         caseName: 'Обмін',
@@ -162,28 +158,33 @@ const showErrorMessage = (msg) => {
         date: new Date(),
       }));
   
+      // 3. Створити новий масив інвентаря без обраних
       const updatedInventory = inventory.filter(item => !selectedInventoryIds.has(item._id));
+  
+      // 4. Додати нові фігурки до інвентаря
       const finalInventory = [...updatedInventory, ...newInventoryEntries];
   
+      // 5. Отримати userId з токена
       function parseJwt(token) {
         try {
-          return JSON.parse(atob(token.split('.')[1]));
+          return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join('')));
         } catch (e) {
           return null;
         }
       }
-  
       const decoded = parseJwt(token);
       const userId = decoded?.userId;
+
       if (!userId) {
         console.error("User ID не знайдено у токені");
-        showErrorMessage("Не вдалося отримати ID користувача");
+        showErrorMessage("Помилка: не вдалося отримати ID користувача");
         return;
       }
   
-      console.log("Відправляю PATCH на", `/api/auth/${userId}/inventory`);
-      console.log("Новий інвентар:", finalInventory);
-  
+      console.log("Відправляю inventory:", finalInventory);
+      // 6. Запит на оновлення інвентаря
       const res = await fetch(`https://funko-case-opener.onrender.com/api/auth/${userId}/inventory`, {
         method: 'PATCH',
         headers: {
@@ -192,14 +193,14 @@ const showErrorMessage = (msg) => {
         },
         body: JSON.stringify({ inventory: finalInventory }),
       });
-  
+
       console.log("PATCH статус:", res.status);
-      const responseText = await res.text();
-      console.log("PATCH відповідь:", responseText);
+      const text = await res.text();
+      console.log("PATCH відповідь:", text);
   
       if (!res.ok) throw new Error('Помилка під час обміну');
   
-      const data = JSON.parse(responseText);
+      const data = await res.json();
       setInventory(data.user.inventory);
       setSelectedInventoryIds(new Set());
       setSelectedFiguresRight(new Set());
@@ -207,10 +208,10 @@ const showErrorMessage = (msg) => {
       setInventoryPage(1);
       showErrorMessage('Успішний обмін 🎉');
     } catch (err) {
-      console.error("handleExchange помилка:", err);
+      console.error(err);
       showErrorMessage('Не вдалося здійснити обмін.');
     }
-  };  
+  };
   
 
 
