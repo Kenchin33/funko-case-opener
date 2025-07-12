@@ -7,6 +7,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CrashGame from './pages/CrashGame';
+import Exchange from './pages/Exchange';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<Navigate to="/" />} />
         <Route path="/crash" element={<CrashGame />} />
+        <Route path="/exchange" element={<Exchange />} />
       </Routes>
     </Router>
   );

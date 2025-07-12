@@ -1348,6 +1348,14 @@
     max-width: none;
     margin-bottom: 0;
   }
+
+  .exchange-area {
+    flex-direction: column;
+  }
+
+  .exchange-panel {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1363,4 +1371,22 @@
   .crash-game-main {
     margin-top: 20px;
   }
+}
+
+.exchange-area {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+.exchange-panel {
+  flex: 1 1 48%;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+  min-width: 300px;
 }

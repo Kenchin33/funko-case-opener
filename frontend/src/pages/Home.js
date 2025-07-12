@@ -123,6 +123,18 @@ const Home = () => {
         <p>Зроби свої фігурки ціннішими!</p>
       </div>
     </Link>
+
+    <Link to="/exchange" className="case-card" style={{ cursor: 'pointer' }}>
+      <img
+        src="/images/exchange.png"
+        alt="Обмін фігурок"
+        className="case-image"
+      />
+      <div className="case-info">
+        <h3>Обмін</h3>
+        <p>Обмінюй фігурки на інші!</p>
+      </div>
+    </Link>
   </div>
 </section>
 
