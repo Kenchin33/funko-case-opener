@@ -36,9 +36,6 @@ const showErrorMessage = (msg) => {
   errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
 };
 
-const getFigureById = (id) => allFigures.find(fig => fig._id === id) || {};
-
-
   useEffect(() => {
     if (!token) return;
 
@@ -74,15 +71,10 @@ const getFigureById = (id) => allFigures.find(fig => fig._id === id) || {};
 
   const getSortedInventory = () => {
     if (!sortOrderLeft) return inventory;
-    return [...inventory].sort((a, b) => {
-      const figA = getFigureById(a.figure);
-      const figB = getFigureById(b.figure);
-      const priceA = figA.price ?? 0;
-      const priceB = figB.price ?? 0;
-      return sortOrderLeft === 'asc' ? priceA - priceB : priceB - priceA;
-    });
+    return [...inventory].sort((a, b) =>
+      sortOrderLeft === 'asc' ? a.price - b.price : b.price - a.price
+    );
   };
-  
 
   const getSortedAllFigures = () => {
     const filtered = allFigures.filter(fig =>
@@ -149,80 +141,6 @@ const getFigureById = (id) => allFigures.find(fig => fig._id === id) || {};
     return sum + (item?.price ?? 0);
   }, 0);
 
-
-  const handleExchange = async () => {
-    if (!token || !isLoggedIn) return;
-  
-    try {
-      // 1. Отримати нові фігурки для додавання
-      const newFigures = allFigures.filter(f => selectedFiguresRight.has(f._id));
-  
-      // 2. Створити нові об'єкти інвентаря (аналогічні до тих, що зберігаються у User)
-      const newInventoryEntries = newFigures.map(fig => ({
-        figure: fig._id,
-        caseName: 'Обмін',
-        caseId: null,
-        price: fig.price,
-        date: new Date(),
-      }));
-  
-      // 3. Створити новий масив інвентаря без обраних
-      const updatedInventory = inventory.filter(item => !selectedInventoryIds.has(item._id));
-  
-      // 4. Додати нові фігурки до інвентаря
-      const finalInventory = [...updatedInventory, ...newInventoryEntries];
-  
-      // 5. Отримати userId з токена
-      function parseJwt(token) {
-        try {
-          return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-          }).join('')));
-        } catch (e) {
-          return null;
-        }
-      }
-      const decoded = parseJwt(token);
-      const userId = decoded?.userId;
-
-      if (!userId) {
-        console.error("User ID не знайдено у токені");
-        showErrorMessage("Помилка: не вдалося отримати ID користувача");
-        return;
-      }
-  
-      console.log("Відправляю inventory:", finalInventory);
-      // 6. Запит на оновлення інвентаря
-      const res = await fetch(`https://funko-case-opener.onrender.com/api/auth/${userId}/inventory`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
-        body: JSON.stringify({ inventory: finalInventory }),
-      });
-
-      console.log("PATCH статус:", res.status);
-      const text = await res.text();
-      console.log("PATCH відповідь:", text);
-  
-      if (!res.ok) throw new Error('Помилка під час обміну');
-  
-      const data = await res.json();
-      setInventory(data.user.inventory);
-      setSelectedInventoryIds(new Set());
-      setSelectedFiguresRight(new Set());
-      setFiguresPage(1);
-      setInventoryPage(1);
-      showErrorMessage('Успішний обмін 🎉');
-    } catch (err) {
-      console.error(err);
-      showErrorMessage('Не вдалося здійснити обмін.');
-    }
-  };
-  
-
-
   return (
     <div className="home-container">
       <header className="header">
@@ -249,7 +167,7 @@ const getFigureById = (id) => allFigures.find(fig => fig._id === id) || {};
       <main>
       {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
             <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                <button className="btn btn-primary" onClick={handleExchange}>Обміняти фігурки</button>
+                <button className="btn btn-primary">Обміняти фігурки</button>
             </div>
         )}
         <div className="exchange-area">
@@ -281,7 +199,7 @@ const getFigureById = (id) => allFigures.find(fig => fig._id === id) || {};
                 </div>
               ) : (
                 getPagedInventory().map(entry => {
-                  const figure = getFigureById(entry.figure);
+                  const figure = entry.figure || {};
                   const isSelected = selectedInventoryIds.has(entry._id);
                   return (
                     <div key={entry._id} className={`figure-card ${isSelected ? 'selected' : ''}`}
