@@ -36,6 +36,9 @@ const showErrorMessage = (msg) => {
   errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
 };
 
+const getFigureById = (id) => allFigures.find(fig => fig._id === id) || {};
+
+
   useEffect(() => {
     if (!token) return;
 
@@ -71,10 +74,15 @@ const showErrorMessage = (msg) => {
 
   const getSortedInventory = () => {
     if (!sortOrderLeft) return inventory;
-    return [...inventory].sort((a, b) =>
-      sortOrderLeft === 'asc' ? a.figure.price - b.figure.price : b.figure.price - a.figure.price
-    );
+    return [...inventory].sort((a, b) => {
+      const figA = getFigureById(a.figure);
+      const figB = getFigureById(b.figure);
+      const priceA = figA.price ?? 0;
+      const priceB = figB.price ?? 0;
+      return sortOrderLeft === 'asc' ? priceA - priceB : priceB - priceA;
+    });
   };
+  
 
   const getSortedAllFigures = () => {
     const filtered = allFigures.filter(fig =>
@@ -273,7 +281,7 @@ const showErrorMessage = (msg) => {
                 </div>
               ) : (
                 getPagedInventory().map(entry => {
-                  const figure = entry.figure || {};
+                  const figure = getFigureById(entry.figure);
                   const isSelected = selectedInventoryIds.has(entry._id);
                   return (
                     <div key={entry._id} className={`figure-card ${isSelected ? 'selected' : ''}`}
