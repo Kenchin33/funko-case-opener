@@ -16,6 +16,8 @@ const Profile = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFigureIndex, setSelectedFigureIndex] = useState(null);
 
+  const [sortOrder, setSortOrder] = useState(null);
+
   // Дані форми заявки
   const [formData, setFormData] = useState({
     fullName: '',
@@ -254,13 +256,32 @@ const Profile = () => {
           </div>
         )}
 
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+          <button
+            onClick={() => {
+              setSortOrder(prev =>
+                prev === null ? 'asc' : prev === 'asc' ? 'desc' : null
+              );
+            }}
+            className="btn btn-sell-all"
+          >
+            {sortOrder === 'asc' && 'Сортувати ↓ (спадання)'}
+            {sortOrder === 'desc' && 'Сортування вимкнено'}
+            {sortOrder === null && 'Сортувати ↑ (зростання)'}
+          </button>
+        </div>
+
         <h3 style={{ textAlign: 'center', marginTop: '40px' }}>Інвентар:</h3>
 
         {userData.inventory.length === 0 ? (
           <p style={{ textAlign: 'center' }}>Інвентар порожній.</p>
         ) : (
           <div className="won-figures-grid">
-            {userData.inventory.map((entry, index) => {
+            {[...userData.inventory].sort((a, b) => {
+              if (sortOrder === 'asc') return (a.price || 0) - (b.price || 0);
+              if (sortOrder === 'desc') return (b.price || 0) - (a.price || 0);
+              return 0;
+            }).map((entry, index) => {
               const figure = entry.figure || {};
               return (
                 <div key={entry._id || index} className="figure-card">
