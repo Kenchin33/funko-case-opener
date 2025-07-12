@@ -141,6 +141,56 @@ const showErrorMessage = (msg) => {
     return sum + (item?.price ?? 0);
   }, 0);
 
+
+  const handleExchange = async () => {
+    if (selectedSumInventory !== selectedSumRight) {
+      showErrorMessage('Суми не співпадають, обмін неможливий.');
+      return;
+    }
+  
+    if (selectedInventoryIds.size === 0 || selectedFiguresRight.size === 0) {
+      showErrorMessage('Оберіть фігурки для обміну з обох сторін.');
+      return;
+    }
+  
+    try {
+      const removeIds = Array.from(selectedInventoryIds);
+      // Формуємо дані нових фігурок для додавання:
+      const newFigures = Array.from(selectedFiguresRight).map(id => {
+        const fig = allFigures.find(f => f._id === id);
+        return {
+          _id: fig._id,
+          price: fig.price,
+          caseId: fig.caseId || null,
+          caseName: fig.caseName || 'Обмін',
+        };
+      });
+  
+      const res = await fetch('https://funko-case-opener.onrender.com/api/exchange', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ removeIds, newFigures }),
+      });
+  
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Помилка обміну');
+      }
+  
+      const data = await res.json();
+      setInventory(data.inventory); // Оновлюємо інвентар з сервера
+      setSelectedInventoryIds(new Set()); // Очищаємо вибір
+      setSelectedFiguresRight(new Set());
+      showErrorMessage('Обмін успішний!');
+    } catch (err) {
+      showErrorMessage(err.message);
+    }
+  };
+  
+
   return (
     <div className="home-container">
       <header className="header">
@@ -167,7 +217,7 @@ const showErrorMessage = (msg) => {
       <main>
       {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
             <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                <button className="btn btn-primary">Обміняти фігурки</button>
+                <button className="btn btn-primary" onClick={handleExchange}>Обміняти фігурки</button>
             </div>
         )}
         <div className="exchange-area">
