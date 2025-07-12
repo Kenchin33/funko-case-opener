@@ -4,7 +4,7 @@ import { FaUserCircle } from 'react-icons/fa';
 import './style.css';
 
 const EXCLUDED_ID = "686f9c79b62dd7c2154d21e9";
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 18;
 
 const Exchange = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,6 +13,9 @@ const Exchange = () => {
   const [allFigures, setAllFigures] = useState([]);
   const [sortOrderLeft, setSortOrderLeft] = useState(null);
   const [sortOrderRight, setSortOrderRight] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [showError, setShowError] = useState(false);
+  const errorTimeoutRef = useRef(null);
 
   const [selectedInventoryIds, setSelectedInventoryIds] = useState(new Set());
   const [selectedFiguresRight, setSelectedFiguresRight] = useState(new Set());
@@ -22,6 +25,16 @@ const Exchange = () => {
 
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+
+const showErrorMessage = (msg) => {
+  if (errorTimeoutRef.current) {
+    clearTimeout(errorTimeoutRef.current);
+  }
+  setErrorMsg(msg);
+  setShowError(false);
+  setTimeout(() => setShowError(true), 10);
+  errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
+};
 
   useEffect(() => {
     if (!token) return;
@@ -97,13 +110,26 @@ const Exchange = () => {
   };
 
   const toggleSelectFigureRight = (id) => {
+    const figure = allFigures.find(f => f._id === id);
+    if (!figure) return;
+  
+    const isAlreadySelected = selectedFiguresRight.has(id);
+    const newSum = isAlreadySelected
+      ? selectedSumRight - figure.price
+      : selectedSumRight + figure.price;
+  
+    if (newSum > selectedSumInventory) {
+      showErrorMessage('Сума фігурок перевищує обрану з інвентаря. Оберіть дорожчі фігурки зліва.');
+      return;
+    }
+  
     setSelectedFiguresRight(prev => {
       const updated = new Set(prev);
       if (updated.has(id)) updated.delete(id);
       else updated.add(id);
       return updated;
     });
-  };
+  };  
 
   const selectedSumInventory = [...selectedInventoryIds].reduce((sum, id) => {
     const item = inventory.find(i => i._id === id);
@@ -120,7 +146,7 @@ const Exchange = () => {
       <header className="header">
         <button className="btn btn-outline back-button" onClick={() => navigate('/')}>← На головну</button>
         <div className="logo" onClick={() => navigate('/')}>
-          <h1>Фанко Казіно</h1>
+          <h1 style={{ textAlign: 'center', color: 'white'}}>Обмін</h1>
         </div>
         <div className="user-menu">
           {isLoggedIn ? (
@@ -139,7 +165,6 @@ const Exchange = () => {
       </header>
 
       <main>
-        <h2 style={{ textAlign: 'center', color: 'white', marginTop: '20px' }}>Сторінка обміну</h2>
 
         <div className="exchange-area">
           {/* Інвентар */}
@@ -260,6 +285,14 @@ const Exchange = () => {
             )}
           </div>
         </div>
+        {showError && (
+            <div className="error-message" role="alert" aria-live="assertive">{errorMsg}</div>
+        )}
+        {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
+            <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <button className="btn btn-primary">Обміняти фігурки</button>
+            </div>
+        )}
       </main>
     </div>
   );
