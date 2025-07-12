@@ -13,8 +13,10 @@ const Exchange = () => {
   const [sortOrderLeft, setSortOrderLeft] = useState(null);
   const [sortOrderRight, setSortOrderRight] = useState(null);
 
-  // --- Стан вибраних фігурок у інвентарі ---
-  const [selectedIndexes, setSelectedIndexes] = useState(new Set());
+  // Стан вибраних фігурок з інвентарю (ключ - унікальний id фігурки в inventory)
+  const [selectedInventoryIds, setSelectedInventoryIds] = useState(new Set());
+  // Стан вибраних фігурок з усіх фігурок (ключ - унікальний id фігурки в allFigures)
+  const [selectedFiguresRight, setSelectedFiguresRight] = useState(new Set());
 
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
@@ -49,6 +51,7 @@ const Exchange = () => {
       .catch(err => console.error('Помилка завантаження фігурок:', err));
   }, []);
 
+  // Сортування інвентаря
   const getSortedInventory = () => {
     if (!sortOrderLeft) return inventory;
     return [...inventory].sort((a, b) =>
@@ -58,6 +61,7 @@ const Exchange = () => {
     );
   };
 
+  // Сортування усіх фігурок
   const getSortedAllFigures = () => {
     const filteredFigures = allFigures.filter(fig => fig._id !== EXCLUDED_ID);
     if (!sortOrderRight) return filteredFigures;
@@ -66,19 +70,36 @@ const Exchange = () => {
     );
   };
 
-  // Функція для вибору/зняття вибору фігурки по індексу
-  const toggleSelectFigure = (index) => {
-    setSelectedIndexes(prev => {
+  // Тогл вибору фігурки з інвентарю за її унікальним id
+  const toggleSelectInventory = (id) => {
+    setSelectedInventoryIds(prev => {
       const updated = new Set(prev);
-      if (updated.has(index)) updated.delete(index);
-      else updated.add(index);
+      if (updated.has(id)) updated.delete(id);
+      else updated.add(id);
       return updated;
     });
   };
 
-  // Підрахунок суми вибраних фігурок
-  const selectedSum = [...selectedIndexes].reduce((sum, idx) => {
-    return sum + (inventory[idx]?.price ?? 0);
+  // Тогл вибору фігурки з усіх фігурок за її унікальним id
+  const toggleSelectFigureRight = (id) => {
+    setSelectedFiguresRight(prev => {
+      const updated = new Set(prev);
+      if (updated.has(id)) updated.delete(id);
+      else updated.add(id);
+      return updated;
+    });
+  };
+
+  // Підрахунок суми вибраних у інвентарі
+  const selectedSumInventory = [...selectedInventoryIds].reduce((sum, id) => {
+    const item = inventory.find(i => i._id === id);
+    return sum + (item?.price ?? 0);
+  }, 0);
+
+  // Підрахунок суми вибраних у правому блоці
+  const selectedSumRight = [...selectedFiguresRight].reduce((sum, id) => {
+    const item = allFigures.find(f => f._id === id);
+    return sum + (item?.price ?? 0);
   }, 0);
 
   return (
@@ -110,10 +131,37 @@ const Exchange = () => {
         <div className="exchange-area">
           {/* Лівий блок — інвентар */}
           <div className="inventory-panel-exchange">
-            <div className="inventory-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <h3>Ваш інвентар</h3>
+            <div
+              className="inventory-header"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 8,
+                gap: 10,
+              }}
+            >
+              <h3 style={{ margin: 0, flex: '0 0 auto' }}>Ваш інвентар</h3>
+
+              {/* Сума посередині */}
+              <div
+                style={{
+                  flex: '1 1 auto',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                  color: 'orange',
+                  fontSize: '1.2rem',
+                  userSelect: 'none',
+                  minWidth: 140,
+                }}
+              >
+                {selectedInventoryIds.size === 1 && `Ціна: ${selectedSumInventory}$`}
+                {selectedInventoryIds.size > 1 && `Загальна сума: ${selectedSumInventory}$`}
+              </div>
+
               <button
                 className="btn btn-sort"
+                style={{ flex: '0 0 auto' }}
                 onClick={() =>
                   setSortOrderLeft(prev =>
                     prev === null ? 'asc' : prev === 'asc' ? 'desc' : null
@@ -124,11 +172,6 @@ const Exchange = () => {
                 {sortOrderLeft === 'desc' && 'Скасувати сортування'}
                 {sortOrderLeft === null && 'Сортувати за ↑'}
               </button>
-              {/* Вивід ціни або суми над інвентарем */}
-              <div style={{ marginTop: 8, color: 'white', fontWeight: '600' }}>
-                {selectedIndexes.size === 1 && `Ціна: ${selectedSum}$`}
-                {selectedIndexes.size > 1 && `Загальна сума: ${selectedSum}$`}
-              </div>
             </div>
 
             <div className="inventory-grid">
@@ -137,20 +180,15 @@ const Exchange = () => {
                   <p style={{ textAlign: 'center', padding: '40px 10px' }}>У вас ще немає фігурок</p>
                 </div>
               ) : (
-                getSortedInventory().map((entry, idx) => {
+                getSortedInventory().map((entry) => {
                   const figure = entry.figure || {};
-                  // Якщо index відсортованого масиву не відповідає індексу в оригінальному — це можна ускладнити, але для початку припустимо,
-                  // що індекси однакові, або краще використовувати унікальний ID.
-                  // Тому передамо індекс в getSortedInventory через map
-                  // Якщо потрібна точніша логіка, скажи.
+                  const isSelected = selectedInventoryIds.has(entry._id);
 
-                  // Тут idx - індекс після сортування, а потрібно зберігати у selectedIndexes індекс оригінального inventory
-                  // Тобто краще передавати оригінальний індекс для toggleSelectFigure
                   return (
                     <div
-                      key={idx}
-                      className={`figure-card ${selectedIndexes.has(idx) ? 'selected' : ''}`}
-                      onClick={() => toggleSelectFigure(idx)}
+                      key={entry._id}
+                      className={`figure-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => toggleSelectInventory(entry._id)}
                       style={{ cursor: 'pointer' }}
                     >
                       <img src={figure.image} alt={figure.name} />
@@ -166,10 +204,37 @@ const Exchange = () => {
 
           {/* Правий блок — фігурки з бази */}
           <div className="exchange-panel">
-            <div className="inventory-header">
-              <h3>Усі фігурки</h3>
+            <div
+              className="inventory-header"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 8,
+                gap: 10,
+              }}
+            >
+              <h3 style={{ margin: 0, flex: '0 0 auto' }}>Усі фігурки</h3>
+
+              {/* Сума посередині */}
+              <div
+                style={{
+                  flex: '1 1 auto',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                  color: 'orange',
+                  fontSize: '1.2rem',
+                  userSelect: 'none',
+                  minWidth: 140,
+                }}
+              >
+                {selectedFiguresRight.size === 1 && `Ціна: ${selectedSumRight}$`}
+                {selectedFiguresRight.size > 1 && `Загальна сума: ${selectedSumRight}$`}
+              </div>
+
               <button
                 className="btn btn-sort"
+                style={{ flex: '0 0 auto' }}
                 onClick={() =>
                   setSortOrderRight(prev =>
                     prev === null ? 'asc' : prev === 'asc' ? 'desc' : null
@@ -181,20 +246,29 @@ const Exchange = () => {
                 {sortOrderRight === null && 'Сортувати за ↑'}
               </button>
             </div>
+
             <div className="inventory-grid">
               {allFigures.length === 0 ? (
                 <div className="figure-card placeholder-card">
                   <p style={{ textAlign: 'center', padding: '40px 10px' }}>Немає доступних фігурок</p>
                 </div>
               ) : (
-                getSortedAllFigures().map((figure, idx) => (
-                  <div key={idx} className="figure-card">
-                    <img src={figure.image} alt={figure.name} />
-                    <p>{figure.name}</p>
-                    <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
-                    <p>{figure.price}$</p>
-                  </div>
-                ))
+                getSortedAllFigures().map((figure) => {
+                  const isSelected = selectedFiguresRight.has(figure._id);
+                  return (
+                    <div
+                      key={figure._id}
+                      className={`figure-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => toggleSelectFigureRight(figure._id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <img src={figure.image} alt={figure.name} />
+                      <p>{figure.name}</p>
+                      <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
+                      <p>{figure.price}$</p>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
