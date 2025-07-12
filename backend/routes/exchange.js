@@ -7,20 +7,22 @@ const { authMiddleware } = require('./auth');
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { removeIndex, newFigureId, newPrice, caseId, caseName } = req.body;
+    const { removeIds, newFigures } = req.body;  // отримуємо масиви з фронтенда
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Видаляємо стару фігурку
-    user.inventory.splice(removeIndex, 1);
+    // Фільтруємо інвентар, видаляючи всі фігурки з _id у removeIds
+    user.inventory = user.inventory.filter(item => !removeIds.includes(item._id.toString()));
 
-    // Додаємо нову
-    user.inventory.push({
-      figure: newFigureId,
-      price: newPrice,
-      caseId,
-      caseName
+    // Додаємо нові фігурки (newFigures - масив об'єктів з потрібними даними)
+    newFigures.forEach(fig => {
+      user.inventory.push({
+        figure: fig._id,
+        price: fig.price,
+        caseId: fig.caseId || null,
+        caseName: fig.caseName || 'Обмін',
+      });
     });
 
     await user.save();
