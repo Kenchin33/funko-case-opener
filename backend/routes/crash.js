@@ -33,7 +33,7 @@ router.post('/claim-reward', authMiddleware, async (req, res) => {
             figure: randomFigure._id,
             price: randomFigure.price,
             caseName: 'Ракетка',
-            caseId: entry.caseId,
+            caseId: null,
         });
 
         const diff = winAmount - randomFigure.price;
