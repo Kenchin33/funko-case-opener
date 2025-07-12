@@ -119,7 +119,7 @@ const showErrorMessage = (msg) => {
       : selectedSumRight + figure.price;
   
     if (newSum > selectedSumInventory) {
-      showErrorMessage('Сума фігурок перевищує обрану з інвентаря. Оберіть дорожчі фігурки у інвентарі.');
+      showErrorMessage('Сума фігурок перевищує обрану з інвентаря.');
       return;
     }
   
@@ -140,6 +140,60 @@ const showErrorMessage = (msg) => {
     const item = allFigures.find(f => f._id === id);
     return sum + (item?.price ?? 0);
   }, 0);
+
+
+  const handleExchange = async () => {
+    if (!token || !isLoggedIn) return;
+  
+    try {
+      // 1. Отримати нові фігурки для додавання
+      const newFigures = allFigures.filter(f => selectedFiguresRight.has(f._id));
+  
+      // 2. Створити нові об'єкти інвентаря (аналогічні до тих, що зберігаються у User)
+      const newInventoryEntries = newFigures.map(fig => ({
+        figure: fig._id,
+        caseName: 'Обмін',
+        caseId: null,
+        price: fig.price,
+        date: new Date(),
+      }));
+  
+      // 3. Створити новий масив інвентаря без обраних
+      const updatedInventory = inventory.filter(item => !selectedInventoryIds.has(item._id));
+  
+      // 4. Додати нові фігурки до інвентаря
+      const finalInventory = [...updatedInventory, ...newInventoryEntries];
+  
+      // 5. Отримати userId з токена
+      const decoded = JSON.parse(atob(token.split('.')[1])); // розкодуємо payload
+      const userId = decoded.userId;
+  
+      // 6. Запит на оновлення інвентаря
+      const res = await fetch(`https://funko-case-opener.onrender.com/api/auth/${userId}/inventory`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({ inventory: finalInventory }),
+      });
+  
+      if (!res.ok) throw new Error('Помилка під час обміну');
+  
+      const data = await res.json();
+      setInventory(data.user.inventory);
+      setSelectedInventoryIds(new Set());
+      setSelectedFiguresRight(new Set());
+      setFiguresPage(1);
+      setInventoryPage(1);
+      showErrorMessage('Успішний обмін 🎉');
+    } catch (err) {
+      console.error(err);
+      showErrorMessage('Не вдалося здійснити обмін.');
+    }
+  };
+  
+
 
   return (
     <div className="home-container">
@@ -167,7 +221,7 @@ const showErrorMessage = (msg) => {
       <main>
       {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
             <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                <button className="btn btn-primary">Обміняти фігурки</button>
+                <button className="btn btn-primary" onClick={handleExchange}>Обміняти фігурки</button>
             </div>
         )}
         <div className="exchange-area">
@@ -290,7 +344,7 @@ const showErrorMessage = (msg) => {
           </div>
         </div>
         {showError && (
-            <div className="error-message" role="alert" aria-live="assertive">{errorMsg}</div>
+            <div className="error-message-exchange" role="alert" aria-live="assertive">{errorMsg}</div>
         )}
       </main>
     </div>
