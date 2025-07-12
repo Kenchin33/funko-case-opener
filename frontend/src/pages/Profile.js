@@ -256,22 +256,29 @@ const Profile = () => {
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-          <button
-            onClick={() => {
-              setSortOrder(prev =>
-                prev === null ? 'asc' : prev === 'asc' ? 'desc' : null
-              );
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            margin: '40px 20px 10px',
             }}
-            className="btn btn-sell-all"
-          >
-            {sortOrder === 'asc' && 'Сортувати ↓ (спадання)'}
-            {sortOrder === 'desc' && 'Сортування вимкнено'}
-            {sortOrder === null && 'Сортувати ↑ (зростання)'}
-          </button>
+            >
+              <button
+              onClick={() => {
+                setSortOrder(prev =>
+                  prev === null ? 'asc' : prev === 'asc' ? 'desc' : null
+                );
+              }}
+              className="btn btn-sort"
+              >
+                {sortOrder === 'asc' && 'Сортувати за ↓'}
+                {sortOrder === 'desc' && 'Скасувати сортування'}
+                {sortOrder === null && 'Сортувати за ↑'}
+                </button>
+                
+                <h3 style={{ margin: 0 }}>Інвентар:</h3>
         </div>
-
-        <h3 style={{ textAlign: 'center', marginTop: '40px' }}>Інвентар:</h3>
 
         {userData.inventory.length === 0 ? (
           <p style={{ textAlign: 'center' }}>Інвентар порожній.</p>
