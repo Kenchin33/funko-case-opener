@@ -146,10 +146,7 @@ const showErrorMessage = (msg) => {
     if (!token || !isLoggedIn) return;
   
     try {
-      // 1. Отримати нові фігурки для додавання
       const newFigures = allFigures.filter(f => selectedFiguresRight.has(f._id));
-  
-      // 2. Створити нові об'єкти інвентаря (аналогічні до тих, що зберігаються у User)
       const newInventoryEntries = newFigures.map(fig => ({
         figure: fig._id,
         caseName: 'Обмін',
@@ -158,17 +155,28 @@ const showErrorMessage = (msg) => {
         date: new Date(),
       }));
   
-      // 3. Створити новий масив інвентаря без обраних
       const updatedInventory = inventory.filter(item => !selectedInventoryIds.has(item._id));
-  
-      // 4. Додати нові фігурки до інвентаря
       const finalInventory = [...updatedInventory, ...newInventoryEntries];
   
-      // 5. Отримати userId з токена
-      const decoded = JSON.parse(atob(token.split('.')[1])); // розкодуємо payload
-      const userId = decoded.userId;
+      function parseJwt(token) {
+        try {
+          return JSON.parse(atob(token.split('.')[1]));
+        } catch (e) {
+          return null;
+        }
+      }
   
-      // 6. Запит на оновлення інвентаря
+      const decoded = parseJwt(token);
+      const userId = decoded?.userId;
+      if (!userId) {
+        console.error("User ID не знайдено у токені");
+        showErrorMessage("Не вдалося отримати ID користувача");
+        return;
+      }
+  
+      console.log("Відправляю PATCH на", `/api/auth/${userId}/inventory`);
+      console.log("Новий інвентар:", finalInventory);
+  
       const res = await fetch(`https://funko-case-opener.onrender.com/api/auth/${userId}/inventory`, {
         method: 'PATCH',
         headers: {
@@ -178,9 +186,13 @@ const showErrorMessage = (msg) => {
         body: JSON.stringify({ inventory: finalInventory }),
       });
   
+      console.log("PATCH статус:", res.status);
+      const responseText = await res.text();
+      console.log("PATCH відповідь:", responseText);
+  
       if (!res.ok) throw new Error('Помилка під час обміну');
   
-      const data = await res.json();
+      const data = JSON.parse(responseText);
       setInventory(data.user.inventory);
       setSelectedInventoryIds(new Set());
       setSelectedFiguresRight(new Set());
@@ -188,10 +200,10 @@ const showErrorMessage = (msg) => {
       setInventoryPage(1);
       showErrorMessage('Успішний обмін 🎉');
     } catch (err) {
-      console.error(err);
+      console.error("handleExchange помилка:", err);
       showErrorMessage('Не вдалося здійснити обмін.');
     }
-  };
+  };  
   
 
 

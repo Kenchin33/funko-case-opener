@@ -156,7 +156,6 @@ const CasePage = () => {
       const insertAt = window.innerWidth < 480 ? totalPrefix + centerIndex + 28 : window.innerWidth < 768 ? totalPrefix + centerIndex + 3 : totalPrefix + centerIndex;
       const winningFigure = caseData.figures.find(f => f._id === data._id) || data;
       const finalReel = [...randomFigures, winningFigure, ...randomFigures.slice(0, visibleCount)];
-      console.log('Повний список фігурок у стрічці:', finalReel);
 
       const fragment = document.createDocumentFragment();
       finalReel.forEach((fig) => {

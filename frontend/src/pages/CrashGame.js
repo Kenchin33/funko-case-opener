@@ -368,7 +368,6 @@ const CrashGame = () => {
     if (rand < instantCrashChance) {
       coef = 1.0;
       setInstantCrashChance(0.10); // наступна гра: збільшуємо шанс інстант-крашу
-      console.log('%c💥 Instant Crash! Коефіцієнт: 1.00x', 'color: red; font-weight: bold;');
     } else {
       // нормальна гра – повертаємо шанси назад, якщо вони були збільшені
       if (instantCrashChance > 0.01) {
@@ -396,7 +395,6 @@ const CrashGame = () => {
         }
       }
   
-      console.log(`🎲 Згенерований коефіцієнт: ${coef}x`);
     }
   
     generatedCoefficientRef.current = coef;
