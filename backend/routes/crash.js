@@ -32,7 +32,7 @@ router.post('/claim-reward', authMiddleware, async (req, res) => {
         newInventoryEntries.push({
             figure: randomFigure._id,
             price: randomFigure.price,
-            caseName: randomFigure.caseName || 'Ракетка',
+            caseName: 'Ракетка',
             caseId: entry.caseId,
         });
 
