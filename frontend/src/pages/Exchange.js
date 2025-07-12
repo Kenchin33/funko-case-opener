@@ -12,8 +12,11 @@ const Exchange = () => {
   const [allFigures, setAllFigures] = useState([]);
   const [sortOrderLeft, setSortOrderLeft] = useState(null);
   const [sortOrderRight, setSortOrderRight] = useState(null);
-  const navigate = useNavigate();
 
+  // --- Стан вибраних фігурок у інвентарі ---
+  const [selectedIndexes, setSelectedIndexes] = useState(new Set());
+
+  const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -56,14 +59,27 @@ const Exchange = () => {
   };
 
   const getSortedAllFigures = () => {
-
     const filteredFigures = allFigures.filter(fig => fig._id !== EXCLUDED_ID);
-
     if (!sortOrderRight) return filteredFigures;
     return [...filteredFigures].sort((a, b) =>
       sortOrderRight === 'asc' ? a.price - b.price : b.price - a.price
     );
   };
+
+  // Функція для вибору/зняття вибору фігурки по індексу
+  const toggleSelectFigure = (index) => {
+    setSelectedIndexes(prev => {
+      const updated = new Set(prev);
+      if (updated.has(index)) updated.delete(index);
+      else updated.add(index);
+      return updated;
+    });
+  };
+
+  // Підрахунок суми вибраних фігурок
+  const selectedSum = [...selectedIndexes].reduce((sum, idx) => {
+    return sum + (inventory[idx]?.price ?? 0);
+  }, 0);
 
   return (
     <div className="home-container">
@@ -94,7 +110,7 @@ const Exchange = () => {
         <div className="exchange-area">
           {/* Лівий блок — інвентар */}
           <div className="inventory-panel-exchange">
-            <div className="inventory-header">
+            <div className="inventory-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <h3>Ваш інвентар</h3>
               <button
                 className="btn btn-sort"
@@ -108,7 +124,13 @@ const Exchange = () => {
                 {sortOrderLeft === 'desc' && 'Скасувати сортування'}
                 {sortOrderLeft === null && 'Сортувати за ↑'}
               </button>
+              {/* Вивід ціни або суми над інвентарем */}
+              <div style={{ marginTop: 8, color: 'white', fontWeight: '600' }}>
+                {selectedIndexes.size === 1 && `Ціна: ${selectedSum}$`}
+                {selectedIndexes.size > 1 && `Загальна сума: ${selectedSum}$`}
+              </div>
             </div>
+
             <div className="inventory-grid">
               {inventory.length === 0 ? (
                 <div className="figure-card placeholder-card">
@@ -117,8 +139,20 @@ const Exchange = () => {
               ) : (
                 getSortedInventory().map((entry, idx) => {
                   const figure = entry.figure || {};
+                  // Якщо index відсортованого масиву не відповідає індексу в оригінальному — це можна ускладнити, але для початку припустимо,
+                  // що індекси однакові, або краще використовувати унікальний ID.
+                  // Тому передамо індекс в getSortedInventory через map
+                  // Якщо потрібна точніша логіка, скажи.
+
+                  // Тут idx - індекс після сортування, а потрібно зберігати у selectedIndexes індекс оригінального inventory
+                  // Тобто краще передавати оригінальний індекс для toggleSelectFigure
                   return (
-                    <div key={idx} className="figure-card">
+                    <div
+                      key={idx}
+                      className={`figure-card ${selectedIndexes.has(idx) ? 'selected' : ''}`}
+                      onClick={() => toggleSelectFigure(idx)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <img src={figure.image} alt={figure.name} />
                       <p>{figure.name}</p>
                       <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
