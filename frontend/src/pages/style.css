@@ -792,6 +792,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
+  text-align: center;
 }
 
 /* Повідомлення про успіх */

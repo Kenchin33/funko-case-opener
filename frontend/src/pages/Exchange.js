@@ -119,7 +119,7 @@ const showErrorMessage = (msg) => {
       : selectedSumRight + figure.price;
   
     if (newSum > selectedSumInventory) {
-      showErrorMessage('Сума фігурок перевищує обрану з інвентаря. Оберіть дорожчі фігурки зліва.');
+      showErrorMessage('Сума фігурок перевищує обрану з інвентаря. Оберіть дорожчі фігурки у інвентарі.');
       return;
     }
   
@@ -165,7 +165,11 @@ const showErrorMessage = (msg) => {
       </header>
 
       <main>
-
+      {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
+            <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <button className="btn btn-primary">Обміняти фігурки</button>
+            </div>
+        )}
         <div className="exchange-area">
           {/* Інвентар */}
           <div className="inventory-panel-exchange">
@@ -287,11 +291,6 @@ const showErrorMessage = (msg) => {
         </div>
         {showError && (
             <div className="error-message" role="alert" aria-live="assertive">{errorMsg}</div>
-        )}
-        {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
-            <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                <button className="btn btn-primary">Обміняти фігурки</button>
-            </div>
         )}
       </main>
     </div>
