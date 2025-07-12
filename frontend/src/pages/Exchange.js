@@ -6,51 +6,74 @@ import './style.css';
 const Exchange = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [balance, setBalance] = useState(null);
+  const [inventory, setInventory] = useState([]);
+  const [allFigures, setAllFigures] = useState([]);
   const [sortOrderLeft, setSortOrderLeft] = useState(null);
   const [sortOrderRight, setSortOrderRight] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
+  const token = localStorage.getItem('token');
 
-      fetch('https://funko-case-opener.onrender.com/api/auth/me', {
-        headers: { 'Authorization': 'Bearer ' + token },
+  useEffect(() => {
+    if (!token) return;
+
+    // Отримати інформацію про користувача та інвентар
+    fetch('https://funko-case-opener.onrender.com/api/auth/me', {
+      headers: { Authorization: 'Bearer ' + token },
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Не авторизований');
+        return res.json();
       })
-        .then(res => {
-          if (!res.ok) throw new Error('Не авторизований');
-          return res.json();
-        })
-        .then(data => {
-          setBalance(data.balance ?? 0);
-        })
-        .catch(() => {
-          setIsLoggedIn(false);
-          setBalance(null);
-          localStorage.removeItem('token');
-        });
-    } else {
-      setIsLoggedIn(false);
-      setBalance(null);
-    }
+      .then(data => {
+        setIsLoggedIn(true);
+        setBalance(data.balance ?? 0);
+        setInventory(data.inventory ?? []);
+      })
+      .catch(() => {
+        setIsLoggedIn(false);
+        setBalance(null);
+        setInventory([]);
+        localStorage.removeItem('token');
+      });
+  }, [token]);
+
+  useEffect(() => {
+    // Отримати всі фігурки з бази
+    fetch('https://funko-case-opener.onrender.com/api/figures')
+      .then(res => res.json())
+      .then(data => {
+        setAllFigures(data);
+      })
+      .catch(err => console.error('Помилка завантаження фігурок:', err));
   }, []);
+
+  // Сортування
+  const getSortedInventory = () => {
+    if (!sortOrderLeft) return inventory;
+    return [...inventory].sort((a, b) =>
+      sortOrderLeft === 'asc' ? a.figure.price - b.figure.price : b.figure.price - a.figure.price
+    );
+  };
+
+  const getSortedAllFigures = () => {
+    if (!sortOrderRight) return allFigures;
+    return [...allFigures].sort((a, b) =>
+      sortOrderRight === 'asc' ? a.price - b.price : b.price - a.price
+    );
+  };
 
   return (
     <div className="home-container">
-      <button className="btn btn-outline back-button" onClick={() => navigate('/')}>← На головну</button>
       <header className="header">
+        <button className="btn btn-outline back-button" onClick={() => navigate('/')}>← На головну</button>
         <div className="logo" onClick={() => navigate('/')}>
           <h1>Фанко Казіно</h1>
         </div>
         <div className="user-menu">
           {isLoggedIn ? (
-            <Link
-              to="/profile"
-              className="profile-icon"
-              title="Профіль"
-              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}
-            >
+            <Link to="/profile" className="profile-icon" title="Профіль"
+              style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', color: 'white', fontWeight: '600' }}>
               <span className="balance-text">{balance !== null ? balance + ' UAH' : '...'}</span>
               <FaUserCircle size={36} />
             </Link>
@@ -68,7 +91,7 @@ const Exchange = () => {
 
         <div className="exchange-area">
           {/* Лівий блок — інвентар */}
-          <div className="inventory-panel">
+         <div className="inventory-panel">
             <div className="inventory-header">
               <h3>Ваш інвентар</h3>
               <button
@@ -85,11 +108,29 @@ const Exchange = () => {
               </button>
             </div>
             <div className="inventory-grid">
-              <div className="figure-card placeholder-card">
-                <p style={{ textAlign: 'center', padding: '40px 10px' }}>Фігурки з інвентаря ще не завантажені</p>
-              </div>
+                {inventory.length === 0 ? (
+                <div className="figure-card placeholder-card">
+                    <p style={{ textAlign: 'center', padding: '40px 10px' }}>У вас ще немає фігурок</p>
+                </div>
+                ) : (
+                    inventory.slice().sort((a, b) => {
+                        if (sortOrderLeft === 'asc') return a.price - b.price;
+                        if (sortOrderLeft === 'desc') return b.price - a.price;
+                        return 0;
+                    }).map((entry, idx) => {
+                        const figure = entry.figure || {};
+                        return (
+                            <div key={idx} className="figure-card">
+                                <img src={figure.image} alt={figure.name} />
+                                <p>{figure.name}</p>
+                                <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
+                                <p>{entry.price}$</p>
+                            </div>
+                        );
+                    })
+                )}
             </div>
-          </div>
+         </div>
 
           {/* Правий блок — фігурки з бази */}
           <div className="exchange-panel">
@@ -109,9 +150,24 @@ const Exchange = () => {
               </button>
             </div>
             <div className="inventory-grid">
-              <div className="figure-card placeholder-card">
-                <p style={{ textAlign: 'center', padding: '40px 10px' }}>Фігурки з бази ще не завантажені</p>
-              </div>
+                {allFigures.length === 0 ? (
+                    <div className="figure-card placeholder-card">
+                        <p style={{ textAlign: 'center', padding: '40px 10px' }}>Немає доступних фігурок</p>
+                    </div>
+                ) : (
+                    allFigures.slice().sort((a, b) => {
+                        if (sortOrderRight === 'asc') return a.price - b.price;
+                        if (sortOrderRight === 'desc') return b.price - a.price;
+                        return 0;
+                    }).map((figure, idx) => (
+                        <div key={idx} className="figure-card">
+                            <img src={figure.image} alt={figure.name} />
+                            <p>{figure.name}</p>
+                            <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
+                            <p>{figure.price}$</p>
+                        </div>
+                    ))
+                )}
             </div>
           </div>
         </div>
