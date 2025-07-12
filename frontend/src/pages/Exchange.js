@@ -63,7 +63,7 @@ const Exchange = () => {
 
   // Сортування усіх фігурок
   const getSortedAllFigures = () => {
-    const filteredFigures = allFigures.filter(fig => fig._id !== EXCLUDED_ID);
+    const filteredFigures = allFigures.filter(fig => fig._id !== EXCLUDED_ID && selectedInventoryIds.size > 0 && fig.price <= selectedSumInventory);
     if (!sortOrderRight) return filteredFigures;
     return [...filteredFigures].sort((a, b) =>
       sortOrderRight === 'asc' ? a.price - b.price : b.price - a.price
@@ -248,28 +248,36 @@ const Exchange = () => {
             </div>
 
             <div className="inventory-grid">
-              {allFigures.length === 0 ? (
-                <div className="figure-card placeholder-card">
-                  <p style={{ textAlign: 'center', padding: '40px 10px' }}>Немає доступних фігурок</p>
-                </div>
-              ) : (
-                getSortedAllFigures().map((figure) => {
-                  const isSelected = selectedFiguresRight.has(figure._id);
-                  return (
-                    <div
-                      key={figure._id}
-                      className={`figure-card ${isSelected ? 'selected' : ''}`}
-                      onClick={() => toggleSelectFigureRight(figure._id)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <img src={figure.image} alt={figure.name} />
-                      <p>{figure.name}</p>
-                      <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
-                      <p>{figure.price}$</p>
+                {selectedInventoryIds.size === 0 ? (
+                    <div className="figure-card placeholder-card">
+                        <p style={{ textAlign: 'center', padding: '40px 10px' }}>Спочатку виберіть фігурку(и) з інвентаря</p>
                     </div>
-                  );
-                })
-              )}
+                ) : (
+                    getSortedAllFigures().length === 0 ? (
+                        <div className="figure-card placeholder-card">
+                            <p style={{ textAlign: 'center', padding: '40px 10px' }}>
+                                Немає фігурок дешевших або рівних за сумою
+                            </p>
+                        </div>
+                    ) : (
+                        getSortedAllFigures().map((figure) => {
+                            const isSelected = selectedFiguresRight.has(figure._id);
+                            return (
+                                <div
+                                    key={figure._id}
+                                    className={`figure-card ${isSelected ? 'selected' : ''}`}
+                                    onClick={() => toggleSelectFigureRight(figure._id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <img src={figure.image} alt={figure.name} />
+                                    <p>{figure.name}</p>
+                                    <p className={`rarity ${figure.rarity}`}>{figure.rarity}</p>
+                                    <p>{figure.price}$</p>
+                                </div>
+                            );
+                        })
+                    )
+                )}
             </div>
           </div>
         </div>
