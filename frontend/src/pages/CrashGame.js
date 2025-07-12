@@ -460,20 +460,20 @@ const CrashGame = () => {
               <p>Немає фігурок</p>
             ) : (
               <div className="inventory-grid">
-                {[...inventory].sort((a, b) => {
+                {inventory.map((item, originalIndex) => ({ ...item, originalIndex})).sort((a, b) => {
                   if (sortOrder === 'asc') return a.price - b.price;
                   if (sortOrder === 'desc') return b.price - a.price;
                   return 0;
-                }).map((entry, index) => {
+                }).map((entry) => {
                   const figure = entry.figure || {};
-                  const selected = selectedIndexes.has(index);
+                  const selected = selectedIndexes.has(entry.originalIndex);
                   return (
-                    <label key={index} className={`figure-card ${selected ? 'selected' : ''}`}>
+                    <label key={entry.originalIndex} className={`figure-card ${selected ? 'selected' : ''}`}>
                       <input
                         type="checkbox"
                         style={{ display: 'none' }}
                         checked={selected}
-                        onChange={() => toggleSelectFigure(index)}
+                        onChange={() => toggleSelectFigure(entry.originalIndex)}
                       />
                       <img src={figure.image} alt={figure.name} />
                       <p>{figure.name}</p>
