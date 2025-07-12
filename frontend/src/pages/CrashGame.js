@@ -44,6 +44,7 @@ const CrashGame = () => {
   const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
   const [instantCrashChance, setInstantCrashChance] = useState(0.01);
   const generatedCoefficientRef = useRef(null);
+  const [sortOrder, setSortOrder] = useState(null);
 
   // Визначення хмаринок з позицією по top і left, швидкістю анімації та масштабом
   const clouds = [
@@ -438,8 +439,19 @@ const CrashGame = () => {
         <div className="crash-game-main" style={{ display: 'flex', gap: '20px' }}>
           {/* Інвентар */}
           <div className="inventory-panel">
-            <div className="inventory-header">
+            <div className="inventory-header" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'}}>
               <h3>Ваш інвентар</h3>
+
+              <button 
+                onClick={() =>
+                setSortOrder(prev => prev === null ? 'asc' : prev === 'asc' ? 'desc' : null)
+              }
+                className="btn btn-sort"
+              >
+                    {sortOrder === 'asc' && 'Сортувати за ↓'}
+                    {sortOrder === 'desc' && 'Скасувати сортування'}
+                    {sortOrder === null && 'Сортувати за ↑'}
+              </button>
               <div className="bet-sum">
                 Сума ставки: <strong>{Math.round(totalBetAmount)}$</strong>
               </div>
@@ -448,7 +460,11 @@ const CrashGame = () => {
               <p>Немає фігурок</p>
             ) : (
               <div className="inventory-grid">
-                {inventory.map((entry, index) => {
+                {[...inventory].sort((a, b) => {
+                  if (sortOrder === 'asc') return a.price - b.price;
+                  if (sortOrder === 'desc') return b.price - a.price;
+                  return 0;
+                }).map((entry, index) => {
                   const figure = entry.figure || {};
                   const selected = selectedIndexes.has(index);
                   return (
