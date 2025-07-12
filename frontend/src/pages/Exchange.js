@@ -26,26 +26,15 @@ const Exchange = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
-  const showErrorMessage = (msg) => {
-    if (errorTimeoutRef.current) {
-      clearTimeout(errorTimeoutRef.current);
-    }
-    setErrorMsg(msg);
-    setShowError(true);
-    errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
-  };
-
-  // Парсинг токена для userId один раз
-  const parseJwt = (token) => {
-    try {
-      return JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-      return null;
-    }
-  };
-
-  const decodedToken = token ? parseJwt(token) : null;
-  const userId = decodedToken?.userId;
+const showErrorMessage = (msg) => {
+  if (errorTimeoutRef.current) {
+    clearTimeout(errorTimeoutRef.current);
+  }
+  setErrorMsg(msg);
+  setShowError(false);
+  setTimeout(() => setShowError(true), 10);
+  errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
+};
 
   useEffect(() => {
     if (!token) return;
@@ -87,11 +76,6 @@ const Exchange = () => {
     );
   };
 
-  const selectedSumInventory = [...selectedInventoryIds].reduce((sum, id) => {
-    const item = inventory.find(i => i._id === id);
-    return sum + (item?.price ?? 0);
-  }, 0);
-
   const getSortedAllFigures = () => {
     const filtered = allFigures.filter(fig =>
       fig._id !== EXCLUDED_ID &&
@@ -103,11 +87,6 @@ const Exchange = () => {
       sortOrderRight === 'asc' ? a.price - b.price : b.price - a.price
     );
   };
-
-  const selectedSumRight = [...selectedFiguresRight].reduce((sum, id) => {
-    const item = allFigures.find(f => f._id === id);
-    return sum + (item?.price ?? 0);
-  }, 0);
 
   const getPagedInventory = () => {
     const sorted = getSortedInventory();
@@ -133,88 +112,114 @@ const Exchange = () => {
   const toggleSelectFigureRight = (id) => {
     const figure = allFigures.find(f => f._id === id);
     if (!figure) return;
-
+  
     const isAlreadySelected = selectedFiguresRight.has(id);
     const newSum = isAlreadySelected
       ? selectedSumRight - figure.price
       : selectedSumRight + figure.price;
-
+  
     if (newSum > selectedSumInventory) {
       showErrorMessage('Сума фігурок перевищує обрану з інвентаря.');
       return;
     }
-
+  
     setSelectedFiguresRight(prev => {
       const updated = new Set(prev);
       if (updated.has(id)) updated.delete(id);
       else updated.add(id);
       return updated;
     });
-  };
+  };  
 
-  // ** Оновлений handleExchange, що надсилає POST /api/exchange **
-  const handleExchange = async () => {
+  const selectedSumInventory = [...selectedInventoryIds].reduce((sum, id) => {
+    const item = inventory.find(i => i._id === id);
+    return sum + (item?.price ?? 0);
+  }, 0);
+
+  const selectedSumRight = [...selectedFiguresRight].reduce((sum, id) => {
+    const item = allFigures.find(f => f._id === id);
+    return sum + (item?.price ?? 0);
+  }, 0);
+
+
+  const handleExchange = async (removeIndex, newFigure) => {
+    setError(null);
+    const userId = localStorage.getItem('userId'); // або інший спосіб отримати userId
+    const token = localStorage.getItem('token');
+
     if (!userId || !token) {
-      showErrorMessage('Користувач не авторизований');
-      return;
-    }
-
-    if (selectedInventoryIds.size === 0 || selectedFiguresRight.size === 0) {
-      showErrorMessage('Оберіть фігурки для обміну з обох сторін');
-      return;
-    }
-
-    // Формуємо масив для видалення — id фігурок з інвентаря
-    const removeIds = [...selectedInventoryIds];
-
-    // Нові фігурки — дані з allFigures для вибраних праворуч
-    const newFigures = [...selectedFiguresRight].map(id => {
-      const fig = allFigures.find(f => f._id === id);
-      return {
-        _id: fig._id,
-        price: fig.price,
-        caseId: fig.caseId || null,
-        caseName: fig.caseName || 'Обмін',
-      };
-    });
-
+        setError('Користувач не авторизований');
+        return;
+      }
+  
     try {
-      const res = await fetch('https://funko-case-opener.onrender.com/api/exchange', {
-        method: 'POST',
+      const newFigures = allFigures.filter(f => selectedFiguresRight.has(f._id));
+      const newInventoryEntries = newFigures.map(fig => ({
+        figure: fig._id,
+        caseName: 'Обмін',
+        caseId: null,
+        price: fig.price,
+        date: new Date(),
+      }));
+  
+      const updatedInventory = inventory.filter(item => !selectedInventoryIds.has(item._id));
+      const finalInventory = [...updatedInventory, ...newInventoryEntries];
+  
+      function parseJwt(token) {
+        try {
+          return JSON.parse(atob(token.split('.')[1]));
+        } catch (e) {
+          return null;
+        }
+      }
+  
+      const decoded = parseJwt(token);
+      const userId = decoded?.userId;
+      if (!userId) {
+        console.error("User ID не знайдено у токені");
+        showErrorMessage("Не вдалося отримати ID користувача");
+        return;
+      }
+  
+      console.log("Відправляю PATCH на", `/api/auth/${userId}/inventory`);
+      console.log("Новий інвентар:", finalInventory);
+  
+      const res = await fetch(`https://funko-case-opener.onrender.com/api/auth/${userId}/inventory`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + token,
         },
-        body: JSON.stringify({
-          removeIds,
-          newFigures,
-        }),
+        body: JSON.stringify({ inventory: finalInventory }),
       });
-
-      if (!res.ok) throw new Error('Помилка при обміні');
-
-      const data = await res.json();
-
-      // Оновлюємо локальний інвентар з даних сервера
-      setInventory(data.inventory);
-      // Скидаємо вибір
+  
+      console.log("PATCH статус:", res.status);
+      const responseText = await res.text();
+      console.log("PATCH відповідь:", responseText);
+  
+      if (!res.ok) throw new Error('Помилка під час обміну');
+  
+      const data = JSON.parse(responseText);
+      setInventory(data.user.inventory);
       setSelectedInventoryIds(new Set());
       setSelectedFiguresRight(new Set());
-      setInventoryPage(1);
       setFiguresPage(1);
+      setInventoryPage(1);
       showErrorMessage('Успішний обмін 🎉');
     } catch (err) {
-      console.error('handleExchange помилка:', err);
+      console.error("handleExchange помилка:", err);
       showErrorMessage('Не вдалося здійснити обмін.');
     }
-  };
+  };  
+  
+
 
   return (
     <div className="home-container">
       <header className="header">
         <button className="btn btn-outline back-button" onClick={() => navigate('/')}>← На головну</button>
         <div className="logo" onClick={() => navigate('/')}>
-          <h1 style={{ textAlign: 'center', color: 'white' }}>Обмін</h1>
+          <h1 style={{ textAlign: 'center', color: 'white'}}>Обмін</h1>
         </div>
         <div className="user-menu">
           {isLoggedIn ? (
@@ -233,10 +238,10 @@ const Exchange = () => {
       </header>
 
       <main>
-        {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
-          <div style={{ textAlign: 'center', margin: '20px 0' }}>
-            <button className="btn btn-primary" onClick={handleExchange}>Обміняти фігурки</button>
-          </div>
+      {selectedSumInventory > 0 && selectedSumInventory === selectedSumRight && (
+            <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <button className="btn btn-primary" onClick={handleExchange}>Обміняти фігурки</button>
+            </div>
         )}
         <div className="exchange-area">
           {/* Інвентар */}
@@ -358,7 +363,7 @@ const Exchange = () => {
           </div>
         </div>
         {showError && (
-          <div className="error-message-exchange" role="alert" aria-live="assertive">{errorMsg}</div>
+            <div className="error-message-exchange" role="alert" aria-live="assertive">{errorMsg}</div>
         )}
       </main>
     </div>
