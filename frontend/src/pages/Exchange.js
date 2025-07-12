@@ -16,6 +16,9 @@ const Exchange = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [showError, setShowError] = useState(false);
   const errorTimeoutRef = useRef(null);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const successTimeoutRef = useRef(null);
 
   const [selectedInventoryIds, setSelectedInventoryIds] = useState(new Set());
   const [selectedFiguresRight, setSelectedFiguresRight] = useState(new Set());
@@ -35,6 +38,16 @@ const showErrorMessage = (msg) => {
   setTimeout(() => setShowError(true), 10);
   errorTimeoutRef.current = setTimeout(() => setShowError(false), 2010);
 };
+
+const showSuccessMessage = (msg) => {
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+    setSuccessMsg(msg);
+    setShowSuccess(false);
+    setTimeout(() => setShowSuccess(true), 10);
+    successTimeoutRef.current = setTimeout(() => setShowSuccess(false), 2010);
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -184,7 +197,7 @@ const showErrorMessage = (msg) => {
       setInventory(data.inventory); // Оновлюємо інвентар з сервера
       setSelectedInventoryIds(new Set()); // Очищаємо вибір
       setSelectedFiguresRight(new Set());
-      showErrorMessage('Обмін успішний!');
+      showSuccessMessage('Обмін успішний!');
     } catch (err) {
       showErrorMessage(err.message);
     }
@@ -341,6 +354,9 @@ const showErrorMessage = (msg) => {
         </div>
         {showError && (
             <div className="error-message-exchange" role="alert" aria-live="assertive">{errorMsg}</div>
+        )}
+        {showSuccess && (
+            <div className="success-message-exchange" role="alert" aria-live="polite">{successMsg}</div>
         )}
       </main>
     </div>
